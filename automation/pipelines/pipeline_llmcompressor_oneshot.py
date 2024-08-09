@@ -2,7 +2,7 @@ from clearml.automation import PipelineController
 from clearml import Task
 import argparse
 
-parser = argparse.ArgumentParser(description = "Apply quantization recipe in one-shot")
+parser = argparse.ArgumentParser(description = "Apply recipe in one-shot")
 
 parser.add_argument("--project-name", type=str)
 parser.add_argument("--task-prefix", type=str)
@@ -22,8 +22,9 @@ parser.add_argument("--tags", type=str, nargs="+", default=None)
 parser.add_argument("--oneshot-packages", type=str, nargs="+", default=None)
 parser.add_argument("--evaluation-packages", type=str, nargs="+", default=None)
 parser.add_argument("--benchmark-tasks", type=str, nargs="+", default=["openllm"])
-parser.add_argument("--engine", type=str, choices=["vllm, hf"], default="vllm")
+parser.add_argument("--engine", type=str, choices=["vllm", "hf", "sparseml"], default="vllm")
 parser.add_argument("--build-vllm", action="store_true", default=False)
+parser.add_argument("--batch-size", type=str, default="auto")
 
 args = parser.parse_args()
 args = vars(args)
@@ -61,28 +62,57 @@ pipe.add_step(
 )
 
 oneshot_model_id = f"${{{oneshot_step_name}.models.output.-1.id}}"
-if args["engine"] == "vllm":
+
+batch_size = args["batch_size"]
+if batch_size == "auto":
+    evalplus_batch_size = 1
+else:
+    batch_size = int(batch_size)
+    evalplus_batch_size = batch_size
+
+engine = args["engine"]
+if engine == "vllm":
     lm_evaluation_harness_task_id = Task.get_task(project_name="Automation",task_name="lm_evaluation_harness_vllm", task_filter={'order_by': ["-last_update"]}).id
     lm_evaluation_override_engine = {
         "Args/build_vllm": args["build_vllm"],
         "Args/gpu_memory_utilization": 0.7,
         "Args/num_gpus": num_gpus_evaluation,
     }
+
+    evalplus_task_id = Task.get_task(project_name="Automation",task_name="evalplus_vllm", task_filter={'order_by': ["-last_update"]}).id
+    evalplus_override_engine = lm_evaluation_override_engine
 else:
-    lm_evaluation_harness_task_id = Task.get_task(project_name="Automation",task_name="lm_evaluation_harness_hf", task_filter={'order_by': ["-last_update"]}).id
-    lm_evaluation_override_engine = {
-        "Args/parallelize": True,
-        "Args/num_gpus": num_gpus_evaluation,
-    }
+    if engine == "hf":
+        lm_evaluation_harness_task_id = Task.get_task(project_name="Automation",task_name="lm_evaluation_harness_hf", task_filter={'order_by': ["-last_update"]}).id
+        evalplus_task_id = Task.get_task(project_name="Automation",task_name="evalplus_hf", task_filter={'order_by': ["-last_update"]}).id
+    elif engine == "sparseml":
+        lm_evaluation_harness_task_id = Task.get_task(project_name="Automation",task_name="lm_evaluation_harness_sparseml", task_filter={'order_by': ["-last_update"]}).id
+        evalplus_task_id = Task.get_task(project_name="Automation",task_name="evalplus_sparseml", task_filter={'order_by': ["-last_update"]}).id
+
+    if num_gpus_evaluation > 1:
+        lm_evaluation_override_engine = {"Args/parallelize": True}
+    else:
+        lm_evaluation_override_engine = {}
+
+    evalplus_override_engine = lm_evaluation_override_engine
 
 lm_evaluation_override = {
     "Args/model_id": oneshot_model_id,
     "Args/clearml_model": True,
     "Args/packages": evaluation_packages,
+    "Args/batch_size": batch_size,
 }
 lm_evaluation_override.update(lm_evaluation_override_engine)
 
-engine = args["engine"]
+evalplus_override = {
+    "Args/model_id": oneshot_model_id,
+    "Args/clearml_model": True,
+    "Args/packages": evaluation_packages,
+    "Args/batch_size": evalplus_batch_size,
+}
+evalplus_override.update(evalplus_override_engine)
+
+
 if "mmlu_llama_3.1_instruct" in args["benchmark_tasks"]:
     mmlu_instruct_step_name = f"{oneshot_step_name}_mmlu_llama_3.1_{engine}"
     mmlu_instruct_override = {
@@ -169,7 +199,7 @@ if "gsm8k_cot_llama_3.1_instruct" in args["benchmark_tasks"]:
     pipe.add_step(
         name=gsm8k_instruct_step_name,
         parents=[oneshot_step_name],
-        base_task_id=lm_evaluation_harness_vllm_task_id,
+        base_task_id=lm_evaluation_harness_task_id,
         execution_queue=args["evaluation_queue"],
         parameter_override=gsm8k_instruct_override,
     )
@@ -306,11 +336,30 @@ if "truthfulqa" in args["benchmark_tasks"]:
     else:
         truthfulqa_override["Args/max_length"] = 4096
     pipe.add_step(
-        name=gsm8k_step_name,
+        name=truthfulqa_step_name,
         parents=[oneshot_step_name],
         base_task_id=lm_evaluation_harness_task_id,
         execution_queue=args["evaluation_queue"],
         parameter_override=truthfulqa_override,
+    )
+
+if "humaneval" in args["benchmark_tasks"]:
+    humaneval_step_name = f"{oneshot_step_name}_humaneval_{engine}"
+    humaneval_override = {
+        "Args/num_fewshot": 0,
+        "Args/add_bos_token": True,
+    }
+    humaneval_override.update(evalplus_override)
+    if engine == "vllm":
+        truthfulqa_override["Args/max_model_len"] = 4096
+    else:
+        truthfulqa_override["Args/max_length"] = 4096
+    pipe.add_step(
+        name=humaneval_step_name,
+        parents=[oneshot_step_name],
+        base_task_id=evalplus_task_id,
+        execution_queue=args["evaluation_queue"],
+        parameter_override=humaneval_override,
     )
 
 pipe.start()

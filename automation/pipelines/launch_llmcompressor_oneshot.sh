@@ -1,4 +1,4 @@
-python /network/alexandre/automation/pipeline_llmcompressor_oneshot.py \
+python pipeline_llmcompressor_oneshot.py \
   --project-name "LLM quantization - W8" \
   --task-prefix "Llama-3_1-8B-Instruct/RTN/calibration/256/8196" \
   --model-id meta-llama/Meta-Llama-3.1-8B-Instruct \
