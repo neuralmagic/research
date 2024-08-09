@@ -188,7 +188,7 @@ def get_dataset(dataset_name, num_samples, max_seq_len, tokenizer, random_fracti
         random_dataset = Dataset.from_dict({"input_ids": input_ids, "attention_mask": attention_mask})
         
         if downstream_dataset is not None:
-            dataset = interleave_datasets([downstream_dataset, random_data])
+            dataset = interleave_datasets([downstream_dataset, random_dataset])
         else:
             dataset = random_dataset
     else:
