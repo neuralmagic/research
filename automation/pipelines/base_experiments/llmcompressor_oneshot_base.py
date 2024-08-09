@@ -9,7 +9,7 @@ queue_name = "oneshot-a100x1"
 # LOCAL
 #
 
-parser = argparse.ArgumentParser(description = "Apply quantization recipe in one-shot")
+parser = argparse.ArgumentParser(description = "Apply recipe in one-shot")
 
 parser.add_argument("--model-id", type=str)
 parser.add_argument("--recipe", type=str)
