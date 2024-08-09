@@ -34,6 +34,7 @@ additional_packages = args.pop("packages")
 packages = [
     "git+https://github.com/EleutherAI/lm-evaluation-harness.git@main", 
     "sentencepiece",
+    "git+https://github.com/neuralmagic/compressed-tensors.git@main"
 ]
 
 if additional_packages is not None and len(additional_packages) > 0:
