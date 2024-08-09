@@ -40,7 +40,7 @@ if additional_packages is not None and len(additional_packages) > 0:
 
 task = Task.init(project_name=project_name, task_name=task_name)
 task.set_base_docker(docker_image="498127099666.dkr.ecr.us-east-1.amazonaws.com/mlops/k8s-research-clean:latest")
-task.set_script(repository="https://github.com/neuralmagic/research.git", branch="main",working_dir="clearml")
+task.set_script(repository="https://github.com/neuralmagic/research.git", branch="main",working_dir="clearml_evaluation_parsing")
 task.set_packages(packages)
 
 task.execute_remotely(queue_name)
