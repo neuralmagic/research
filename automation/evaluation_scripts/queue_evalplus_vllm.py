@@ -47,7 +47,6 @@ task = Task.init(project_name=project_name, task_name=task_name)
 task.set_base_docker(docker_image="498127099666.dkr.ecr.us-east-1.amazonaws.com/mlops/k8s-research-torch:latest")
 task.set_script(repository="https://github.com/neuralmagic/evalplus.git", branch="master")
 task.set_packages(packages)
-task.connect(args)
 
 task.execute_remotely(queue_name)
 
