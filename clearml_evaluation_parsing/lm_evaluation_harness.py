@@ -25,9 +25,9 @@ def process_results(json_file):
 
     return scalars, artifact
 
-def push_to_clearml(clearml_task, json_file):
+def push_to_clearml(clearml_task, json_file, clearml_model=None):
     scalars, artifact = process_results(json_file)
-    general_push_to_clearml(clearml_task, scalars, artifact)
+    general_push_to_clearml(clearml_task, scalars, artifact, clearml_model)
 
 def main():
     parser = argparse.ArgumentParser()

@@ -17,15 +17,17 @@ def push_artifacts(clearml_task, artifacts):
     for artifact in artifacts:
         clearml_task.upload_artifact(name=artifact["name"], artifact_object=artifact["object"])
 
-def push_scalars(clearml_task, scalars):
+def push_scalars(clearml_task, scalars, clearml_model=None):
     if not isinstance(scalars, Iterable) or isinstance(scalars, Mapping):
         scalars = [scalars]
     for scalar in scalars:
         clearml_task.get_logger().report_single_value(name=scalar["name"], value=scalar["value"])
+        if clearml_model is not None:
+            clearml_model.report_single_value(name=scalar["name"], value=scalar["value"])
 
-def push_to_clearml(clearml_task, scalars, artifacts):
+def push_to_clearml(clearml_task, scalars, artifacts, clearml_model=None):
     if scalars is not None:
-        push_scalars(clearml_task, scalars)
+        push_scalars(clearml_task, scalars, clearml_model)
     if artifacts is not None:
         push_artifacts(clearml_task, artifacts)
 

@@ -106,4 +106,7 @@ subprocess.run(inputs)
 model_suffix = os.path.split(model_id)[-1]
 results_dir = glob(f"*{model_suffix}")[-1]
 json_file = glob(os.path.join(results_dir, "results*.json"))[0]
-push_to_clearml(task, json_file)
+if args["clearml_model"]:
+    push_to_clearml(task, json_file, input_model)
+else:
+    push_to_clearml(task, json_file)
