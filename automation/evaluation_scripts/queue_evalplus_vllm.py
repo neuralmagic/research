@@ -154,12 +154,20 @@ task.upload_artifact(name="results", artifact_object=results)
 
 if pass1_base:
     task.get_logger().report_single_value(name="pass@1 base", value=pass1_base)
+    if args["clearml_model"]:
+        input_model.report_single_value(name="pass@1 base", value=pass1_base)
 
 if pass10_base:
     task.get_logger().report_single_value(name="pass@10 base", value=pass10_base)
+    if args["clearml_model"]:
+        input_model.report_single_value(name="pass@10 base", value=pass10_base)
 
 if pass1_extra:
     task.get_logger().report_single_value(name="pass@1 base + extra", value=pass1_extra)
+    if args["clearml_model"]:
+        input_model.report_single_value(name="pass@1 base + extra", value=pass1_extra)
 
 if pass10_extra:
     task.get_logger().report_single_value(name="pass@10 base + extra", value=pass10_extra)
+    if args["clearml_model"]:
+        input_model.report_single_value(name="pass@10 base + extra", value=pass10_extra)
