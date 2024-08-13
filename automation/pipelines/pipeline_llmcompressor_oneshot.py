@@ -124,10 +124,11 @@ if "mmlu_llama_3.1_instruct" in args["benchmark_tasks"]:
         "Args/max_gen_toks": 10,
     }
     mmlu_instruct_override.update(lm_evaluation_override)
+    mmlu_instruct_max_model_len = min(3850, args["max_seq_len"])
     if engine == "vllm":
-        mmlu_instruct_override["Args/max_model_len"] = 3850
+        mmlu_instruct_override["Args/max_model_len"] = mmlu_instruct_max_model_len
     else:
-        mmlu_instruct_override["Args/max_length"] = 3850
+        mmlu_instruct_override["Args/max_length"] = mmlu_instruct_max_model_len
 
     pipe.add_step(
         name=mmlu_instruct_step_name,
@@ -147,10 +148,11 @@ if "mmlu_cot_0shot_llama_3.1_instruct" in args["benchmark_tasks"]:
         "Args/max_gen_toks": 1024,
     }
     mmlu_cot_override.update(lm_evaluation_override)
+    mmlu_cot_max_model_len = min(4064, args["max_seq_len"])
     if engine == "vllm":
-        mmlu_cot_override["Args/max_model_len"] = 4064
+        mmlu_cot_override["Args/max_model_len"] = mmlu_cot_max_model_len
     else:
-        mmlu_cot_override["Args/max_length"] = 4064
+        mmlu_cot_override["Args/max_length"] = mmlu_cot_max_model_len
     pipe.add_step(
         name=mmlu_cot_step_name,
         parents=[oneshot_step_name],
@@ -169,10 +171,11 @@ if "arc_challenge_llama_3.1_instruct" in args["benchmark_tasks"]:
         "Args/max_gen_toks": 100,
     }
     arc_instruct_override.update(lm_evaluation_override)
+    arc_instruct_max_model_len = min(3940, args["max_seq_len"])
     if engine == "vllm":
-        arc_instruct_override["Args/max_model_len"] = 3940
+        arc_instruct_override["Args/max_model_len"] = arc_instruct_max_model_len
     else:
-        arc_instruct_override["Args/max_length"] = 3940
+        arc_instruct_override["Args/max_length"] = arc_instruct_max_model_len
     pipe.add_step(
         name=arc_instruct_step_name,
         parents=[oneshot_step_name],
@@ -192,10 +195,11 @@ if "gsm8k_cot_llama_3.1_instruct" in args["benchmark_tasks"]:
         "Args/max_gen_toks": 1024,
     }
     gsm8k_instruct_override.update(lm_evaluation_override)
+    gsm8k_instruct_max_model_len = min(4096, args["max_seq_len"])
     if engine == "vllm":
-        gsm8k_instruct_override["Args/max_model_len"] = 4096
+        gsm8k_instruct_override["Args/max_model_len"] = gsm8k_instruct_max_model_len
     else:
-        gsm8k_instruct_override["Args/max_length"] = 4096
+        gsm8k_instruct_override["Args/max_length"] = gsm8k_instruct_max_model_len
     pipe.add_step(
         name=gsm8k_instruct_step_name,
         parents=[oneshot_step_name],
@@ -210,11 +214,12 @@ if "openllm" in args["benchmark_tasks"]:
         "Args/benchmark_tasks": "openllm",
         "Args/add_bos_token": True,
     }
-    if engine == "vllm":
-        openllm_override["Args/max_model_len"] = 4096
-    else:
-        openllm_override["Args/max_length"] = 4096
     openllm_override.update(lm_evaluation_override)
+    openllm_max_model_len = min(4096, args["max_seq_len"])
+    if engine == "vllm":
+        openllm_override["Args/max_model_len"] = openllm_max_model_len
+    else:
+        openllm_override["Args/max_length"] = openllm_max_model_len
     pipe.add_step(
         name=openllm_step_name,
         parents=[oneshot_step_name],
@@ -231,10 +236,12 @@ if "mmlu" in args["benchmark_tasks"]:
         "Args/add_bos_token": True,
     }
     mmlu_override.update(lm_evaluation_override)
+
+    mmlu_max_model_len = min(4096, args["max_seq_len"])
     if engine == "vllm":
-        mmlu_override["Args/max_model_len"] = 4096
+        mmlu_override["Args/max_model_len"] = mmlu_max_model_len
     else:
-        mmlu_override["Args/max_length"] = 4096
+        mmlu_override["Args/max_length"] = mmlu_max_model_len
     pipe.add_step(
         name=mmlu_step_name,
         parents=[oneshot_step_name],
@@ -251,10 +258,11 @@ if "hellaswag" in args["benchmark_tasks"]:
         "Args/add_bos_token": True,
     }
     hellaswag_override.update(lm_evaluation_override)
+    hellaswag_max_model_len = min(4096, args["max_seq_len"])
     if engine == "vllm":
-        hellaswag_override["Args/max_model_len"] = 4096
+        hellaswag_override["Args/max_model_len"] = hellaswag_max_model_len
     else:
-        hellaswag_override["Args/max_length"] = 4096
+        hellaswag_override["Args/max_length"] = hellaswag_max_model_len
     pipe.add_step(
         name=hellaswag_step_name,
         parents=[oneshot_step_name],
@@ -271,10 +279,11 @@ if "winogrande" in args["benchmark_tasks"]:
         "Args/add_bos_token": True,
     }
     winogrande_override.update(lm_evaluation_override)
+    winogrande_max_model_len = min(4096, args["max_seq_len"])
     if engine == "vllm":
-        winogrande_override["Args/max_model_len"] = 4096
+        winogrande_override["Args/max_model_len"] = winogrande_max_model_len
     else:
-        winogrande_override["Args/max_length"] = 4096
+        winogrande_override["Args/max_length"] = winogrande_max_model_len
     pipe.add_step(
         name=winogrande_step_name,
         parents=[oneshot_step_name],
@@ -291,10 +300,11 @@ if "arc_challenge" in args["benchmark_tasks"]:
         "Args/add_bos_token": True,
     }
     arc_challenge_override.update(lm_evaluation_override)
+    arc_challenge_max_model_len = min(4096, args["max_seq_len"])
     if engine == "vllm":
-        arc_challenge_override["Args/max_model_len"] = 4096
+        arc_challenge_override["Args/max_model_len"] = arc_challenge_max_model_len
     else:
-        arc_challenge_override["Args/max_length"] = 4096
+        arc_challenge_override["Args/max_length"] = arc_challenge_max_model_len
     pipe.add_step(
         name=arc_challenge_step_name,
         parents=[oneshot_step_name],
@@ -311,10 +321,11 @@ if "gsm8k" in args["benchmark_tasks"]:
         "Args/add_bos_token": True,
     }
     gsm8k_override.update(lm_evaluation_override)
+    gsm8k_max_model_len = min(4096, args["max_seq_len"])
     if engine == "vllm":
-        gsm8k_override["Args/max_model_len"] = 4096
+        gsm8k_override["Args/max_model_len"] = gsm8k_max_model_len
     else:
-        gsm8k_override["Args/max_length"] = 4096
+        gsm8k_override["Args/max_length"] = gsm8k_max_model_len
     pipe.add_step(
         name=gsm8k_step_name,
         parents=[oneshot_step_name],
@@ -331,10 +342,11 @@ if "truthfulqa" in args["benchmark_tasks"]:
         "Args/add_bos_token": True,
     }
     truthfulqa_override.update(lm_evaluation_override)
+    truthfulqa_max_model_len = min(4096, args["max_seq_len"])
     if engine == "vllm":
-        truthfulqa_override["Args/max_model_len"] = 4096
+        truthfulqa_override["Args/max_model_len"] = truthfulqa_max_model_len
     else:
-        truthfulqa_override["Args/max_length"] = 4096
+        truthfulqa_override["Args/max_length"] = truthfulqa_max_model_len
     pipe.add_step(
         name=truthfulqa_step_name,
         parents=[oneshot_step_name],
@@ -350,10 +362,6 @@ if "humaneval" in args["benchmark_tasks"]:
         "Args/add_bos_token": True,
     }
     humaneval_override.update(evalplus_override)
-    if engine == "vllm":
-        truthfulqa_override["Args/max_model_len"] = 4096
-    else:
-        truthfulqa_override["Args/max_length"] = 4096
     pipe.add_step(
         name=humaneval_step_name,
         parents=[oneshot_step_name],
