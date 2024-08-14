@@ -70,7 +70,7 @@ else:
     model_id = args["model_id"]
 
 # Load tokenizer
-tokenizer = AutoTokenizer.from_pretrained(model_id)
+tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=args["trust_remote_code"])
 
 
 # Build dataset
