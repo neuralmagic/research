@@ -86,7 +86,7 @@ else:
 max_model_len = args["max_model_len"]
 max_gen_toks = args["max_gen_toks"]
 gpu_memory_utilization = args["gpu_memory_utilization"]
-model_args = f"pretrained={model_id},dtype=auto,max_model_len={max_model_len},max_gen_toks={max_gen_toks},gpu_memory_utilization={gpu_memory_utilization},tensor_parallel_size={num_gpus}"
+model_args = f"pretrained={model_id},dtype=auto,max_model_len={max_model_len},max_gen_toks={max_gen_toks},gpu_memory_utilization={gpu_memory_utilization},tensor_parallel_size={num_gpus},enable_chunked_prefill=True"
 if args["add_bos_token"]:
     model_args += ",add_bos_token=True"
 if args["trust_remote_code"]:
