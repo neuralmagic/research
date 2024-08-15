@@ -1,4 +1,3 @@
 python lm_evaluation_harness_vllm_base.py \
-  --model-id f1074c064b1f4b22a8b27ad33fc937e3 \
-  --clearml-model \
-  --num-gpus 1
+  --model-id ebc4e45577804f389e65fd992ab75c5b \
+  --clearml-model

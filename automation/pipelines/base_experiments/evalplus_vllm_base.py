@@ -12,7 +12,6 @@ queue_name = "oneshot-a100x1"
 parser = argparse.ArgumentParser(description = "Eval model w/ evalplus harness")
 
 parser.add_argument("--model-id", type=str)
-parser.add_argument("--num-gpus", type=int)
 parser.add_argument("--clearml-model", action="store_true", default=False)
 parser.add_argument("--benchmark-task", type=str, default="humaneval")
 parser.add_argument("--disable-sanitize", action="store_true", default=False)
@@ -67,11 +66,22 @@ if args["clearml_model"]:
 else:
     model_id = args["model_id"]
 
+user_properties = task.get_user_properties()
+queue_name_task = user_properties["k8s-queue"]["value"]
+
+if "single" in queue_name or "x1" in queue_name:
+    num_gpus = 1
+elif "double" in queue_name or "x2" in queue_name:
+    num_gpus = 2
+elif "quad" in queue_name or "x4" in queue_name:
+    num_gpus = 4
+elif "octo" in queue_name or "x8" in queue_name:
+    num_gpus = 8
+
 batch_size = args["batch_size"]
 temperature = args["temperature"]
 benchmark_task = args["benchmark_task"]
 num_samples = args["num_samples"]
-num_gpus = args["num_gpus"]
 
 generation_inputs = [
     "python3", "codegen/generate.py",
