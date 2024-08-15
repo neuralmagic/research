@@ -24,12 +24,12 @@ parser.add_argument("--max-seq-len", type=int, default=2048)
 parser.add_argument("--trust-remote-code", action="store_true", default=False)
 parser.add_argument("--tags", type=str, nargs="+", default=None)
 parser.add_argument("--packages", type=str, nargs="+", default=None)
+parser.add_argument("--max-memory-per-gpu", type=str, default=None)
 
 args = parser.parse_args()
 
 args = vars(args)
 additional_packages = args.pop("packages")
-
 
 packages = [
     "git+https://github.com/vllm-project/llm-compressor.git@main",
@@ -39,6 +39,8 @@ packages = [
 
 if additional_packages is not None and len(additional_packages) > 0:
     packages.extend(additional_packages)
+
+Task.force_store_standalone_script()
 
 task = Task.init(project_name=project_name, task_name=task_name)
 task.set_base_docker(docker_image="498127099666.dkr.ecr.us-east-1.amazonaws.com/mlops/k8s-research-torch:latest")
@@ -51,6 +53,10 @@ task.execute_remotely(queue_name)
 #
 
 from llmcompressor.transformers import SparseAutoModelForCausalLM, oneshot
+from llmcompressor.transformers.compression.helpers import (
+    calculate_offload_device_map,
+    custom_offload_device_map,
+)
 from transformers import AutoTokenizer
 from datasets import load_dataset, Dataset, interleave_datasets
 import math
@@ -64,6 +70,36 @@ if args["clearml_model"]:
     task.connect(input_model)
 else:
     model_id = args["model_id"]
+
+if args["max_memory_per_gpu"] is None:
+    device_map = "auto"
+else:
+    user_properties = task.get_user_properties()
+    queue_name_task = user_properties["k8s-queue"]["value"]
+
+    if "single" in queue_name or "x1" in queue_name:
+        num_gpus = 1
+    elif "double" in queue_name or "x2" in queue_name:
+        num_gpus = 2
+    elif "quad" in queue_name or "x4" in queue_name:
+        num_gpus = 4
+    elif "octo" in queue_name or "x8" in queue_name:
+        num_gpus = 8
+    
+    if args["max_memory_per_gpu"] == "hessian":
+        device_map = calculate_offload_device_map(
+            model_id, 
+            reserve_for_hessians=True, 
+            num_gpus=num_gpus, 
+            torch_dtype="auto",
+        )
+    else:
+        device_map = custom_offload_device_map(
+            model_id, 
+            max_memory_per_gpu=args["max_memory_per_gpu"] + "GB",
+            num_gpus=num_gpus, 
+            torch_dtype="auto",
+        )
 
 model = SparseAutoModelForCausalLM.from_pretrained(
     model_id, torch_dtype="auto", device_map="auto", trust_remote_code=args["trust_remote_code"]
@@ -220,6 +256,7 @@ oneshot(
     recipe=recipe,
     max_seq_length=args["max_seq_len"],
     num_calibration_samples=args["num_samples"],
+    tokenizer=tokenizer,
 )
 
 # save model compressed
