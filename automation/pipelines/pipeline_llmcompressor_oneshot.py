@@ -69,7 +69,6 @@ if engine == "vllm":
     lm_evaluation_override_engine = {
         "Args/build_vllm": args["build_vllm"],
         "Args/gpu_memory_utilization": 0.7,
-        "Args/num_gpus": num_gpus_evaluation,
     }
 
     evalplus_task_id = Task.get_task(project_name="Automation",task_name="evalplus_vllm", task_filter={'order_by': ["-last_update"]}).id
