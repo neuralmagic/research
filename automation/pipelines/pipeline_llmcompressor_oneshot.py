@@ -45,15 +45,6 @@ oneshot_task_id = Task.get_task(project_name="Automation",task_name="llmcompress
 
 oneshot_step_name = f"{task_prefix}_llm_compressor"
 
-if "single" in args["evaluation_queue"] or "x1" in args["evaluation_queue"]:
-    num_gpus_evaluation = 1
-elif "double" in args["evaluation_queue"] or "x2" in args["evaluation_queue"]:
-    num_gpus_evaluation = 2
-elif "quad" in args["evaluation_queue"] or "x4" in args["evaluation_queue"]:
-    num_gpus_evaluation = 4
-elif "octo" in args["evaluation_queue"] or "x8" in args["evaluation_queue"]:
-    num_gpus_evaluation = 8
-
 oneshot_override = {f"Args/{k}": v for k, v in args.items()}
 pipe.add_step(
     name=oneshot_step_name,
@@ -91,20 +82,12 @@ else:
         lm_evaluation_harness_task_id = Task.get_task(project_name="Automation",task_name="lm_evaluation_harness_sparseml", task_filter={'order_by': ["-last_update"]}).id
         evalplus_task_id = Task.get_task(project_name="Automation",task_name="evalplus_sparseml", task_filter={'order_by': ["-last_update"]}).id
 
-    if num_gpus_evaluation > 1:
-        lm_evaluation_override_engine = {"Args/parallelize": True}
-    else:
-        lm_evaluation_override_engine = {}
-
-    evalplus_override_engine = lm_evaluation_override_engine
-
 lm_evaluation_override = {
     "Args/model_id": oneshot_model_id,
     "Args/clearml_model": True,
     "Args/packages": evaluation_packages,
     "Args/batch_size": batch_size,
 }
-lm_evaluation_override.update(lm_evaluation_override_engine)
 
 evalplus_override = {
     "Args/model_id": oneshot_model_id,
@@ -112,7 +95,6 @@ evalplus_override = {
     "Args/packages": evaluation_packages,
     "Args/batch_size": evalplus_batch_size,
 }
-evalplus_override.update(evalplus_override_engine)
 
 
 if "mmlu_llama_3.1_instruct" in args["benchmark_tasks"]:
