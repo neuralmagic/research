@@ -19,6 +19,7 @@ parser.add_argument("--max-gen-toks", type=int, default=256)
 parser.add_argument("--batch-size", type=str, default="auto")
 parser.add_argument("--trust-remote-code", action="store_true", default=False)
 parser.add_argument("--gpu-memory-utilization", type=float, default=0.4)
+parser.add_argument("--enable-chunked-prefill", action="store_true", default=False)
 parser.add_argument("--max-model-len", type=int, default=4096)
 parser.add_argument("--packages", type=str, nargs="+", default=None)
 parser.add_argument("--apply-chat-template", action="store_true", default=False)
@@ -86,11 +87,13 @@ else:
 max_model_len = args["max_model_len"]
 max_gen_toks = args["max_gen_toks"]
 gpu_memory_utilization = args["gpu_memory_utilization"]
-model_args = f"pretrained={model_id},dtype=auto,max_model_len={max_model_len},max_gen_toks={max_gen_toks},gpu_memory_utilization={gpu_memory_utilization},tensor_parallel_size={num_gpus},enable_chunked_prefill=True"
+model_args = f"pretrained={model_id},dtype=auto,max_model_len={max_model_len},max_gen_toks={max_gen_toks},gpu_memory_utilization={gpu_memory_utilization},tensor_parallel_size={num_gpus}"
 if args["add_bos_token"]:
     model_args += ",add_bos_token=True"
 if args["trust_remote_code"]:
     model_args += ",trust_remote_code=True"
+if args["enable_chunked_prefill"]:
+    model_args += ",enable_chunked_prefill=True"
 
 inputs = [
     "python3", "-m", "lm_eval", 
