@@ -23,6 +23,7 @@ parser.add_argument("--max-seq-len", type=int, default=2048)
 parser.add_argument("--trust-remote-code", action="store_true", default=False)
 parser.add_argument("--tags", type=str, nargs="+", default=None)
 parser.add_argument("--packages", type=str, nargs="+", default=None)
+parser.add_argument("--max-memory-per-gpu", type=str, default=None)
 
 args = parser.parse_args()
 
@@ -53,6 +54,10 @@ task.execute_remotely(queue_name)
 #
 
 from llmcompressor.transformers import SparseAutoModelForCausalLM, oneshot
+from llmcompressor.transformers.compression.helpers import (
+    calculate_offload_device_map,
+    custom_offload_device_map,
+)
 from transformers import AutoTokenizer
 from datasets import load_dataset, Dataset, interleave_datasets
 import math
@@ -67,13 +72,42 @@ if args["clearml_model"]:
 else:
     model_id = args["model_id"]
 
+if args["max_memory_per_gpu"] is None:
+    device_map = "auto"
+else:
+    if "single" in queue_name or "x1" in queue_name:
+        num_gpus = 1
+    elif "double" in queue_name or "x2" in queue_name:
+        num_gpus = 2
+    elif "quad" in queue_name or "x4" in queue_name:
+        num_gpus = 4
+    elif "octo" in queue_name or "x8" in queue_name:
+        num_gpus = 8
+    
+    if args["max_memory_per_gpu"] == "hessian":
+        device_map = calculate_offload_device_map(
+            model_id, 
+            reserve_for_hessians=True, 
+            num_gpus=num_gpus, 
+            torch_dtype="auto",
+        )
+    else:
+        device_map = custom_offload_device_map(
+            model_id, 
+            max_memory_per_gpu=args["max_memory_per_gpu"] + "GB",
+            num_gpus=num_gpus, 
+            torch_dtype="auto",
+        )
+
 model = SparseAutoModelForCausalLM.from_pretrained(
-    model_id, torch_dtype="auto", device_map="auto", trust_remote_code=args["trust_remote_code"]
+    model_id, 
+    torch_dtype="auto", 
+    device_map=device_map, 
+    trust_remote_code=args["trust_remote_code"],
 )
 
 # Load tokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=args["trust_remote_code"])
-
 
 # Build dataset
 def get_c4_samples(num_samples, max_seq_len, tokenizer):
