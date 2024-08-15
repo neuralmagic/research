@@ -35,6 +35,8 @@ pipeline_name = args.pop("pipeline_name")
 args["packages"] = args.pop("oneshot_packages")
 evaluation_packages = args.pop("evaluation_packages")
 
+Task.force_store_standalone_script()
+
 pipe = PipelineController(
     name=pipeline_name, project=project_name, version="0.0.1",target_project=project_name,
 )
