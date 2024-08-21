@@ -18,6 +18,7 @@ parser.add_argument("--disable-shuffle", action="store_true", default=False)
 parser.add_argument("--num-samples", type=int, default=512)
 parser.add_argument("--max-seq-len", type=int, default=2048)
 parser.add_argument("--trust-remote-code", action="store_true", default=False)
+parser.add_argument("--max-memory-per-gpu", type=str, default=None)
 parser.add_argument("--tags", type=str, nargs="+", default=None)
 parser.add_argument("--oneshot-packages", type=str, nargs="+", default=None)
 parser.add_argument("--evaluation-packages", type=str, nargs="+", default=None)
@@ -34,6 +35,7 @@ task_prefix = args.pop("task_prefix")
 pipeline_name = args.pop("pipeline_name")
 args["packages"] = args.pop("oneshot_packages")
 evaluation_packages = args.pop("evaluation_packages")
+batch_size = args.pop("batch_size")
 
 Task.force_store_standalone_script()
 
@@ -56,7 +58,6 @@ pipe.add_step(
 
 oneshot_model_id = f"${{{oneshot_step_name}.models.output.-1.id}}"
 
-batch_size = args["batch_size"]
 if batch_size == "auto":
     evalplus_batch_size = 1
 else:
