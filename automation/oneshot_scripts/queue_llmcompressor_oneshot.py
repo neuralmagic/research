@@ -90,6 +90,7 @@ else:
             reserve_for_hessians=True, 
             num_gpus=num_gpus, 
             torch_dtype="auto",
+            trust_remote_code=args["trust_remote_code"],
         )
     else:
         device_map = custom_offload_device_map(
@@ -97,6 +98,7 @@ else:
             max_memory_per_gpu=args["max_memory_per_gpu"] + "GB",
             num_gpus=num_gpus, 
             torch_dtype="auto",
+            trust_remote_code=args["trust_remote_code"],
         )
 
 model = SparseAutoModelForCausalLM.from_pretrained(
