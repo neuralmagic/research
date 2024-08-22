@@ -7,7 +7,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description = "Eval model w/ lm-evaluation-harness using SparseML backend")
 
-parser.add_argument("--model-id", type=str, nargs="+")
+parser.add_argument("--model-id", type=str)
 parser.add_argument("--queue-name", type=str)
 parser.add_argument("--project-name", type=str)
 parser.add_argument("--task-name", type=str)
