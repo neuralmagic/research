@@ -34,7 +34,7 @@ args = vars(args)
 additional_packages = args["packages"]
 
 packages = [
-    "git+https://github.com/neuralmagic/guidellm.git@output_summary",
+    "git+https://github.com/neuralmagic/guidellm.git@main",
     "sentencepiece",
 ]
 
