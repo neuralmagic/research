@@ -53,7 +53,7 @@ if additional_packages is not None and len(additional_packages) > 0:
 Task.force_store_standalone_script()
 
 task = Task.init(project_name=project_name, task_name=task_name)
-task.set_base_docker(docker_image="498127099666.dkr.ecr.us-east-1.amazonaws.com/mlops/k8s-research-clean:latest")
+task.set_base_docker(docker_image="498127099666.dkr.ecr.us-east-1.amazonaws.com/mlops/k8s-research-torch:latest")
 task.set_script(repository="https://github.com/neuralmagic/research.git", branch="main",working_dir="clearml_evaluation_parsing")
 task.set_packages(packages)
 
@@ -94,7 +94,7 @@ if args["add_bos_token"]:
 if args["trust_remote_code"]:
     model_args += ",trust_remote_code=True"
 if args["enable_chunked_prefill"]:
-    model_args += ",enable_chunked_prefill=True"
+    model_args += ",enable_chunked_prefill=True,disable_sliding_window=True"
 if args["cpu_offload_gb"] is not None:
     cpu_offload_gb = args["cpu_offload_gb"]
     model_args += f",cpu_offload_gb={cpu_offload_gb}"
