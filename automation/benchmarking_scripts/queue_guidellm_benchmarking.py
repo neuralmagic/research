@@ -14,6 +14,7 @@ parser.add_argument("--clearml-model", action="store_true", default=False)
 parser.add_argument("--packages", type=str, nargs="+", default=None)
 parser.add_argument("--build-vllm", action="store_true", default=False)
 parser.add_argument("--max-model-len", type=int, default=None)
+parser.add_argument("--server-wait-time", type=int, default=600)
 
 args, unparsed_args = parser.parse_known_args()
 
@@ -99,11 +100,12 @@ if num_gpus > 1:
 if args["max_model_len"] is not None:
     server_command.extend(["--max-model-len", str(args["max_model_len"])])
 
-server_process = subprocess.Popen(server_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+server_log_file = open("vllm_server_log.txt", "w")
+server_process = subprocess.Popen(" ".join(server_command), stdout=server_log_file, stderr=server_log_file, shell=True)
 
 delay = 5
 server_initialized = False
-for _ in range(800):
+for _ in range(args["server_wait_time"] // delay):
     try:
         response = requests.get(guidellm_args["target"] + "/models")
         if response.status_code == 200:
@@ -120,13 +122,16 @@ if server_initialized:
     for k, v in guidellm_args.items():
         argument_name = k.replace("_","-")
         inputs.append(f"--{argument_name}")
-        inputs.append(v)
+        inputs.append(str(v))
 
     print("Starting benchmarking...")
-    subprocess.run(inputs)
+    subprocess.run(" ".join(inputs), shell=True)
+
+    server_process.kill()
 
     task.upload_artifact(name="guidellm benchmarking output", artifact_object=guidellm_args["output-path"])
+    task.upload_artifact(name="vLLM server log", artifact_object="vllm_server_log.txt")
 else:
+    server_process.kill()
+    task.upload_artifact(name="vLLM server log", artifact_object="vllm_server_log.txt")
     print("Server failed to intialize")
-    stdout = server_process.communicate()[0]
-    print(stdout)
