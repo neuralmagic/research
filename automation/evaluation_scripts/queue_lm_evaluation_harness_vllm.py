@@ -22,6 +22,8 @@ parser.add_argument("--gpu-memory-utilization", type=float, default=0.4)
 parser.add_argument("--cpu-offload-gb", type=int, default=None)
 parser.add_argument("--enable-chunked-prefill", action="store_true", default=False)
 parser.add_argument("--max-model-len", type=int, default=4096)
+parser.add_argument("--max-num-batched-tokens", type=int, default=512)
+parser.add_argument("--max-num-seqs", type=int, default=128)
 parser.add_argument("--packages", type=str, nargs="+", default=None)
 parser.add_argument("--apply-chat-template", action="store_true", default=False)
 parser.add_argument("--fewshot-as-multiturn", action="store_true", default=False)
@@ -88,13 +90,15 @@ else:
 max_model_len = args["max_model_len"]
 max_gen_toks = args["max_gen_toks"]
 gpu_memory_utilization = args["gpu_memory_utilization"]
-model_args = f"pretrained={model_id},dtype=auto,max_model_len={max_model_len},max_gen_toks={max_gen_toks},gpu_memory_utilization={gpu_memory_utilization},tensor_parallel_size={num_gpus}"
+max_num_seqs = args["max_num_seqs"]
+model_args = f"pretrained={model_id},dtype=auto,max_model_len={max_model_len},max_gen_toks={max_gen_toks},gpu_memory_utilization={gpu_memory_utilization},tensor_parallel_size={num_gpus},max_num_seqs={max_num_seqs}"
 if args["add_bos_token"]:
     model_args += ",add_bos_token=True"
 if args["trust_remote_code"]:
     model_args += ",trust_remote_code=True"
 if args["enable_chunked_prefill"]:
-    model_args += ",enable_chunked_prefill=True,disable_sliding_window=True"
+    max_num_batched_tokens = args["max_num_batched_tokens"]
+    model_args += f",enable_chunked_prefill=True,disable_sliding_window=True,max_num_batched_tokens={max_num_batched_tokens}"
 if args["cpu_offload_gb"] is not None:
     cpu_offload_gb = args["cpu_offload_gb"]
     model_args += f",cpu_offload_gb={cpu_offload_gb}"

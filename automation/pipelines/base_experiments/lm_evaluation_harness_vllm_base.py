@@ -20,8 +20,10 @@ parser.add_argument("--max-gen-toks", type=int, default=256)
 parser.add_argument("--batch-size", type=str, default="auto")
 parser.add_argument("--trust-remote-code", action="store_true", default=False)
 parser.add_argument("--gpu-memory-utilization", type=float, default=0.4)
+parser.add_argument("--cpu-offload-gb", type=int, default=None)
 parser.add_argument("--enable-chunked-prefill", action="store_true", default=False)
 parser.add_argument("--max-model-len", type=int, default=4096)
+parser.add_argument("--max-num-batched-tokens", type=int, default=512)
 parser.add_argument("--packages", type=str, nargs="+", default=None)
 parser.add_argument("--apply-chat-template", action="store_true", default=False)
 parser.add_argument("--fewshot-as-multiturn", action="store_true", default=False)
@@ -94,7 +96,11 @@ if args["add_bos_token"]:
 if args["trust_remote_code"]:
     model_args += ",trust_remote_code=True"
 if args["enable_chunked_prefill"]:
-    model_args += ",enable_chunked_prefill=True"
+    max_num_batched_tokens = args["max_num_batched_tokens"]
+    model_args += f",enable_chunked_prefill=True,disable_sliding_window=True,max_num_batched_tokens={max_num_batched_tokens}"
+if args["cpu_offload_gb"] is not None:
+    cpu_offload_gb = args["cpu_offload_gb"]
+    model_args += f",cpu_offload_gb={cpu_offload_gb}"
 
 inputs = [
     "python3", "-m", "lm_eval", 
