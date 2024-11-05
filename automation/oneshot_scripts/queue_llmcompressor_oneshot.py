@@ -24,6 +24,9 @@ parser.add_argument("--trust-remote-code", action="store_true", default=False)
 parser.add_argument("--tags", type=str, nargs="+", default=None)
 parser.add_argument("--packages", type=str, nargs="+", default=None)
 parser.add_argument("--max-memory-per-gpu", type=str, default=None)
+parser.add_argument("--dtype", type=str, default="auto")
+parser.add_argument("--save-uncompressed", action="store_true", default=False)
+
 
 args = parser.parse_args()
 
@@ -35,6 +38,7 @@ additional_packages = args.pop("packages")
 
 packages = [
     "git+https://github.com/vllm-project/llm-compressor.git@main",
+    "git+https://github.com/neuralmagic/compressed-tensors.git@main",
     "sentencepiece",
 ]
 
@@ -44,7 +48,7 @@ if additional_packages is not None and len(additional_packages) > 0:
 Task.force_store_standalone_script()
 
 task = Task.init(project_name=project_name, task_name=task_name)
-task.set_base_docker(docker_image="498127099666.dkr.ecr.us-east-1.amazonaws.com/mlops/k8s-research-torch:latest")
+task.set_base_docker(docker_image="498127099666.dkr.ecr.us-east-1.amazonaws.com/mlops/k8s-research-clean:latest")
 task.set_packages(packages)
 
 task.execute_remotely(queue_name)
@@ -63,6 +67,7 @@ from datasets import load_dataset, Dataset, interleave_datasets
 import math
 import random
 from clearml import InputModel, OutputModel
+import torch
 
 # Load model
 if args["clearml_model"]:
@@ -71,6 +76,11 @@ if args["clearml_model"]:
     task.connect(input_model)
 else:
     model_id = args["model_id"]
+
+if args["dtype"] == "auto":
+    dtype = "auto"
+else:
+    dtype = getattr(torch, args["dtype"])
 
 if args["max_memory_per_gpu"] is None:
     device_map = "auto"
@@ -89,7 +99,7 @@ else:
             model_id, 
             reserve_for_hessians=True, 
             num_gpus=num_gpus, 
-            torch_dtype="auto",
+            torch_dtype=dtype,
             trust_remote_code=args["trust_remote_code"],
         )
     else:
@@ -97,13 +107,15 @@ else:
             model_id, 
             max_memory_per_gpu=args["max_memory_per_gpu"] + "GB",
             num_gpus=num_gpus, 
-            torch_dtype="auto",
+            torch_dtype=dtype,
             trust_remote_code=args["trust_remote_code"],
         )
 
+    print(device_map)
+
 model = SparseAutoModelForCausalLM.from_pretrained(
     model_id, 
-    torch_dtype="auto", 
+    torch_dtype=dtype, 
     device_map=device_map, 
     trust_remote_code=args["trust_remote_code"],
 )
@@ -258,11 +270,10 @@ oneshot(
     recipe=recipe,
     max_seq_length=args["max_seq_len"],
     num_calibration_samples=args["num_samples"],
-    tokenizer=tokenizer,
 )
 
 # save model compressed
-model.save_pretrained(args["save_dir"], save_compressed=True)
+model.save_pretrained(args["save_dir"], save_compressed=(not args["save_uncompressed"]))
 
 # upload model to ClearML
 if not args["disable_clearml_model_save"]:
