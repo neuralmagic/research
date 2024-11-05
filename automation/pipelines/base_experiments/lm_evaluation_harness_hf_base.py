@@ -30,9 +30,9 @@ args = vars(args)
 additional_packages = args.pop("packages")
 
 packages = [
-    "git+https://github.com/EleutherAI/lm-evaluation-harness.git@main", 
+    "git+https://github.com/neuralmagic/lm-evaluation-harness.git@llama_3.1_instruct", 
+    "git+https://github.com/neuralmagic/compressed-tensors.git@main",    
     "sentencepiece",
-    "git+https://github.com/neuralmagic/compressed-tensors.git@main"
 ]
 
 if additional_packages is not None and len(additional_packages) > 0:
