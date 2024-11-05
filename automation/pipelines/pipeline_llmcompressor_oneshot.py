@@ -22,6 +22,8 @@ parser.add_argument("--max-memory-per-gpu", type=str, default=None)
 parser.add_argument("--tags", type=str, nargs="+", default=None)
 parser.add_argument("--oneshot-packages", type=str, nargs="+", default=None)
 parser.add_argument("--evaluation-packages", type=str, nargs="+", default=None)
+parser.add_argument("--add-bos-token", action="store_true", default=False)
+parser.add_argument("--num-fewshot", type=int, default=None)
 parser.add_argument("--benchmark-tasks", type=str, nargs="+", default=["openllm"])
 parser.add_argument("--engine", type=str, choices=["vllm", "hf", "sparseml"], default="vllm")
 parser.add_argument("--build-vllm", action="store_true", default=False)
@@ -69,7 +71,9 @@ if engine == "vllm":
     lm_evaluation_harness_task_id = Task.get_task(project_name="Automation",task_name="lm_evaluation_harness_vllm", task_filter={'order_by': ["-last_update"]}).id
     lm_evaluation_override_engine = {
         "Args/build_vllm": args["build_vllm"],
-        "Args/gpu_memory_utilization": 0.7,
+        "Args/gpu_memory_utilization": 0.9,
+        "Args/enable_chunked_prefill": True,
+        "Args/max_num_batched_tokens": 256
     }
 
     evalplus_task_id = Task.get_task(project_name="Automation",task_name="evalplus_vllm", task_filter={'order_by': ["-last_update"]}).id
@@ -107,12 +111,15 @@ if "mmlu_llama_3.1_instruct" in args["benchmark_tasks"]:
     mmlu_instruct_step_name = f"{oneshot_step_name}_mmlu_llama_3.1_{engine}"
     mmlu_instruct_override = {
         "Args/benchmark_tasks": "mmlu_llama_3.1_instruct",
-        "Args/num_fewshot": 5,
         "Args/fewshot_as_multiturn": True,
         "Args/apply_chat_template": True,
-        "Args/add_bos_token": True,
+        "Args/add_bos_token": args["add_bos_token"],
         "Args/max_gen_toks": 10,
     }
+    if args["num_fewshot"] is not None:
+        mmlu_instruct_override["Args/num_fewshot"] = args["num_fewshot"]
+    else:
+        mmlu_instruct_override["Args/num_fewshot"] = 5
     mmlu_instruct_override.update(lm_evaluation_override)
     mmlu_instruct_max_model_len = min(3850, args["max_seq_len"])
     if engine == "vllm":
@@ -128,13 +135,209 @@ if "mmlu_llama_3.1_instruct" in args["benchmark_tasks"]:
         parameter_override=mmlu_instruct_override,
     )
 
+if "mmlu_pt_llama_3.1_instruct" in args["benchmark_tasks"]:
+    mmlu_pt_instruct_step_name = f"{oneshot_step_name}_mmlu_pt_llama_3.1_{engine}"
+    mmlu_pt_instruct_override = {
+        "Args/benchmark_tasks": "mmlu_pt_llama_3.1_instruct",
+        "Args/fewshot_as_multiturn": True,
+        "Args/apply_chat_template": True,
+        "Args/add_bos_token": args["add_bos_token"],
+        "Args/max_gen_toks": 10,
+    }
+    if args["num_fewshot"] is not None:
+        mmlu_pt_instruct_override["Args/num_fewshot"] = args["num_fewshot"]
+    else:
+        mmlu_pt_instruct_override["Args/num_fewshot"] = 5
+    mmlu_pt_instruct_override.update(lm_evaluation_override)
+    mmlu_instruct_max_model_len = min(3850, args["max_seq_len"])
+    if engine == "vllm":
+        mmlu_pt_instruct_override["Args/max_model_len"] = mmlu_instruct_max_model_len
+    else:
+        mmlu_pt_instruct_override["Args/max_length"] = mmlu_instruct_max_model_len
+
+    pipe.add_step(
+        name=mmlu_pt_instruct_step_name,
+        parents=[oneshot_step_name],
+        base_task_id=lm_evaluation_harness_task_id,
+        execution_queue=args["evaluation_queue"],
+        parameter_override=mmlu_pt_instruct_override,
+    )
+
+if "mmlu_es_llama_3.1_instruct" in args["benchmark_tasks"]:
+    mmlu_es_instruct_step_name = f"{oneshot_step_name}_mmlu_es_llama_3.1_{engine}"
+    mmlu_es_instruct_override = {
+        "Args/benchmark_tasks": "mmlu_es_llama_3.1_instruct",
+        "Args/fewshot_as_multiturn": True,
+        "Args/apply_chat_template": True,
+        "Args/add_bos_token": args["add_bos_token"],
+        "Args/max_gen_toks": 10,
+    }
+    if args["num_fewshot"] is not None:
+        mmlu_es_instruct_override["Args/num_fewshot"] = args["num_fewshot"]
+    else:
+        mmlu_es_instruct_override["Args/num_fewshot"] = 5
+    mmlu_es_instruct_override.update(lm_evaluation_override)
+    mmlu_instruct_max_model_len = min(3850, args["max_seq_len"])
+    if engine == "vllm":
+        mmlu_es_instruct_override["Args/max_model_len"] = mmlu_instruct_max_model_len
+    else:
+        mmlu_es_instruct_override["Args/max_length"] = mmlu_instruct_max_model_len
+
+    pipe.add_step(
+        name=mmlu_es_instruct_step_name,
+        parents=[oneshot_step_name],
+        base_task_id=lm_evaluation_harness_task_id,
+        execution_queue=args["evaluation_queue"],
+        parameter_override=mmlu_es_instruct_override,
+    )
+
+if "mmlu_it_llama_3.1_instruct" in args["benchmark_tasks"]:
+    mmlu_it_instruct_step_name = f"{oneshot_step_name}_mmlu_it_llama_3.1_{engine}"
+    mmlu_it_instruct_override = {
+        "Args/benchmark_tasks": "mmlu_it_llama_3.1_instruct",
+        "Args/fewshot_as_multiturn": True,
+        "Args/apply_chat_template": True,
+        "Args/add_bos_token": args["add_bos_token"],
+        "Args/max_gen_toks": 10,
+    }
+    if args["num_fewshot"] is not None:
+        mmlu_it_instruct_override["Args/num_fewshot"] = args["num_fewshot"]
+    else:
+        mmlu_it_instruct_override["Args/num_fewshot"] = 5
+    mmlu_it_instruct_override.update(lm_evaluation_override)
+    mmlu_instruct_max_model_len = min(3850, args["max_seq_len"])
+    if engine == "vllm":
+        mmlu_it_instruct_override["Args/max_model_len"] = mmlu_instruct_max_model_len
+    else:
+        mmlu_it_instruct_override["Args/max_length"] = mmlu_instruct_max_model_len
+
+    pipe.add_step(
+        name=mmlu_it_instruct_step_name,
+        parents=[oneshot_step_name],
+        base_task_id=lm_evaluation_harness_task_id,
+        execution_queue=args["evaluation_queue"],
+        parameter_override=mmlu_it_instruct_override,
+    )
+
+if "mmlu_fr_llama_3.1_instruct" in args["benchmark_tasks"]:
+    mmlu_fr_instruct_step_name = f"{oneshot_step_name}_mmlu_fr_llama_3.1_{engine}"
+    mmlu_fr_instruct_override = {
+        "Args/benchmark_tasks": "mmlu_fr_llama_3.1_instruct",
+        "Args/fewshot_as_multiturn": True,
+        "Args/apply_chat_template": True,
+        "Args/add_bos_token": args["add_bos_token"],
+        "Args/max_gen_toks": 10,
+    }
+    if args["num_fewshot"] is not None:
+        mmlu_fr_instruct_override["Args/num_fewshot"] = args["num_fewshot"]
+    else:
+        mmlu_fr_instruct_override["Args/num_fewshot"] = 5
+    mmlu_fr_instruct_override.update(lm_evaluation_override)
+    mmlu_instruct_max_model_len = min(3850, args["max_seq_len"])
+    if engine == "vllm":
+        mmlu_fr_instruct_override["Args/max_model_len"] = mmlu_instruct_max_model_len
+    else:
+        mmlu_fr_instruct_override["Args/max_length"] = mmlu_instruct_max_model_len
+
+    pipe.add_step(
+        name=mmlu_fr_instruct_step_name,
+        parents=[oneshot_step_name],
+        base_task_id=lm_evaluation_harness_task_id,
+        execution_queue=args["evaluation_queue"],
+        parameter_override=mmlu_fr_instruct_override,
+    )
+
+if "mmlu_de_llama_3.1_instruct" in args["benchmark_tasks"]:
+    mmlu_de_instruct_step_name = f"{oneshot_step_name}_mmlu_de_llama_3.1_{engine}"
+    mmlu_de_instruct_override = {
+        "Args/benchmark_tasks": "mmlu_de_llama_3.1_instruct",
+        "Args/fewshot_as_multiturn": True,
+        "Args/apply_chat_template": True,
+        "Args/add_bos_token": args["add_bos_token"],
+        "Args/max_gen_toks": 10,
+    }
+    if args["num_fewshot"] is not None:
+        mmlu_de_instruct_override["Args/num_fewshot"] = args["num_fewshot"]
+    else:
+        mmlu_de_instruct_override["Args/num_fewshot"] = 5
+    mmlu_de_instruct_override.update(lm_evaluation_override)
+    mmlu_instruct_max_model_len = min(3850, args["max_seq_len"])
+    if engine == "vllm":
+        mmlu_de_instruct_override["Args/max_model_len"] = mmlu_instruct_max_model_len
+    else:
+        mmlu_de_instruct_override["Args/max_length"] = mmlu_instruct_max_model_len
+
+    pipe.add_step(
+        name=mmlu_de_instruct_step_name,
+        parents=[oneshot_step_name],
+        base_task_id=lm_evaluation_harness_task_id,
+        execution_queue=args["evaluation_queue"],
+        parameter_override=mmlu_de_instruct_override,
+    )
+
+if "mmlu_hi_llama_3.1_instruct" in args["benchmark_tasks"]:
+    mmlu_hi_instruct_step_name = f"{oneshot_step_name}_mmlu_hi_llama_3.1_{engine}"
+    mmlu_hi_instruct_override = {
+        "Args/benchmark_tasks": "mmlu_hi_llama_3.1_instruct",
+        "Args/fewshot_as_multiturn": True,
+        "Args/apply_chat_template": True,
+        "Args/add_bos_token": args["add_bos_token"],
+        "Args/max_gen_toks": 10,
+    }
+    if args["num_fewshot"] is not None:
+        mmlu_hi_instruct_override["Args/num_fewshot"] = args["num_fewshot"]
+    else:
+        mmlu_hi_instruct_override["Args/num_fewshot"] = 5
+    mmlu_hi_instruct_override.update(lm_evaluation_override)
+    mmlu_instruct_max_model_len = min(3850, args["max_seq_len"])
+    if engine == "vllm":
+        mmlu_hi_instruct_override["Args/max_model_len"] = mmlu_instruct_max_model_len
+    else:
+        mmlu_hi_instruct_override["Args/max_length"] = mmlu_instruct_max_model_len
+
+    pipe.add_step(
+        name=mmlu_hi_instruct_step_name,
+        parents=[oneshot_step_name],
+        base_task_id=lm_evaluation_harness_task_id,
+        execution_queue=args["evaluation_queue"],
+        parameter_override=mmlu_hi_instruct_override,
+    )
+
+if "mmlu_th_llama_3.1_instruct" in args["benchmark_tasks"]:
+    mmlu_th_instruct_step_name = f"{oneshot_step_name}_mmlu_th_llama_3.1_{engine}"
+    mmlu_th_instruct_override = {
+        "Args/benchmark_tasks": "mmlu_th_llama_3.1_instruct",
+        "Args/fewshot_as_multiturn": True,
+        "Args/apply_chat_template": True,
+        "Args/add_bos_token": args["add_bos_token"],
+        "Args/max_gen_toks": 10,
+    }
+    if args["num_fewshot"] is not None:
+        mmlu_th_instruct_override["Args/num_fewshot"] = args["num_fewshot"]
+    else:
+        mmlu_th_instruct_override["Args/num_fewshot"] = 5
+    mmlu_th_instruct_override.update(lm_evaluation_override)
+    mmlu_instruct_max_model_len = min(3850, args["max_seq_len"])
+    if engine == "vllm":
+        mmlu_th_instruct_override["Args/max_model_len"] = mmlu_instruct_max_model_len
+    else:
+        mmlu_th_instruct_override["Args/max_length"] = mmlu_instruct_max_model_len
+
+    pipe.add_step(
+        name=mmlu_th_instruct_step_name,
+        parents=[oneshot_step_name],
+        base_task_id=lm_evaluation_harness_task_id,
+        execution_queue=args["evaluation_queue"],
+        parameter_override=mmlu_th_instruct_override,
+    )
+
 if "mmlu_cot_0shot_llama_3.1_instruct" in args["benchmark_tasks"]:
     mmlu_cot_step_name = f"{oneshot_step_name}_mmlu_cot_llama_3.1_{engine}"
     mmlu_cot_override = {
         "Args/benchmark_tasks": "mmlu_cot_0shot_llama_3.1_instruct",
         "Args/num_fewshot": 0,
         "Args/apply_chat_template": True,
-        "Args/add_bos_token": True,
+        "Args/add_bos_token": args["add_bos_token"],
         "Args/max_gen_toks": 1024,
     }
     mmlu_cot_override.update(lm_evaluation_override)
@@ -155,11 +358,15 @@ if "arc_challenge_llama_3.1_instruct" in args["benchmark_tasks"]:
     arc_instruct_step_name = f"{oneshot_step_name}_arc_challenge_llama_3.1_instruct_{engine}"
     arc_instruct_override = {
         "Args/benchmark_tasks": "arc_challenge_llama_3.1_instruct",
-        "Args/num_fewshot": 0,
         "Args/apply_chat_template": True,
-        "Args/add_bos_token": True,
+        "Args/add_bos_token": args["add_bos_token"],
         "Args/max_gen_toks": 100,
     }
+    if args["num_fewshot"] is not None:
+        arc_instruct_override["Args/num_fewshot"] = args["num_fewshot"]
+    else:
+        arc_instruct_override["Args/num_fewshot"] = 0
+
     arc_instruct_override.update(lm_evaluation_override)
     arc_instruct_max_model_len = min(3940, args["max_seq_len"])
     if engine == "vllm":
@@ -178,12 +385,16 @@ if "gsm8k_cot_llama_3.1_instruct" in args["benchmark_tasks"]:
     gsm8k_instruct_step_name = f"{oneshot_step_name}_gsm8k_cot_llama_3.1_instruct_{engine}"
     gsm8k_instruct_override = {
         "Args/benchmark_tasks": "gsm8k_cot_llama_3.1_instruct",
-        "Args/num_fewshot": 8,
         "Args/fewshot_as_multiturn": True,
         "Args/apply_chat_template": True,
-        "Args/add_bos_token": True,
+        "Args/add_bos_token": args["add_bos_token"],
         "Args/max_gen_toks": 1024,
     }
+    if args["num_fewshot"] is not None:
+        gsm8k_instruct_override["Args/num_fewshot"] = args["num_fewshot"]
+    else:
+        gsm8k_instruct_override["Args/num_fewshot"] = 8
+
     gsm8k_instruct_override.update(lm_evaluation_override)
     gsm8k_instruct_max_model_len = min(4096, args["max_seq_len"])
     if engine == "vllm":
@@ -222,9 +433,12 @@ if "mmlu" in args["benchmark_tasks"]:
     mmlu_step_name = f"{oneshot_step_name}_mmlu_{engine}"
     mmlu_override = {
         "Args/benchmark_tasks": "mmlu",
-        "Args/num_fewshot": 5,
         "Args/add_bos_token": True,
     }
+    if args["num_fewshot"] is not None:
+        mmlu_override["Args/num_fewshot"] = args["num_fewshot"]
+    else:
+        mmlu_override["Args/num_fewshot"] = 5
     mmlu_override.update(lm_evaluation_override)
 
     mmlu_max_model_len = min(4096, args["max_seq_len"])
@@ -247,12 +461,15 @@ if "hellaswag" in args["benchmark_tasks"]:
         "Args/num_fewshot": 10,
         "Args/add_bos_token": True,
     }
+    if args["num_fewshot"] is not None:
+        hellaswag_override["Args/num_fewshot"] = args["num_fewshot"]
     hellaswag_override.update(lm_evaluation_override)
     hellaswag_max_model_len = min(4096, args["max_seq_len"])
     if engine == "vllm":
         hellaswag_override["Args/max_model_len"] = hellaswag_max_model_len
     else:
         hellaswag_override["Args/max_length"] = hellaswag_max_model_len
+
     pipe.add_step(
         name=hellaswag_step_name,
         parents=[oneshot_step_name],
@@ -265,9 +482,12 @@ if "winogrande" in args["benchmark_tasks"]:
     winogrande_step_name = f"{oneshot_step_name}_winogrande_{engine}"
     winogrande_override = {
         "Args/benchmark_tasks": "winogrande",
-        "Args/num_fewshot": 5,
         "Args/add_bos_token": True,
     }
+    if args["num_fewshot"] is not None:
+        winogrande_override["Args/num_fewshot"] = args["num_fewshot"]
+    else:
+        winogrande_override["Args/num_fewshot"] = 5
     winogrande_override.update(lm_evaluation_override)
     winogrande_max_model_len = min(4096, args["max_seq_len"])
     if engine == "vllm":
@@ -286,9 +506,12 @@ if "arc_challenge" in args["benchmark_tasks"]:
     arc_challenge_step_name = f"{oneshot_step_name}_arc_challenge_{engine}"
     arc_challenge_override = {
         "Args/benchmark_tasks": "arc_challenge",
-        "Args/num_fewshot": 25,
         "Args/add_bos_token": True,
     }
+    if args["num_fewshot"] is not None:
+        arc_challenge_override["Args/num_fewshot"] = args["num_fewshot"]
+    else:
+        arc_challenge_override["Args/num_fewshot"] = 25
     arc_challenge_override.update(lm_evaluation_override)
     arc_challenge_max_model_len = min(4096, args["max_seq_len"])
     if engine == "vllm":
@@ -307,9 +530,12 @@ if "gsm8k" in args["benchmark_tasks"]:
     gsm8k_step_name = f"{oneshot_step_name}_gsm8k_{engine}"
     gsm8k_override = {
         "Args/benchmark_tasks": "gsm8k",
-        "Args/num_fewshot": 5,
         "Args/add_bos_token": True,
     }
+    if args["num_fewshot"] is not None:
+        gsm8k_override["Args/num_fewshot"] = args["num_fewshot"]
+    else:
+        gsm8k_override["Args/num_fewshot"] = 5
     gsm8k_override.update(lm_evaluation_override)
     gsm8k_max_model_len = min(4096, args["max_seq_len"])
     if engine == "vllm":
@@ -328,9 +554,12 @@ if "truthfulqa" in args["benchmark_tasks"]:
     truthfulqa_step_name = f"{oneshot_step_name}_truthfulqa_{engine}"
     truthfulqa_override = {
         "Args/benchmark_tasks": "truthfulqa",
-        "Args/num_fewshot": 0,
         "Args/add_bos_token": True,
     }
+    if args["num_fewshot"] is not None:
+        truthfulqa_override["Args/num_fewshot"] = args["num_fewshot"]
+    else:
+        truthfulqa_override["Args/num_fewshot"] = 0
     truthfulqa_override.update(lm_evaluation_override)
     truthfulqa_max_model_len = min(4096, args["max_seq_len"])
     if engine == "vllm":
