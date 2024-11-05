@@ -31,7 +31,8 @@ additional_packages = args.pop("packages")
 build_vllm = args.pop("build_vllm")
 
 packages = [
-    "git+https://github.com/neuralmagic/evalplus.git@master", 
+    "git+https://github.com/neuralmagic/evalplus.git@master",
+    "git+https://github.com/neuralmagic/compressed-tensors.git@main",
     "sentencepiece",
 ]
 
