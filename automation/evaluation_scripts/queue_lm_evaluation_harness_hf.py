@@ -32,7 +32,7 @@ queue_name = args.pop("queue_name")
 additional_packages = args.pop("packages")
 
 packages = [
-    "git+https://github.com/EleutherAI/lm-evaluation-harness.git@main", 
+    "git+https://github.com/neuralmagic/lm-evaluation-harness.git@llama_3.1_instruct", 
     "sentencepiece",
     "git+https://github.com/neuralmagic/compressed-tensors.git@main"
 ]
