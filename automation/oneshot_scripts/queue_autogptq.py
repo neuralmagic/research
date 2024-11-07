@@ -13,7 +13,7 @@ parser.add_argument("--project-name", type=str)
 parser.add_argument("--task-name", type=str)
 parser.add_argument("--bits", type=int)
 parser.add_argument("--group-size", type=int)
-parser.add_argument("--desc-act", type=bool, default=False)
+parser.add_argument("--desc-act", action="store_true", default=False)
 parser.add_argument("--damp-percent", type=float, default=0.01)
 parser.add_argument("--disable-clearml-model-save", action="store_true", default=False)
 parser.add_argument("--save-dir", type=str, default="output")
@@ -23,6 +23,7 @@ parser.add_argument("--random-fraction", type=float, default=0.)
 parser.add_argument("--num-samples", type=int, default=512)
 parser.add_argument("--max-seq-len", type=int, default=2048)
 parser.add_argument("--trust-remote-code", action="store_true", default=False)
+parser.add_argument("--checkpoint-format", type=str, default="gptq")
 parser.add_argument("--tags", type=str, nargs="+", default=None)
 parser.add_argument("--packages", type=str, nargs="+", default=None)
 
@@ -35,7 +36,7 @@ queue_name = args.pop("queue_name")
 additional_packages = args.pop("packages")
 
 packages = [
-    "auto-gptq",
+    "git+https://github.com/neuralmagic/nm-AutoGPTQ@marlin_24",
     "sentencepiece",
     "transformers"
 ]
@@ -147,7 +148,7 @@ def get_downstream_samples(dataset_name, num_samples, max_seq_len, tokenizer, sh
     if dataset_name == "HuggingFaceH4/ultrachat_200k":
         ds = load_dataset(dataset_name, split="train_sft[:5%]")
     elif dataset_name == "gsm8k":
-        de = load_dataset("gsm8k", "main", split="train")
+        ds = load_dataset("gsm8k", "main", split="train")
     elif "json" in dataset_name:
         print("Loading json dataset: ", dataset_name)
         ds = load_dataset("json", data_files=dataset_name)["train"]
@@ -215,6 +216,7 @@ quantize_config = BaseQuantizeConfig(
   desc_act=args["desc_act"],
   model_file_base_name="model",
   damp_percent=args["damp_percent"],
+  checkpoint_format=args["checkpoint_format"],
 )
 
 # apply recipe to the model

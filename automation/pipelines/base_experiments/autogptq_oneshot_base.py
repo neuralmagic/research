@@ -17,6 +17,7 @@ parser.add_argument("--disable-clearml-model-save", action="store_true", default
 parser.add_argument("--bits", type=int, default=4)
 parser.add_argument("--group-size", type=int, default=128)
 parser.add_argument("--desc-act", action="store_true", default=False)
+parser.add_argument("--static-groups", action="store_true", default=False)
 parser.add_argument("--damp-percent", type=float, default=0.01)
 parser.add_argument("--save-dir", type=str, default="output")
 parser.add_argument("--dataset", type=str, default="neuralmagic/LLM_compression_calibration")
@@ -25,6 +26,7 @@ parser.add_argument("--disable-shuffle", action="store_true", default=False)
 parser.add_argument("--num-samples", type=int, default=512)
 parser.add_argument("--max-seq-len", type=int, default=2048)
 parser.add_argument("--trust-remote-code", action="store_true", default=False)
+parser.add_argument("--checkpoint-format", type=str, default="gptq")
 parser.add_argument("--tags", type=str, nargs="+", default=None)
 parser.add_argument("--packages", type=str, nargs="+", default=None)
 
@@ -35,7 +37,7 @@ additional_packages = args.pop("packages")
 
 
 packages = [
-    "auto-gptq",
+    "git+https://github.com/neuralmagic/nm-AutoGPTQ@marlin_24",
     "sentencepiece",
     "transformers"
 ]
@@ -214,6 +216,8 @@ quantize_config = BaseQuantizeConfig(
   desc_act=args["desc_act"],
   model_file_base_name="model",
   damp_percent=args["damp_percent"],
+  static_groups=args["static_groups"],
+  checkpoint_format=args["checkpoint_format"],
 )
 
 model = AutoGPTQForCausalLM.from_pretrained(
