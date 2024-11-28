@@ -30,7 +30,7 @@ for id, entry in enumerate(unparsed_args):
 
 Task.force_store_standalone_script()
 
-task = Task.init(project_name=args["project_name"], task_name=args["task_name"])
+task = Task.init(project_name=args.project_name, task_name=args.task_name)
 task.connect(guidellm_args, name="GuideLLM")
 
 from clearml import InputModel
@@ -43,17 +43,17 @@ import sys
 from urllib.parse import urlparse
 import torch
 
-if args["num_gpus"] is None:
+if args.num_gpus is None:
     num_gpus = torch.cuda.device_count()
 else:
-    num_gpus = args["num_gpus"]
+    num_gpus = args.num_gpus
 
 guidellm_args = task.get_parameters_as_dict()["GuideLLM"]
 
 if "output-path" not in guidellm_args:
     guidellm_args["output-path"] = "guidellm_output.json"
 
-if args["clearml_model"]:
+if args.clearml_model:
     input_model = InputModel(model_id=guidellm_args["model"])
     guidellm_args["model"] = input_model.get_local_copy()
     task.connect(input_model)
@@ -63,17 +63,17 @@ parsed_target = urlparse(guidellm_args["target"])
 server_command = ["vllm", "serve", guidellm_args["model"], "--host", parsed_target.hostname, "--port", str(parsed_target.port)]
 if num_gpus > 1:
     server_command.extend(["--tensor-parallel-size", str(num_gpus)])
-if args["max_model_len"] is not None:
-    server_command.extend(["--max-model-len", str(args["max_model_len"])])
-if args["dtype"] is not None:
-    server_command.extend(["--dtype", args["dtype"]])
+if args.max_model_len is not None:
+    server_command.extend(["--max-model-len", str(args.max_model_len)])
+if args.dtype is not None:
+    server_command.extend(["--dtype", args.dtype])
 
 server_log_file = open("vllm_server_log.txt", "w")
 server_process = subprocess.Popen(" ".join(server_command), stdout=server_log_file, stderr=server_log_file, shell=True, preexec_fn=os.setsid)
 
 delay = 5
 server_initialized = False
-for _ in range(args["server_wait_time"] // delay):
+for _ in range(args.server_wait_time // delay):
     try:
         response = requests.get(guidellm_args["target"] + "/models")
         if response.status_code == 200:
