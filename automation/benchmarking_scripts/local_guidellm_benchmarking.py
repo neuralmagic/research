@@ -36,6 +36,7 @@ task.connect(guidellm_args, name="GuideLLM")
 from clearml import InputModel
 import subprocess
 import requests
+import signal
 import time
 import os
 import sys
@@ -68,7 +69,7 @@ if args["dtype"] is not None:
     server_command.extend(["--dtype", args["dtype"]])
 
 server_log_file = open("vllm_server_log.txt", "w")
-server_process = subprocess.Popen(" ".join(server_command), stdout=server_log_file, stderr=server_log_file, shell=True)
+server_process = subprocess.Popen(" ".join(server_command), stdout=server_log_file, stderr=server_log_file, shell=True, preexec_fn=os.setsid)
 
 delay = 5
 server_initialized = False
@@ -94,11 +95,11 @@ if server_initialized:
     print("Starting benchmarking...")
     subprocess.run(" ".join(inputs), shell=True)
 
-    server_process.kill()
+    os.killpg(os.getpgid(server_process.pid), signal.SIGTERM)
 
     task.upload_artifact(name="guidellm benchmarking output", artifact_object=guidellm_args["output-path"])
     task.upload_artifact(name="vLLM server log", artifact_object="vllm_server_log.txt")
 else:
-    server_process.kill()
+    os.killpg(os.getpgid(server_process.pid), signal.SIGTERM)
     task.upload_artifact(name="vLLM server log", artifact_object="vllm_server_log.txt")
     raise AssertionError("Server failed to intialize")
