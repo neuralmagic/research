@@ -27,7 +27,7 @@ args = parser.parse_args()
 
 Task.force_store_standalone_script()
 
-#task = Task.init(project_name=args.project_name, task_name=args.task_name)
+task = Task.init(project_name=args.project_name, task_name=args.task_name)
 
 from clearml import InputModel
 from glob import glob
@@ -37,23 +37,23 @@ import torch
 import importlib.util
 import sys
 
-current_file_path = os.path.abspath(__file__)
-path_to_parsing = os.path.join(current_file_path, "..", "..", "clearml_evaluation_parsing", "lm_evaluation_harness.py")
+current_file_path = os.path.dirname(os.path.abspath(__file__))
+path_to_parsing = os.path.join(current_file_path, "..", "..", "clearml_evaluation_parsing")
 sys.path.insert(0, path_to_parsing)
 
 from lm_evaluation_harness import push_to_clearml
 
-if args."num_gpus" is None:
+if args.num_gpus is None:
     num_gpus = torch.cuda.device_count()
 else:
-    num_gpus = args."num_gpus"
+    num_gpus = args.num_gpus
 
-if args."clearml_model":
-    input_model = InputModel(model_id=args."model_id")
+if args.clearml_model:
+    input_model = InputModel(model_id=args.model_id)
     model_id = input_model.get_local_copy()
     task.connect(input_model)
 else:
-    model_id = args."model_id"
+    model_id = args.model_id
 
 model_args = f"pretrained={model_id},dtype=auto,max_model_len={args.max_model_len},max_gen_toks={args.max_gen_toks},gpu_memory_utilization={args.gpu_memory_utilization},tensor_parallel_size={num_gpus},max_num_seqs={args.max_num_seqs}"
 if args.add_bos_token:
