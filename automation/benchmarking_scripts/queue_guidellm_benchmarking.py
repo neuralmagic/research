@@ -13,7 +13,9 @@ parser.add_argument("--task-name", type=str)
 parser.add_argument("--clearml-model", action="store_true", default=False)
 parser.add_argument("--packages", type=str, nargs="+", default=None)
 parser.add_argument("--build-vllm", action="store_true", default=False)
+parser.add_argument("--dtype", type=str, default=None)
 parser.add_argument("--max-model-len", type=int, default=None)
+parser.add_argument("--num-gpus", type=int, default=None)
 parser.add_argument("--server-wait-time", type=int, default=600)
 
 args, unparsed_args = parser.parse_known_args()
@@ -40,13 +42,20 @@ packages = [
     "sentencepiece",
 ]
 
-if args["build_vllm"]:
-    packages.append("git+https://github.com/vllm-project/vllm.git@main")
-else:
-    packages.append("vllm")
-
 if additional_packages is not None and len(additional_packages) > 0:
     packages.extend(additional_packages)
+
+vllm_specified = False
+for package in packages:
+    if package.startswith("vllm=="):
+        vllm_specified = True
+
+if not vllm_specified:
+    if args["build_vllm"]:
+        packages.append("git+https://github.com/vllm-project/vllm.git@main")
+    else:
+        #packages.append("https://vllm-wheels.s3.us-west-2.amazonaws.com/nightly/vllm-1.0.0.dev-cp38-abi3-manylinux1_x86_64.whl")
+        packages.append("vllm")
 
 Task.force_store_standalone_script()
 
@@ -69,14 +78,17 @@ import os
 import sys
 from urllib.parse import urlparse
 
-if "single" in args["queue_name"] or "x1" in args["queue_name"]:
-    num_gpus = 1
-elif "double" in args["queue_name"] or "x2" in args["queue_name"]:
-    num_gpus = 2
-elif "quad" in args["queue_name"] or "x4" in args["queue_name"]:
-    num_gpus = 4
-elif "octo" in args["queue_name"] or "x8" in args["queue_name"]:
-    num_gpus = 8
+if args["num_gpus"] is None:
+    if "single" in args["queue_name"] or "x1" in args["queue_name"]:
+        num_gpus = 1
+    elif "double" in args["queue_name"] or "x2" in args["queue_name"]:
+        num_gpus = 2
+    elif "quad" in args["queue_name"] or "x4" in args["queue_name"]:
+        num_gpus = 4
+    elif "octo" in args["queue_name"] or "x8" in args["queue_name"]:
+        num_gpus = 8
+else:
+    num_gpus = args["num_gpus"]
 
 guidellm_args = task.get_parameters_as_dict()["GuideLLM"]
 
@@ -99,6 +111,8 @@ if num_gpus > 1:
     server_command.extend(["--tensor-parallel-size", str(num_gpus)])
 if args["max_model_len"] is not None:
     server_command.extend(["--max-model-len", str(args["max_model_len"])])
+if args["dtype"] is not None:
+    server_command.extend(["--dtype", args["dtype"]])
 
 server_log_file = open("vllm_server_log.txt", "w")
 server_process = subprocess.Popen(" ".join(server_command), stdout=server_log_file, stderr=server_log_file, shell=True)
@@ -134,4 +148,4 @@ if server_initialized:
 else:
     server_process.kill()
     task.upload_artifact(name="vLLM server log", artifact_object="vllm_server_log.txt")
-    print("Server failed to intialize")
+    raise AssertionError("Server failed to intialize")
