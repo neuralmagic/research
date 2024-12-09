@@ -39,7 +39,6 @@ import requests
 import signal
 import time
 import os
-import sys
 from urllib.parse import urlparse
 import torch
 
@@ -97,9 +96,22 @@ if server_initialized:
 
     os.killpg(os.getpgid(server_process.pid), signal.SIGTERM)
 
+    if os.path.isfile(guidellm_args["output-path"]):
+        os.remove(guidellm_args["output-path"])
+    if os.path.isfile("vllm_server_log.txt"):
+        os.remove("vllm_server_log.txt")
+
     task.upload_artifact(name="guidellm benchmarking output", artifact_object=guidellm_args["output-path"])
     task.upload_artifact(name="vLLM server log", artifact_object="vllm_server_log.txt")
+    os.remove(guidellm_args["output-path"])
+    os.remove("vllm_server_log.txt")
 else:
+    if os.path.isfile(guidellm_args["output-path"]):
+        os.remove(guidellm_args["output-path"])
+    if os.path.isfile("vllm_server_log.txt"):
+        os.remove("vllm_server_log.txt")
+
     os.killpg(os.getpgid(server_process.pid), signal.SIGTERM)
     task.upload_artifact(name="vLLM server log", artifact_object="vllm_server_log.txt")
+    os.remove("vllm_server_log.txt")
     raise AssertionError("Server failed to intialize")
