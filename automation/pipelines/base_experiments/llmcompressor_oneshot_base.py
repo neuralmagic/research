@@ -25,7 +25,7 @@ parser.add_argument("--dtype", type=str, default="auto")
 parser.add_argument("--trust-remote-code", action="store_true", default=False)
 parser.add_argument("--tags", type=str, nargs="+", default=None)
 parser.add_argument("--packages", type=str, nargs="+", default=None)
-parser.add_argument("--max-memory-per-gpu", type=str, default=None)
+parser.add_argument("--max-memory-per-gpu", type=str, default="hessian")
 
 args = parser.parse_args()
 
