@@ -21,6 +21,7 @@ parser.add_argument("--random-fraction", type=float, default=0.)
 parser.add_argument("--disable-shuffle", action="store_true", default=False)
 parser.add_argument("--num-samples", type=int, default=512)
 parser.add_argument("--max-seq-len", type=int, default=2048)
+parser.add_argument("--dtype", type=str, default="auto")
 parser.add_argument("--trust-remote-code", action="store_true", default=False)
 parser.add_argument("--tags", type=str, nargs="+", default=None)
 parser.add_argument("--packages", type=str, nargs="+", default=None)
@@ -28,13 +29,14 @@ parser.add_argument("--max-memory-per-gpu", type=str, default=None)
 
 args = parser.parse_args()
 
-args = vars(args)
-additional_packages = args.pop("packages")
+additional_packages = args.packages
 
 packages = [
-    "git+https://github.com/vllm-project/llm-compressor.git@main",
-    "git+https://github.com/neuralmagic/compressed-tensors.git@main",
-    "sentencepiece",
+   "git+https://github.com/vllm-project/llm-compressor.git@main",
+   "git+https://github.com/neuralmagic/compressed-tensors.git@main",
+   "sentencepiece",
+   "-i https://download.pytorch.org/whl/cu121"
+   "torch"
 ]
 
 if additional_packages is not None and len(additional_packages) > 0:
@@ -43,7 +45,7 @@ if additional_packages is not None and len(additional_packages) > 0:
 Task.force_store_standalone_script()
 
 task = Task.init(project_name=project_name, task_name=task_name)
-task.set_base_docker(docker_image="498127099666.dkr.ecr.us-east-1.amazonaws.com/mlops/k8s-research-torch:latest")
+task.set_base_docker(docker_image="498127099666.dkr.ecr.us-east-1.amazonaws.com/mlops/k8s-research-clean:latest")
 task.set_packages(packages)
 
 task.execute_remotely(queue_name)
@@ -52,26 +54,32 @@ task.execute_remotely(queue_name)
 # REMOTE
 #
 
-from llmcompressor.transformers import SparseAutoModelForCausalLM, oneshot
+from llmcompressor.transformers import oneshot
 from llmcompressor.transformers.compression.helpers import (
     calculate_offload_device_map,
     custom_offload_device_map,
 )
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoModelForCausalLM
 from datasets import load_dataset, Dataset, interleave_datasets
 import math
 import random
 from clearml import InputModel, OutputModel
+import torch
 
 # Load model
-if args["clearml_model"]:
-    input_model = InputModel(model_id=args["model_id"])
+if args.clearml_model:
+    input_model = InputModel(model_id=args.model_id)
     model_id = input_model.get_local_copy()
     task.connect(input_model)
 else:
-    model_id = args["model_id"]
+    model_id = args.model_id
 
-if args["max_memory_per_gpu"] is None:
+if args.dtype != "auto":
+    dtype = getattr(torch, args.dtype)
+else:
+    dtype = args.dtype
+
+if args.max_memory_per_gpu is None:
     device_map = "auto"
 else:
     user_properties = task.get_user_properties()
@@ -86,29 +94,35 @@ else:
     elif "octo" in queue_name or "x8" in queue_name:
         num_gpus = 8
     
-    if args["max_memory_per_gpu"] == "hessian":
+    if args.max_memory_per_gpu == "hessian":
         device_map = calculate_offload_device_map(
             model_id, 
             reserve_for_hessians=True, 
             num_gpus=num_gpus, 
-            torch_dtype="auto",
-            trust_remote_code=args["trust_remote_code"],
+            torch_dtype=dtype,
+            trust_remote_code=args.trust_remote_code,
         )
     else:
         device_map = custom_offload_device_map(
             model_id, 
-            max_memory_per_gpu=args["max_memory_per_gpu"] + "GB",
+            max_memory_per_gpu=args.max_memory_per_gpu + "GB",
             num_gpus=num_gpus, 
-            torch_dtype="auto",
-            trust_remote_code=args["trust_remote_code"],
+            torch_dtype=dtype,
+            trust_remote_code=args.trust_remote_code,
         )
 
-model = SparseAutoModelForCausalLM.from_pretrained(
-    model_id, torch_dtype="auto", device_map="auto", trust_remote_code=args["trust_remote_code"]
+model = AutoModelForCausalLM.from_pretrained(
+    model_id, 
+    torch_dtype=dtype, 
+    device_map="auto", 
+    trust_remote_code=args.trust_remote_code
 )
 
 # Load tokenizer
-tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=args["trust_remote_code"])
+tokenizer = AutoTokenizer.from_pretrained(
+    model_id, 
+    trust_remote_code=args.trust_remote_code,
+)
 
 
 # Build dataset
@@ -236,18 +250,18 @@ def get_dataset(dataset_name, num_samples, max_seq_len, tokenizer, random_fracti
     return dataset
 
 dataset = get_dataset(
-    args["dataset"], 
-    args["num_samples"],
-    args["max_seq_len"],
+    args.dataset, 
+    args.num_samples,
+    args.max_seq_len,
     tokenizer, 
-    args["random_fraction"],
-    not args["disable_shuffle"],
+    args.random_fraction,
+    not args.disable_shuffle,
 )
 
-if "yaml" in args["recipe"]:
-    recipe = open(args["recipe"]).read()
+if "yaml" in args.recipe:
+    recipe = open(args.recipe).read()
 else:
-    recipe = args["recipe"]
+    recipe = args.recipe
 
 task.upload_artifact(name="recipe", artifact_object=recipe)
 
@@ -256,21 +270,22 @@ oneshot(
     model=model,
     dataset=dataset,
     recipe=recipe,
-    max_seq_length=args["max_seq_len"],
-    num_calibration_samples=args["num_samples"],
+    max_seq_length=args.max_seq_len,
+    num_calibration_samples=args.num_samples,
     tokenizer=tokenizer,
 )
 
 # save model compressed
-model.save_pretrained(args["save_dir"], save_compressed=True)
+model.save_pretrained(args.save_dir, save_compressed=True)
+tokenizer.save_pretrained(args.save_dir)
 
 # upload model to ClearML
-if not args["disable_clearml_model_save"]:
+if not args.disable_clearml_model_save:
     clearml_model = OutputModel(
         task=task, 
         name=task.name,
         framework="PyTorch", 
-        tags=args["tags"],
+        tags=args.tags,
     )
 
-    clearml_model.update_weights(weights_filename=args["save_dir"], auto_delete_file=False)
+    clearml_model.update_weights(weights_filename=args.save_dir, auto_delete_file=False)
