@@ -3,7 +3,7 @@ import argparse
 
 project_name = "Automation"
 task_name = "llmcompressor_oneshot"
-queue_name = "oneshot-a100x1"
+queue_name = "single-a6000"
 
 #
 # LOCAL
