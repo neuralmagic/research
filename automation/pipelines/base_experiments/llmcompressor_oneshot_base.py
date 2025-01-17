@@ -3,7 +3,7 @@ import argparse
 
 project_name = "Automation"
 task_name = "llmcompressor_oneshot"
-queue_name = "single-a6000"
+queue_name = "oneshot-a100x1"
 
 #
 # LOCAL
@@ -35,8 +35,6 @@ packages = [
    "git+https://github.com/vllm-project/llm-compressor.git@main",
    "git+https://github.com/neuralmagic/compressed-tensors.git@main",
    "sentencepiece",
-   "-i https://download.pytorch.org/whl/cu121"
-   "torch"
 ]
 
 if additional_packages is not None and len(additional_packages) > 0:
