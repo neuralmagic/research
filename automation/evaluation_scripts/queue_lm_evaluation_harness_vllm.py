@@ -1,6 +1,6 @@
 from clearml import Task
 import argparse
-
+import os
 #
 # LOCAL
 #
@@ -23,6 +23,7 @@ parser.add_argument("--cpu-offload-gb", type=int, default=None)
 parser.add_argument("--enable-chunked-prefill", action="store_true", default=False)
 parser.add_argument("--max-model-len", type=int, default=4096)
 parser.add_argument("--max-num-batched-tokens", type=int, default=512)
+#TODO FOR MULTIMODAL: parser.add_argument("--max-num-seqs", type=int, default=8)
 parser.add_argument("--max-num-seqs", type=int, default=128)
 parser.add_argument("--packages", type=str, nargs="+", default=None)
 parser.add_argument("--apply-chat-template", action="store_true", default=False)
@@ -37,6 +38,14 @@ task_name = args.pop("task_name")
 queue_name = args.pop("queue_name")
 additional_packages = args.pop("packages")
 build_vllm = args.pop("build_vllm")
+#TODO FOR MULTIMODAL: os.environ["VLLM_COMMIT"] = "098f94de42859f8251fe920f87adb88336129c53"
+
+#TODO FOR MULTIMODAL: 
+# packages = [
+#     "git+https://github.com/neuralmagic/lm-evaluation-harness.git@llama_3.1_instruct", 
+#     "sentencepiece",
+#     f"https://vllm-wheels.s3.us-west-2.amazonaws.com/{os.environ['VLLM_COMMIT']}/vllm-1.0.0.dev-cp38-abi3-manylinux1_x86_64.whl",
+# ]
 
 packages = [
     "git+https://github.com/neuralmagic/lm-evaluation-harness.git@llama_3.1_instruct", 
@@ -44,9 +53,10 @@ packages = [
 ]
 
 if build_vllm:
-    packages.append("git+https://github.com/vllm-project/vllm.git@main")
+    packages.append("git+https://github.com/vllm-project/vllm.git@refs/pull/11528/head")
 else:
     packages.append("vllm")
+
 
 
 if additional_packages is not None and len(additional_packages) > 0:
@@ -55,7 +65,7 @@ if additional_packages is not None and len(additional_packages) > 0:
 Task.force_store_standalone_script()
 
 task = Task.init(project_name=project_name, task_name=task_name)
-task.set_base_docker(docker_image="498127099666.dkr.ecr.us-east-1.amazonaws.com/mlops/k8s-research-torch:latest")
+task.set_base_docker(docker_image="498127099666.dkr.ecr.us-east-1.amazonaws.com/mlops/k8s-research-clean:latest")
 task.set_script(repository="https://github.com/neuralmagic/research.git", branch="main",working_dir="clearml_evaluation_parsing")
 task.set_packages(packages)
 
@@ -102,6 +112,8 @@ if args["enable_chunked_prefill"]:
 if args["cpu_offload_gb"] is not None:
     cpu_offload_gb = args["cpu_offload_gb"]
     model_args += f",cpu_offload_gb={cpu_offload_gb}"
+if "Llama" in args["model_id"]:
+    model_args += ",enforce_eager=True"
 
 inputs = [
     "python3", "-m", "lm_eval", 
