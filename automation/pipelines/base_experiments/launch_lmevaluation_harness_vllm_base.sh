@@ -1,4 +1,5 @@
 python lm_evaluation_harness_vllm_base.py \
-  --model-id 0b98ccf638d54c19956de35121ee586a \
-  --clearml-model \
-  --build-vllm
+  --model_id meta-llama/Llama-3.2-1B-Instruct \
+  --tasks openllm \
+  --model_args "dtype=auto,max_model_len=8192" \
+  --batch_size 16
