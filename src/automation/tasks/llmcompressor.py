@@ -1,9 +1,9 @@
-from automation.tasks.queue_tasks.queue_task import QueueTask
+from automation.tasks.base_task import BaseTask
 from automation.docker import DEFAULT_DOCKER_IMAGE
 from typing import Union, List, Optional, Sequence, Dict
 import os
 
-class LLMCompressorQueueTask(QueueTask):
+class LLMCompressorTask(BaseTask):
 
     default_packages = ["llmcompressor"]
 
@@ -52,7 +52,7 @@ class LLMCompressorQueueTask(QueueTask):
         self.max_memory_per_gpu = max_memory_per_gpu
         self.dtype = dtype
         self.tags = tags
-        self.script = os.path.join(".", "src", "automation", "tasks", "queue_tasks", "llmcompressor_script.py")
+        self.script = os.path.join(".", "src", "automation", "scripts", "llmcompressor_script.py")
     
     def set_arguments(self, task):
         # Connect parameters to ClearML
