@@ -44,18 +44,18 @@ class BaseTask():
         task.execute_remotely(queue_name=queue_name, clone=False, exit_process=True)
         #self.script(task)
 
-    def execute_locally(self):
-            task = Task.create(
-            project_name=self.project_name, 
-            task_name=self.task_name, 
-            task_type=self.task_type, 
-            docker=self.docker_image, 
-            packages=self.packages, 
-            add_task_init_call=True,
-            script=self.script,
-            repo="https://github.com/neuralmagic/research.git",
-            branch="alex-development",
-        )
+    # def execute_locally(self):
+    #         task = Task.create(
+    #         project_name=self.project_name, 
+    #         task_name=self.task_name, 
+    #         task_type=self.task_type, 
+    #         docker=self.docker_image, 
+    #         packages=self.packages, 
+    #         add_task_init_call=True,
+    #         script=self.script,
+    #         repo="https://github.com/neuralmagic/research.git",
+    #         branch="alex-development",
+    #     )
 
-        self.set_arguments(task)
+    #     self.set_arguments(task)
         
