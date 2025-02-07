@@ -12,7 +12,7 @@ import torch
 def main():
     task = Task.get_current_task()
 
-    args = task.get_parameters_as_dict()
+    args = task.get_parameters_as_dict()["Args"]
 
     # Resolve model_id
     if args.clearml_model:

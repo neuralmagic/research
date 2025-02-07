@@ -56,9 +56,9 @@ class LLMCompressorTask(BaseTask):
         self.script_path = os.path.join(".", "src", "automation", "scripts", "llmcompressor_script.py")
         self.script = main
     
-    def set_arguments(self, task):
+    def get_arguments(self, task):
         # Connect parameters to ClearML
-        task.connect({
+        return {
             "model_id": self.model_id,
             "recipe": self.recipe,
             "dataset_name": self.dataset_name,
@@ -70,6 +70,6 @@ class LLMCompressorTask(BaseTask):
             "max_memory_per_gpu": self.max_memory_per_gpu,
             "dtype": self.dtype,
             "tags": self.tags,
-        })
+        }
 
 

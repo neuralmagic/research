@@ -30,7 +30,7 @@ class BaseTask():
         return NotImplementedError
     
 
-    def set_arguments(self, task):
+    def get_arguments(self, task):
         return NotImplementedError
 
 
@@ -47,7 +47,7 @@ class BaseTask():
             branch="alex-development",
         )
 
-        self.set_arguments(task)       
+        task.connect(self.get_arguments, "Args")
         task.execute_remotely(queue_name=queue_name, clone=False, exit_process=True)
 
     def execute_locally(self):
@@ -57,6 +57,6 @@ class BaseTask():
             task_type=self.task_type, 
         )
 
-        self.set_arguments(task)
+        task.connect(self.get_arguments, "Args")
         self.script()   
 
