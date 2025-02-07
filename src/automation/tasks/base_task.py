@@ -3,7 +3,7 @@ from typing import Sequence, Optional
 
 class BaseTask():
 
-    base_packages = ["git+https://github.com/neuralmagic/reserch.git@alex-development"]
+    base_packages = ["git+https://github.com/neuralmagic/research.git@alex-development"]
 
     def __init__(
             self,
