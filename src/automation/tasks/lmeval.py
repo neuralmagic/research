@@ -1,7 +1,6 @@
 from automation.tasks.base_task import BaseTask
 from automation.docker import DEFAULT_DOCKER_IMAGE
-from automation.scripts.lmeval_script import main
-from typing import Union, List, Optional, Sequence, Dict
+from typing import Optional, Sequence
 import os
 
 class LMEvalTask(BaseTask):
@@ -20,6 +19,8 @@ class LMEvalTask(BaseTask):
             **kwargs,
     ):
         
+        from automation.scripts.lmeval_script import main
+
         if packages is not None:
             packages = list(set(packages + self.lmeval_packages))
         else:
