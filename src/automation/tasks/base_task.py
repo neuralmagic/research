@@ -3,14 +3,22 @@ from typing import Sequence, Optional
 
 class BaseTask():
 
+    default_packages = ["git+https://github.com/neuralmagic/reserch.git@alex-development"]
+
     def __init__(
             self,
             project_name: str,
             task_name: str,
             docker_image: str,
-            packages: Optional[Sequence[str]],
+            packages: Optional[Sequence[str]]=None,
             task_type: str="training",
     ):
+        
+        if packages is not None:
+            packages = list(set(packages + self.default_packages))
+        else:
+            packages = self.default_packages
+
         self.project_name = project_name
         self.task_name = task_name
         self.docker_image = docker_image
@@ -34,28 +42,21 @@ class BaseTask():
             docker=self.docker_image, 
             packages=self.packages, 
             add_task_init_call=True,
-            script=self.script,
+            script=self.script_path,
             repo="https://github.com/neuralmagic/research.git",
             branch="alex-development",
         )
 
-        self.set_arguments(task)
-        
+        self.set_arguments(task)       
         task.execute_remotely(queue_name=queue_name, clone=False, exit_process=True)
-        #self.script(task)
 
-    # def execute_locally(self):
-    #         task = Task.create(
-    #         project_name=self.project_name, 
-    #         task_name=self.task_name, 
-    #         task_type=self.task_type, 
-    #         docker=self.docker_image, 
-    #         packages=self.packages, 
-    #         add_task_init_call=True,
-    #         script=self.script,
-    #         repo="https://github.com/neuralmagic/research.git",
-    #         branch="alex-development",
-    #     )
+    def execute_locally(self):
+        task = Task.init(
+            project_name=self.project_name, 
+            task_name=self.task_name, 
+            task_type=self.task_type, 
+        )
 
-    #     self.set_arguments(task)
-        
+        self.set_arguments(task)
+        self.script()   
+

@@ -1,5 +1,6 @@
 from automation.tasks.base_task import BaseTask
 from automation.docker import DEFAULT_DOCKER_IMAGE
+from automation.scripts.llmcompressor_script import main
 from typing import Union, List, Optional, Sequence, Dict
 import os
 
@@ -52,7 +53,8 @@ class LLMCompressorTask(BaseTask):
         self.max_memory_per_gpu = max_memory_per_gpu
         self.dtype = dtype
         self.tags = tags
-        self.script = os.path.join(".", "src", "automation", "scripts", "llmcompressor_script.py")
+        self.script_path = os.path.join(".", "src", "automation", "scripts", "llmcompressor_script.py")
+        self.script = main
     
     def set_arguments(self, task):
         # Connect parameters to ClearML
