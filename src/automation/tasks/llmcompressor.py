@@ -1,11 +1,9 @@
 from automation.tasks.base_task import BaseTask
 from automation.docker import DEFAULT_DOCKER_IMAGE
-from automation.scripts.llmcompressor_script import main
 from typing import Union, List, Optional, Sequence, Dict
 import os
 
 class LLMCompressorTask(BaseTask):
-
     llmcompressor_packages = ["llmcompressor"]
 
     def __init__(
@@ -28,6 +26,7 @@ class LLMCompressorTask(BaseTask):
             task_type: str="training",
     ):
     
+        from automation.scripts.llmcompressor_script import main
         if packages is not None:
             packages = list(set(packages + self.llmcompressor_packages))
         else:
