@@ -24,8 +24,6 @@ class BaseTask():
         self.docker_image = docker_image
         self.packages = packages
         self.task_type = task_type
-        print(packages)
-        exit()
 
 
     def script(self):
