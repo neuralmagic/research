@@ -33,10 +33,10 @@ class BaseTask():
         return NotImplementedError
 
 
-    def execute_remotely(self, queue_name):
-        self.create_task()
-        self.task.connect(self.get_arguments(), "Args")
-        self.task.execute_remotely(queue_name=queue_name, clone=False, exit_process=True)
+    def set_arguments(self):
+        args = self.get_arguments()
+        for args_name, args_dict in args.items():
+            self.task.connect(args_dict, args_name)
 
 
     def create_task(self):
@@ -52,6 +52,7 @@ class BaseTask():
             branch="alex-development",
         )
 
+
     def get_task_id(self):
         if self.task is not None:
             return self.task.id
@@ -59,15 +60,20 @@ class BaseTask():
             raise ValueError("Task ID not available since ClearML task not yet created. Try task.create_task() firts.")
 
 
+    def execute_remotely(self, queue_name):
+        self.create_task()
+        self.set_arguments()
+        self.task.execute_remotely(queue_name=queue_name, clone=False, exit_process=True)
+
+
     def execute_locally(self):
         self.task = Task.init(
             project_name=self.project_name, 
             task_name=self.task_name, 
-            task_type=self.task_type, 
+            task_type=self.task_type,
+            auto_connect_arg_parser=False,
         )
         
-        args = self.get_arguments()
-        for args_name, args_dict in args.items():
-            self.task.connect(args_dict, args_name)
-        self.script()   
+        self.set_arguments()
+        self.script()
 

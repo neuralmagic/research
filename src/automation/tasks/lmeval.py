@@ -50,8 +50,5 @@ class LMEvalTask(BaseTask):
                 "model_id": self.model_id,
                 "clearml_model": self.clearml_model,
             },
-            "lm_eval": {
-                "args": self.lm_eval,
-                "name": "lm_eval",
-            },
+            "lm_eval": self.lm_eval,
         }
