@@ -6,7 +6,7 @@ from llmcompressor.transformers.compression.helpers import (
 )
 from llmcompressor.transformers import oneshot
 from transformers import AutoModelForCausalLM
-from clearml import InputModel, OutputModel, Task
+from clearml import OutputModel, Task
 import torch
 from automation.utils import resolve_model_id
 
