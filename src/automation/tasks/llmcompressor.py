@@ -56,7 +56,7 @@ class LLMCompressorTask(BaseTask):
         self.script_path = os.path.join(".", "src", "automation", "scripts", "llmcompressor_script.py")
         self.script = main
     
-    def get_arguments(self, task):
+    def get_arguments(self):
         # Connect parameters to ClearML
         return {
             "model_id": self.model_id,
