@@ -3,7 +3,7 @@ from typing import Sequence, Optional
 
 class BaseTask():
 
-    default_packages = ["git+https://github.com/neuralmagic/reserch.git@alex-development"]
+    base_packages = ["git+https://github.com/neuralmagic/reserch.git@alex-development"]
 
     def __init__(
             self,
@@ -15,15 +15,17 @@ class BaseTask():
     ):
         
         if packages is not None:
-            packages = list(set(packages + self.default_packages))
+            packages = list(set(packages + self.base_packages))
         else:
-            packages = self.default_packages
+            packages = self.base_packages
 
         self.project_name = project_name
         self.task_name = task_name
         self.docker_image = docker_image
         self.packages = packages
         self.task_type = task_type
+        print(packages)
+        exit()
 
 
     def script(self):

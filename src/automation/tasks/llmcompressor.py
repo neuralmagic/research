@@ -6,7 +6,7 @@ import os
 
 class LLMCompressorTask(BaseTask):
 
-    default_packages = ["llmcompressor"]
+    llmcompressor_packages = ["llmcompressor"]
 
     def __init__(
             self,
@@ -29,9 +29,9 @@ class LLMCompressorTask(BaseTask):
     ):
     
         if packages is not None:
-            packages = list(set(packages + self.default_packages))
+            packages = list(set(packages + self.llmcompressor_packages))
         else:
-            packages = self.default_packages
+            packages = self.llmcompressor_packages
 
         super().__init__(
             project_name=project_name,
