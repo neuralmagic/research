@@ -1,0 +1,1 @@
+from automation.tasks.queue_tasks import LLMCompressorQueueTask
