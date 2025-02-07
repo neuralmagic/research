@@ -7,9 +7,10 @@ import lm_eval
 def main():
     task = Task.current_task()
 
-    args = task.get_parameters_as_dict(cast=True)["Args"]
-    model_id = args.pop("model_id")
-    clearml_model = args.pop("clearml_model")
+    args = task.get_parameters_as_dict(cast=True)
+    lm_eval_args = args["lm_eval"]
+    model_id = args["Args"]["model_id"]
+    clearml_model = args["Args"]["clearml_model"]
 
     # Resolve model_id
     model_id = resolve_model_id(model_id, clearml_model, task)
@@ -20,19 +21,19 @@ def main():
     base_model_args = f"pretrained={model_id},tensor_parallel_size={num_gpus}"
 
     # Add base_model_args to model_args
-    if "model_args" in args:
-        args["model_args"] += f",{base_model_args}"
+    if "model_args" in lm_eval_args:
+        lm_eval_args["model_args"] += f",{base_model_args}"
     else:
-        args["model_args"] = base_model_args
+        lm_eval_args["model_args"] = base_model_args
 
-    args["write_out"] = True
+    lm_eval_args["write_out"] = True
 
     # Run lm_eval
     task_manager = lm_eval.tasks.TaskManager()
     results = lm_eval.simple_evaluate( # call simple_evaluate
         model="vllm",
         task_manager=task_manager,
-        **args,
+        **lm_eval_args,
     )
 
     if results is None:

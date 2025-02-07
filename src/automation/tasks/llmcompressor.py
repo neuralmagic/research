@@ -57,17 +57,19 @@ class LLMCompressorTask(BaseTask):
     
     def get_arguments(self):
         return {
-            "model_id": self.model_id,
-            "recipe": self.recipe,
-            "dataset_name": self.dataset_name,
-            "clearml_model": self.clearml_model,
-            "save_directory": self.save_directory,
-            "num_samples": self.num_samples,
-            "max_seq_len": self.max_seq_len,
-            "trust_remote_code": self.trust_remote_code,
-            "max_memory_per_gpu": self.max_memory_per_gpu,
-            "dtype": self.dtype,
-            "tags": self.tags,
+            "Args": {
+                "model_id": self.model_id,
+                "recipe": self.recipe,
+                "dataset_name": self.dataset_name,
+                "clearml_model": self.clearml_model,
+                "save_directory": self.save_directory,
+                "num_samples": self.num_samples,
+                "max_seq_len": self.max_seq_len,
+                "trust_remote_code": self.trust_remote_code,
+                "max_memory_per_gpu": self.max_memory_per_gpu,
+                "dtype": self.dtype,
+                "tags": self.tags,
+            },
         }
 
 

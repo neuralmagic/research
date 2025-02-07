@@ -65,7 +65,9 @@ class BaseTask():
             task_name=self.task_name, 
             task_type=self.task_type, 
         )
-
-        self.task.connect(self.get_arguments(), "Args")
+        
+        args = self.get_arguments()
+        for args_name, args_dict in args.items():
+            self.task.connect(args_dict, args_name)
         self.script()   
 

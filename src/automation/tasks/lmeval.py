@@ -5,7 +5,10 @@ import os
 
 class LMEvalTask(BaseTask):
 
-    lmeval_packages = ["git+https://github.com/neuralmagic/lm-evaluation-harness.git@llama_3.1_instruct"]
+    lmeval_packages = [
+        "vllm",
+        "git+https://github.com/neuralmagic/lm-evaluation-harness.git@llama_3.1_instruct",
+    ]
 
     def __init__(
             self,
@@ -43,7 +46,12 @@ class LMEvalTask(BaseTask):
 
     def get_arguments(self):
         return {
-            **self.lm_eval,
-            "model_id": self.model_id,
-            "clearml_model": self.clearml_model,
+            "Args": {
+                "model_id": self.model_id,
+                "clearml_model": self.clearml_model,
+            },
+            "lm_eval": {
+                "args": self.lm_eval,
+                "name": "lm_eval",
+            },
         }
