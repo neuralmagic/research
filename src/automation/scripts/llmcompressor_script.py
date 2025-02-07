@@ -8,6 +8,7 @@ from llmcompressor.transformers import oneshot
 from transformers import AutoModelForCausalLM
 from clearml import InputModel, OutputModel, Task
 import torch
+from automation.utils import resolve_model_id
 
 def main():
     task = Task.current_task()
@@ -15,12 +16,7 @@ def main():
     args = task.get_parameters_as_dict(cast=True)["Args"]
 
     # Resolve model_id
-    if args["clearml_model"]:
-        input_model = InputModel(model_id=args["model_id"])
-        model_id = input_model.get_local_copy()
-        task.connect(input_model)
-    else:
-        model_id = args["model_id"]
+    model_id = resolve_model_id(args["model_id"], args["clearml_model"], task)
 
     # Set dtype
     if args["dtype"] == "auto":
