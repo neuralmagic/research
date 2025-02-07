@@ -24,18 +24,23 @@ class BaseTask():
         self.docker_image = docker_image
         self.packages = packages
         self.task_type = task_type
-
-
-    def script(self):
-        return NotImplementedError
-    
+        self.task = None
+        self.script = None
+        self.script_path = None
+  
 
     def get_arguments(self):
         return NotImplementedError
 
 
     def execute_remotely(self, queue_name):
-        task = Task.create(
+        self.create_task()
+        self.task.connect(self.get_arguments(), "Args")
+        self.task.execute_remotely(queue_name=queue_name, clone=False, exit_process=True)
+
+
+    def create_task(self):
+        self.task = Task.create(
             project_name=self.project_name, 
             task_name=self.task_name, 
             task_type=self.task_type, 
@@ -47,16 +52,20 @@ class BaseTask():
             branch="alex-development",
         )
 
-        task.connect(self.get_arguments(), "Args")
-        task.execute_remotely(queue_name=queue_name, clone=False, exit_process=True)
+    def get_task_id(self):
+        if self.task is not None:
+            return self.task.id
+        else:
+            raise ValueError("Task ID not available since ClearML task not yet created. Try task.create_task() firts.")
+
 
     def execute_locally(self):
-        task = Task.init(
+        self.task = Task.init(
             project_name=self.project_name, 
             task_name=self.task_name, 
             task_type=self.task_type, 
         )
 
-        task.connect(self.get_arguments(), "Args")
+        self.task.connect(self.get_arguments(), "Args")
         self.script()   
 

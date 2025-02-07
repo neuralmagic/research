@@ -57,7 +57,6 @@ class LLMCompressorTask(BaseTask):
         self.script = main
     
     def get_arguments(self):
-        # Connect parameters to ClearML
         return {
             "model_id": self.model_id,
             "recipe": self.recipe,
