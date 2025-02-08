@@ -79,7 +79,7 @@ class GuideLLMTask(BaseTask):
         if len(self.vllm_kwargs) > 0:
             args["vLLM"] = self.vllm_kwargs
 
-        if len(self.enviornment_variables) > 0:
+        if len(self.environment_variables) > 0:
             args["environment"] = self.environment_variables
 
         return args
