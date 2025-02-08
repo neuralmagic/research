@@ -11,15 +11,15 @@ class LMEvalTask(BaseTask):
     ]
 
     def __init__(
-            self,
-            project_name: str,
-            task_name: str,
-            model_id: str,
-            docker_image: str=DEFAULT_DOCKER_IMAGE,
-            packages: Optional[Sequence[str]]=None,
-            clearml_model: bool=False,
-            task_type: str="training",
-            **kwargs,
+        self,
+        project_name: str,
+        task_name: str,
+        model_id: str,
+        docker_image: str=DEFAULT_DOCKER_IMAGE,
+        packages: Optional[Sequence[str]]=None,
+        clearml_model: bool=False,
+        task_type: str="training",
+        **kwargs,
     ):
         
         from automation.scripts.lmeval_script import main
