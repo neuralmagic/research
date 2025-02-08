@@ -1,6 +1,7 @@
 from automation.tasks import BaseTask
 from automation.docker import DEFAULT_DOCKER_IMAGE
 from typing import Optional, Sequence
+import inspect
 import os
 
 DEFAULT_SERVER_WAIT_TIME = 600 # 600 seconds = 10 minutes
@@ -13,21 +14,20 @@ class GuideLLMTask(BaseTask):
     ]
 
     def __init__(
-            self,
-            project_name: str,
-            task_name: str,
-            model_id: str,
-            server_wait_time: int=DEFAULT_SERVER_WAIT_TIME,
-            docker_image: str=DEFAULT_DOCKER_IMAGE,
-            packages: Optional[Sequence[str]]=None,
-            clearml_model: bool=False,
-            task_type: str="training",
-            **kwargs,
+        self,
+        project_name: str,
+        task_name: str,
+        model_id: str,
+        server_wait_time: int=DEFAULT_SERVER_WAIT_TIME,
+        docker_image: str=DEFAULT_DOCKER_IMAGE,
+        packages: Optional[Sequence[str]]=None,
+        clearml_model: bool=False,
+        task_type: str="training",
+        **kwargs,
     ):
 
         from automation.scripts.guidellm_script import main
-        from guidellm.main import generate_benchmark_report_cli
-        import click
+        from guidellm import generate_benchmark_report
 
         if packages is not None:
             packages = list(set(packages + self.guidellm_packages))
@@ -43,14 +43,13 @@ class GuideLLMTask(BaseTask):
         )
 
         # Sort vllm and guidellm kwargs
-        guidellm_signature = {param.name: param.default for param in generate_benchmark_report_cli.params if isinstance(param, click.Option)}
-        guidellm_signature["cont_refresh_table"] = guidellm_signature.pop("enable_continuous_refresh")
+        guidellm_signature = inspect.signature(generate_benchmark_report)
 
         vllm_kwargs = {}
+        guidellm_kwargs = {}
         environment_variables = {}
-        guidellm_kwargs = guidellm_signature
         for k, v in kwargs.items():
-            if k in guidellm_signature:
+            if k in guidellm_signature.parameters:
                 guidellm_kwargs[k] = v
             elif k.startswith("GUIDELLM__"):
                 environment_variables[k] = v
@@ -80,7 +79,7 @@ class GuideLLMTask(BaseTask):
         if len(self.vllm_kwargs) > 0:
             args["vLLM"] = self.vllm_kwargs
 
-        if len(self.environment_variables) > 0:
+        if len(self.enviornment_variables) > 0:
             args["environment"] = self.environment_variables
 
         return args
