@@ -1,0 +1,1 @@
+from automation.pipelines.base_pipeline import BasePipeline as Pipeline
