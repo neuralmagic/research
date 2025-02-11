@@ -21,9 +21,6 @@ class LMEvalTask(BaseTask):
         task_type: str="training",
         **kwargs,
     ):
-        
-        from automation.scripts.lmeval_script import main
-
         if packages is not None:
             packages = list(set(packages + self.lmeval_packages))
         else:
@@ -42,7 +39,12 @@ class LMEvalTask(BaseTask):
         self.clearml_model = clearml_model
         self.lm_eval = kwargs
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "lmeval_script.py")
-        self.script = main
+
+
+    def script(self):
+        from automation.tasks.scripts.lmeval_script import main
+        main()
+
 
     def get_arguments(self):
         return {

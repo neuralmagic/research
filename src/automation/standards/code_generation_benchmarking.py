@@ -1,9 +1,9 @@
-from automation.tasks import GuideLLMTask, DEFAULT_SERVER_WAIT_TIME
+from automation.tasks.guidellm import GuideLLMTask, DEFAULT_SERVER_WAIT_TIME
 from automation.docker import DEFAULT_DOCKER_IMAGE
 from typing import Optional, Sequence
 
 
-class CodeGenerationBenchmarking(GuideLLMTask):
+class CodeGenerationBenchmarkingTask(GuideLLMTask):
 
     def __init__(
         self,

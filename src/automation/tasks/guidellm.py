@@ -25,8 +25,6 @@ class GuideLLMTask(BaseTask):
         task_type: str="training",
         **kwargs,
     ):
-
-        from automation.scripts.guidellm_script import main
         from guidellm import generate_benchmark_report
 
         if packages is not None:
@@ -64,7 +62,12 @@ class GuideLLMTask(BaseTask):
         self.guidellm_kwargs = guidellm_kwargs
         self.environment_variables = environment_variables
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "guidellm_script.py")
-        self.script = main
+
+
+    def script(self):
+        from automation.tasks.scripts.guidellm_script import main
+        main()
+
 
     def get_arguments(self):
         args = {

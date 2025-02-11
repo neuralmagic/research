@@ -2,7 +2,7 @@ from automation.tasks import LLMCompressorTask
 from automation.docker import DEFAULT_DOCKER_IMAGE
 from typing import List, Optional, Sequence, Union
 
-class QuantizationW4A16(LLMCompressorTask):
+class QuantizationW4A16Task(LLMCompressorTask):
     def __init__(
         self,
         project_name: str,
@@ -23,24 +23,30 @@ class QuantizationW4A16(LLMCompressorTask):
     ):
         
         from llmcompressor.modifiers.quantization import GPTQModifier
-        recipe = GPTQModifier(
-            ignore=["lm_head"],
-            damping_frac=damping_frac,
-            config_groups={
-                "group_0": {
-                    "weights": {
-                        "num_bits": 4,
-                        "type": "int",
-                        "symmetric": True,
-                        "strategy": "group",
-                        "group_size": 128,
-                        "actorder": "group",
-                        "observer": observer,
+        recipe = {
+            "quant_stage": {
+                "quant_modifiers": {
+                    "GPTQModifier": {
+                        "ignore": ["lm_head"],
+                        "damping_frac": damping_frac,
+                        "config_groups": {
+                            "group_0": {
+                                "weights": {
+                                    "num_bits": 4,
+                                    "type": "int",
+                                    "symmetric": True,
+                                    "strategy": "group",
+                                    "group_size": 128,
+                                    "actorder": "group",
+                                    "observer": observer,
+                                },
+                                "targets": ["Linear"],
+                            },
+                        },
                     },
-                    "targets": ["Linear"],
                 },
             },
-        )
+        }
         
         super().__init__(
             project_name=project_name,

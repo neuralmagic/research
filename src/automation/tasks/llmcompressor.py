@@ -26,7 +26,6 @@ class LLMCompressorTask(BaseTask):
         task_type: str="training",
     ):
     
-        from automation.scripts.llmcompressor_script import main
         if packages is not None:
             packages = list(set(packages + self.llmcompressor_packages))
         else:
@@ -52,9 +51,13 @@ class LLMCompressorTask(BaseTask):
         self.max_memory_per_gpu = max_memory_per_gpu
         self.tags = tags
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "llmcompressor_script.py")
-        self.script = main
 
-    
+
+    def script(self):
+        from automation.scripts.llmcompressor_script import main
+        main()
+
+
     def get_arguments(self):
 
         recipe = self.recipe
