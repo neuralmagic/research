@@ -1,7 +1,4 @@
 from clearml import PipelineController
-from automation.tasks import BaseTask
-from typing import Optional
-
 
 class BasePipeline():
     def __init__(self,
