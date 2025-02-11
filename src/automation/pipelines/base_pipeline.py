@@ -8,10 +8,10 @@ class BasePipeline():
     ):
         self.project_name = project_name
         self.pipeline_name = pipeline_name
-        self.verion = version
+        self.version = version
         self.pipeline = None
         self.steps = []
-        self.parameters = None
+        self.parameters = []
     
 
     def add_step(self, *args, **kwargs,) -> None:
@@ -42,13 +42,13 @@ class BasePipeline():
         self.pipeline.start(None)
 
 
-    def run_remotely(self, queue_name: str="service") -> None:
+    def execute_remotely(self, queue_name: str="service") -> None:
         if self.pipeline is None:
             self.create_pipeline()
         self.pipeline.enqueue(queue_name=queue_name)
 
 
-    def run_locally(self) -> None:
+    def execute_locally(self) -> None:
         if self.pipeline is not None:
             raise Exception("Can only execute locally if pipeline is not yet created.")
         

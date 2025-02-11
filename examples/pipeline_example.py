@@ -30,7 +30,7 @@ pipeline.add_step(
     name="quantization",
     base_task_id = step1.id,
     execution_queue="oneshot-a5000x1",
-    monitor_models=[step1.get_arguments["Args"]["save_directory"]],
+    monitor_models=[step1.get_arguments()["Args"]["save_directory"]],
     monitor_artifacts=["recipe"],
 )
 
