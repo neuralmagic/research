@@ -1,0 +1,3 @@
+python lm_evaluation_harness_sparseml_base.py \
+  --model-id ebc4e45577804f389e65fd992ab75c5b \
+  --clearml-model
