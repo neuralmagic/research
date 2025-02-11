@@ -52,7 +52,7 @@ class LLMCompressorTask(BaseTask):
         self.max_memory_per_gpu = max_memory_per_gpu
         self.dtype = dtype
         self.tags = tags
-        self.script_path = os.path.join(".", "src", "automation", "scripts", "llmcompressor_script.py")
+        self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "llmcompressor_script.py")
         self.script = main
     
     def get_arguments(self):

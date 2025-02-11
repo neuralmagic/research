@@ -41,7 +41,7 @@ class LMEvalTask(BaseTask):
         self.model_id = model_id
         self.clearml_model = clearml_model
         self.lm_eval = kwargs
-        self.script_path = os.path.join(".", "src", "automation", "scripts", "lmeval_script.py")
+        self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "lmeval_script.py")
         self.script = main
 
     def get_arguments(self):

@@ -63,7 +63,7 @@ class GuideLLMTask(BaseTask):
         self.vllm_kwargs = vllm_kwargs
         self.guidellm_kwargs = guidellm_kwargs
         self.environment_variables = environment_variables
-        self.script_path = os.path.join(".", "src", "automation", "scripts", "guidellm_script.py")
+        self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "guidellm_script.py")
         self.script = main
 
     def get_arguments(self):

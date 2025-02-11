@@ -6,12 +6,12 @@ class BaseTask():
     base_packages = ["git+https://github.com/neuralmagic/research.git@alex-development"]
 
     def __init__(
-            self,
-            project_name: str,
-            task_name: str,
-            docker_image: str,
-            packages: Optional[Sequence[str]]=None,
-            task_type: str="training",
+        self,
+        project_name: str,
+        task_name: str,
+        docker_image: str,
+        packages: Optional[Sequence[str]]=None,
+        task_type: str="training",
     ):
         
         if packages is not None:
@@ -28,6 +28,15 @@ class BaseTask():
         self.script = None
         self.script_path = None
   
+
+    @property
+    def id(self):
+        return self.get_task_id()
+
+    @property
+    def name(self):
+        return self.task_name
+
 
     def get_arguments(self):
         return NotImplementedError
@@ -61,12 +70,16 @@ class BaseTask():
 
 
     def execute_remotely(self, queue_name):
-        self.create_task()
+        if self.task is None:
+            self.create_task()
         self.set_arguments()
         self.task.execute_remotely(queue_name=queue_name, clone=False, exit_process=True)
 
 
     def execute_locally(self):
+        if self.task is not None:
+            raise Exception("Can only execute locally if task is not yet created.")
+
         self.task = Task.init(
             project_name=self.project_name, 
             task_name=self.task_name, 
