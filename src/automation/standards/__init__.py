@@ -1,0 +1,3 @@
+from automation.standards.code_generation_benchmarking import CodeGenerationBenchmarkingTask
+from automation.standards.openllm import OpenLLMTask
+from automation.standards.quantization_w4a16 import QuantizationW4A16Task

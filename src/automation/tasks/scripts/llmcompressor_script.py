@@ -19,10 +19,7 @@ def main():
     model_id = resolve_model_id(args["model_id"], args["clearml_model"], task)
 
     # Set dtype
-    if args["dtype"] == "auto":
-        dtype = "auto"
-    else:
-        dtype = getattr(torch, args["dtype"])
+    dtype = "auto"
 
     # Set device map
     if args["max_memory_per_gpu"] == "auto":
