@@ -39,7 +39,7 @@ pipeline.add_step(
     base_task_id = step2.id,
     parents=["quantization"],
     execution_queue="oneshot-a5000x1",
-    monitor_metrics=[("Summary" "gsm8k/5shot/exact_match,strict-match")],
+    monitor_metrics=[("Summary", "gsm8k/5shot/exact_match,strict-match")],
 )
 
 pipeline.execute_remotely()

@@ -2,7 +2,6 @@ from automation.tasks.base_task import BaseTask
 from automation.docker import DEFAULT_DOCKER_IMAGE
 from typing import Union, List, Optional, Sequence, Any
 import os
-import yaml
 
 class LLMCompressorTask(BaseTask):
     llmcompressor_packages = ["llmcompressor"]

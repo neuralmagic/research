@@ -14,6 +14,7 @@ class CodeGenerationBenchmarkingTask(GuideLLMTask):
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
         clearml_model: bool=False,
+        vllm_kwargs: dict={},
         **kwargs,
     ):
         
@@ -33,5 +34,6 @@ class CodeGenerationBenchmarkingTask(GuideLLMTask):
             clearml_model=clearml_model,
             data_type="emulated",
             data="prompt_tokens=256,generated_tokens=1024",
+            vllm_kwargs=vllm_kwargs,
             **kwargs,
         )

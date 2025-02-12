@@ -1,6 +1,9 @@
 from clearml import PipelineController
 
 class BasePipeline():
+
+    packages = ["git+https://github.com/neuralmagic/research.git@alex-development"]
+
     def __init__(self,
         project_name: str,
         pipeline_name: str,
@@ -28,6 +31,7 @@ class BasePipeline():
             name=self.pipeline_name,
             version=self.version,
             target_project=self.project_name,
+            packages=self.packages,
         )
 
         for parameter_args, parameter_kwargs in self.parameters:
@@ -42,7 +46,7 @@ class BasePipeline():
         self.pipeline.start(None)
 
 
-    def execute_remotely(self, queue_name: str="service") -> None:
+    def execute_remotely(self, queue_name: str="services") -> None:
         if self.pipeline is None:
             self.create_pipeline()
         self.pipeline.enqueue(queue_name=queue_name)

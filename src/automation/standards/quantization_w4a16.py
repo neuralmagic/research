@@ -22,7 +22,6 @@ class QuantizationW4A16Task(LLMCompressorTask):
         tags: Union[str, List[str]]=None,
     ):
         
-        from llmcompressor.modifiers.quantization import GPTQModifier
         recipe = {
             "quant_stage": {
                 "quant_modifiers": {
