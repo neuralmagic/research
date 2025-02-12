@@ -43,13 +43,15 @@ class BasePipeline():
 
     def create_pipeline(self) -> None:
         self._create()
-        self.pipeline.start(None)
+        self.pipeline.create_draft()
+
+        #self.pipeline.start(None)
 
 
     def execute_remotely(self, queue_name: str="services") -> None:
         if self.pipeline is None:
             self.create_pipeline()
-        self.pipeline.enqueue(queue_name=queue_name)
+        PipelineController.enqueue(self.pipeline, queue_name=queue_name)
 
 
     def execute_locally(self) -> None:

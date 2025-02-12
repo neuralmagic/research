@@ -1,6 +1,7 @@
 from automation.tasks import LLMCompressorTask
 from automation.docker import DEFAULT_DOCKER_IMAGE
 from typing import List, Optional, Sequence, Union
+import yaml
 
 class QuantizationW4A16Task(LLMCompressorTask):
     def __init__(
@@ -46,6 +47,8 @@ class QuantizationW4A16Task(LLMCompressorTask):
                 },
             },
         }
+
+        recipe = yaml.dump(recipe, default_flow_style=False)
         
         super().__init__(
             project_name=project_name,
