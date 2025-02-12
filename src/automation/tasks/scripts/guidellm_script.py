@@ -8,8 +8,21 @@ from clearml import Task
 import torch
 from automation.utils import resolve_model_id
 from guidellm import generate_benchmark_report
+import psutil
+
 
 SERVER_LOG_FILE = "vllm_server_log.txt"
+
+
+def kill_process_tree(pid):
+    try:
+        parent = psutil.Process(pid)
+        children = parent.children(recursive=True)
+        for child in children:
+            child.terminate()  # or child.kill()
+        parent.terminate()
+    except psutil.NoSuchProcess:
+        pass
 
 
 def start_vllm_server(vllm_args, model_id, target, server_wait_time):
@@ -31,10 +44,11 @@ def start_vllm_server(vllm_args, model_id, target, server_wait_time):
     for k, v in vllm_args.items():
         if v == True:
             v = "true"
-        server_command.extend([k, str(v)])
+        server_command.extend([f"--{k}", str(v)])
 
+    print(server_command)
     server_log_file = open(SERVER_LOG_FILE, "w")
-    server_process = subprocess.Popen(" ".join(server_command), stdout=server_log_file, stderr=server_log_file, shell=True)
+    server_process = subprocess.Popen(server_command, stdout=server_log_file, stderr=server_log_file, shell=False)
 
     delay = 5
     server_initialized = False
@@ -70,7 +84,7 @@ def main():
     server_process, server_initialized = start_vllm_server(vllm_args, model_id, guidellm_args["target"], args["Args"]["server_wait_time"])
 
     if not server_initialized:
-        server_process.kill()
+        kill_process_tree(server_process.pid)
         task.upload_artifact(name="vLLM server log", artifact_object=SERVER_LOG_FILE)
         raise AssertionError("Server failed to intialize")
 
@@ -81,7 +95,7 @@ def main():
     guidellm_args["model"] = model_id
 
     report = generate_benchmark_report(**guidellm_args)
-    server_process.kill()
+    kill_process_tree(server_process.pid)
 
     task.upload_artifact(name="guidellm guidance report", artifact_object=report.to_json())
     task.upload_artifact(name="vLLM server log", artifact_object=SERVER_LOG_FILE)
