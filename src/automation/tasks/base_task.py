@@ -63,6 +63,7 @@ class BaseTask():
             repo="https://github.com/neuralmagic/research.git",
             branch="alex-development",
         )
+        self.set_arguments()
 
 
     def get_task_id(self):
@@ -75,7 +76,6 @@ class BaseTask():
     def execute_remotely(self, queue_name):
         if self.task is None:
             self.create_task()
-        self.set_arguments()
         self.task.execute_remotely(queue_name=queue_name, clone=False, exit_process=True)
 
 
@@ -89,7 +89,6 @@ class BaseTask():
             task_type=self.task_type,
             auto_connect_arg_parser=False,
         )
-        
-        self.set_arguments()
+        self.set_arguments()        
         self.script()
 
