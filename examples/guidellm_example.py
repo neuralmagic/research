@@ -7,10 +7,12 @@ task = GuideLLMTask(
     rate_type="throughput",
     backend="aiohttp_server",
     GUIDELLM__MAX_CONCURRENCY=256,
-    target="http://localhost:8030/v1",
+    target="http://localhost:8000/v1",
     data_type="emulated",
-    data="prompt_tokens=512,generated_tokens=256"
+    max_seconds=30,
+    data="prompt_tokens=512,generated_tokens=256",
+    vllm_kwargs={"enable-chunked-prefill": True}
 )
 
-task.execute_remotely("oneshot-a6000x1")
-#task.execute_locally()
+#task.execute_remotely("oneshot-a6000x1")
+task.execute_locally()

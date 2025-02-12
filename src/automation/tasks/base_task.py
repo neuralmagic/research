@@ -25,7 +25,6 @@ class BaseTask():
         self.packages = packages
         self.task_type = task_type
         self.task = None
-        self.script = None
         self.script_path = None
   
 
@@ -46,6 +45,10 @@ class BaseTask():
         args = self.get_arguments()
         for args_name, args_dict in args.items():
             self.task.connect(args_dict, args_name)
+
+
+    def script(self):
+        raise NotImplementedError
 
 
     def create_task(self):

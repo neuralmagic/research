@@ -1,7 +1,6 @@
 from automation.tasks import BaseTask
 from automation.docker import DEFAULT_DOCKER_IMAGE
 from typing import Optional, Sequence
-import inspect
 import os
 
 DEFAULT_SERVER_WAIT_TIME = 600 # 600 seconds = 10 minutes
@@ -23,10 +22,9 @@ class GuideLLMTask(BaseTask):
         packages: Optional[Sequence[str]]=None,
         clearml_model: bool=False,
         task_type: str="training",
+        vllm_kwargs: dict={},
         **kwargs,
     ):
-        from guidellm import generate_benchmark_report
-
         if packages is not None:
             packages = list(set(packages + self.guidellm_packages))
         else:
@@ -40,19 +38,14 @@ class GuideLLMTask(BaseTask):
             task_type=task_type,
         )
 
-        # Sort vllm and guidellm kwargs
-        guidellm_signature = inspect.signature(generate_benchmark_report)
-
-        vllm_kwargs = {}
+        # Sort guidellm kwargs from environment variables
         guidellm_kwargs = {}
         environment_variables = {}
         for k, v in kwargs.items():
-            if k in guidellm_signature.parameters:
-                guidellm_kwargs[k] = v
-            elif k.startswith("GUIDELLM__"):
+            if k.startswith("GUIDELLM__"):
                 environment_variables[k] = v
             else:
-                vllm_kwargs[k] = v
+                guidellm_kwargs[k] = v
 
         # Store class attributes
         self.model_id = model_id
