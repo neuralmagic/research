@@ -1,4 +1,5 @@
 from clearml import PipelineController
+from automation.docker import DEFAULT_DOCKER_IMAGE
 
 class BasePipeline():
 
@@ -8,11 +9,13 @@ class BasePipeline():
         project_name: str,
         pipeline_name: str,
         version=None,
+        docker_image: str=DEFAULT_DOCKER_IMAGE,
     ):
         self.project_name = project_name
         self.pipeline_name = pipeline_name
         self.version = version
         self.pipeline = None
+        self.docker_image = docker_image
         self.steps = []
         self.parameters = []
     
@@ -32,6 +35,7 @@ class BasePipeline():
             version=self.version,
             target_project=self.project_name,
             packages=self.packages,
+            docker=self.docker_image,
         )
 
         for parameter_args, parameter_kwargs in self.parameters:
@@ -43,15 +47,15 @@ class BasePipeline():
 
     def create_pipeline(self) -> None:
         self._create()
-        self.pipeline.create_draft()
-
-        #self.pipeline.start(None)
+        #self.pipeline.create_draft()
+        self.pipeline.start(None)
 
 
     def execute_remotely(self, queue_name: str="services") -> None:
         if self.pipeline is None:
             self.create_pipeline()
-        PipelineController.enqueue(self.pipeline, queue_name=queue_name)
+        self.pipeline.enqueue(queue_name=queue_name)
+        #self.pipeline.start(queue=queue_name)
 
 
     def execute_locally(self) -> None:
