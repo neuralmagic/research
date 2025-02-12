@@ -47,7 +47,6 @@ class BasePipeline():
 
     def create_pipeline(self) -> None:
         self._create()
-        #self.pipeline.create_draft()
         self.pipeline.start(None)
 
 
@@ -55,7 +54,6 @@ class BasePipeline():
         if self.pipeline is None:
             self.create_pipeline()
         self.pipeline.enqueue(queue_name=queue_name)
-        #self.pipeline.start(queue=queue_name)
 
 
     def execute_locally(self) -> None:
