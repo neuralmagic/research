@@ -43,7 +43,7 @@ def cast_args(data: dict[str, str], func: callable) -> dict:
             valid_types = [t for t in args if t is not type(None)]
             for valid_type in valid_types:
                 try:
-                    if valid_type is bool:
+                    if valid_type is bool and isinstance(value, str):
                         return value.lower() == "true"
                     return valid_type(value)
                 except (ValueError, TypeError):
@@ -51,7 +51,7 @@ def cast_args(data: dict[str, str], func: callable) -> dict:
             return value  # Fallback if no conversion succeeded
         
         # Handle boolean conversion properly
-        if expected_type is bool:
+        if expected_type is bool and isinstance(value, str):
             return value.lower() == "true"
         
         try:
