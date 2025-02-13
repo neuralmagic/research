@@ -37,7 +37,7 @@ pipeline.add_step(
 pipeline.add_step(
     name="pipeline_example_quantization_step2",
     base_task_id = step2.id,
-    parents=["quantization"],
+    parents=["pipeline_example_quantization_step1"],
     execution_queue="oneshot-a5000x1",
     monitor_metrics=[("Summary", "gsm8k/5shot/exact_match,strict-match")],
 )
