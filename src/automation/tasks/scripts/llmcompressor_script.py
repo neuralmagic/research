@@ -57,10 +57,9 @@ def main():
 
     # Load recipe
     recipe = args["recipe"]
-    if not isinstance(recipe, str):
-        if os.path.isfile(recipe):
-            with open(recipe, "r", encoding="utf-8") as file:
-                recipe = file.read()
+    if isinstance(recipe, str) and os.path.isfile(recipe):
+        with open(recipe, "r", encoding="utf-8") as file:
+            recipe = file.read()
 
     if args["recipe_args"] is not None:
         for key, value in args["recipe_args"].items():
