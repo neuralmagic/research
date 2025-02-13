@@ -10,7 +10,7 @@ step1 = QuantizationW4A16Task(
 )
 step1.create_task()
 
-step1_model_id = "${{pipeline_example_quantization.models.output.-1.id}}"
+step1_model_id = "${{pipeline_example_quantization_step1.models.output.-1.id}}"
 
 step2 = OpenLLMTask(
     project_name="alexandre_debug",
@@ -27,7 +27,7 @@ pipeline = Pipeline(
 )
 
 pipeline.add_step(
-    name="quantization",
+    name="pipeline_example_quantization_step1",
     base_task_id = step1.id,
     execution_queue="oneshot-a5000x1",
     monitor_models=[step1.get_arguments()["Args"]["save_directory"]],
@@ -35,7 +35,7 @@ pipeline.add_step(
 )
 
 pipeline.add_step(
-    name="openllm",
+    name="pipeline_example_quantization_step2",
     base_task_id = step2.id,
     parents=["quantization"],
     execution_queue="oneshot-a5000x1",
