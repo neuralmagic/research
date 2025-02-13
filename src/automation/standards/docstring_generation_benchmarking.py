@@ -33,7 +33,7 @@ class CodeGenerationBenchmarkingTask(GuideLLMTask):
             packages=packages,
             clearml_model=clearml_model,
             data_type="emulated",
-            data="prompt_tokens=256,generated_tokens=1024",
+            data="prompt_tokens=768,generated_tokens=128",
             vllm_kwargs=vllm_kwargs,
             **kwargs,
         )

@@ -1,5 +1,5 @@
 from automation.tasks import LLMCompressorTask
-from automation.docker import DEFAULT_DOCKER_IMAGE
+from automation.configs import DEFAULT_DOCKER_IMAGE
 from typing import List, Optional, Sequence, Union
 import yaml
 

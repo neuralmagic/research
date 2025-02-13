@@ -1,5 +1,6 @@
 from clearml import Task
 from typing import Sequence, Optional
+from automation.configs import DEFAULT_OUTPUT_URI
 
 class BaseTask():
 
@@ -63,7 +64,7 @@ class BaseTask():
             repo="https://github.com/neuralmagic/research.git",
             branch="alex-development",
         )
-        self.task.output_uri = "gs://neuralmagic-clearml"
+        self.task.output_uri = DEFAULT_OUTPUT_URI
         self.set_arguments()
 
 

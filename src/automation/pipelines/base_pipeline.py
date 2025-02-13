@@ -1,5 +1,5 @@
 from clearml import PipelineController
-from automation.docker import DEFAULT_DOCKER_IMAGE
+from automation.configs import DEFAULT_DOCKER_IMAGE
 from typing import Optional
 
 class BasePipeline():

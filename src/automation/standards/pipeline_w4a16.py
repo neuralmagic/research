@@ -1,6 +1,6 @@
 from automation.pipelines import Pipeline
 from automation.standards import QuantizationW4A16Task, OpenLLMTask
-from automation.docker import DEFAULT_DOCKER_IMAGE
+from automation.configs import DEFAULT_DOCKER_IMAGE
 from typing import List
 
 class QuantizationW4A16Pipeline(Pipeline):

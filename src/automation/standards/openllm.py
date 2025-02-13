@@ -1,5 +1,5 @@
 from automation.tasks import LMEvalTask
-from automation.docker import DEFAULT_DOCKER_IMAGE
+from automation.configs import DEFAULT_DOCKER_IMAGE
 from typing import Optional, Sequence
 import os
 
