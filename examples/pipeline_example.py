@@ -17,7 +17,6 @@ step2 = OpenLLMTask(
     task_name="pipeline_example_openllm",
     model_id="dummy",
     clearml_model=True,
-    parameter_override={"Args/model_id": step1_model_id},
 )
 step2.create_task()
 
@@ -40,6 +39,7 @@ pipeline.add_step(
     base_task_id = step2.id,
     parents=["pipeline_example_quantization_step1"],
     execution_queue="oneshot-a5000x1",
+    parameter_override={"Args/model_id": step1_model_id},
     monitor_metrics=[("Summary", "openllm")],
 )
 
