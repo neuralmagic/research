@@ -14,8 +14,14 @@ def main():
     task = Task.current_task()
 
     args = task.get_parameters_as_dict(cast=True)["Args"]
-    clearml_model = bool(args["clearml_model"])
+    clearml_model = args["clearml_model"]
+    if isinstance(clearml_model, str):
+        clearml_model = clearml_model.lower() == "true"
+
     trust_remote_code = bool(args["trust_remote_code"])
+    if isinstance(trust_remote_code, str):
+        trust_remote_code = trust_remote_code.lower() == "true"
+
     max_seq_len = int(args["max_seq_len"])
     num_samples = int(args["num_samples"])
 

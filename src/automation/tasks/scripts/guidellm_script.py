@@ -75,6 +75,9 @@ def main():
     guidellm_args = args["GuideLLM"]
     environment_args = args.get("environment", {})
     vllm_args = args.get("vLLM", {})
+    clearml_model = args["Args"]["clearml_model"]
+    if isinstance(clearml_model, str):
+        clearml_model = clearml_model.lower() == "true"
 
     # Resolve model_id
     model_id = resolve_model_id(args["Args"]["model_id"], bool(args["Args"]["clearml_model"]), task)

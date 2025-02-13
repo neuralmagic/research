@@ -10,7 +10,9 @@ def main():
     args = task.get_parameters_as_dict(cast=True)
     lm_eval_args = args["lm_eval"]
     model_id = args["Args"]["model_id"]
-    clearml_model = bool(args["Args"]["clearml_model"])
+    clearml_model = args["Args"]["clearml_model"]
+    if isinstance(clearml_model, str):
+        clearml_model = clearml_model.lower() == "true"
 
     # Resolve model_id
     model_id = resolve_model_id(model_id, clearml_model, task)

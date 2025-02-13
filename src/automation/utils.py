@@ -39,12 +39,20 @@ def cast_args(data: dict[str, str], func: callable) -> dict:
         origin = typing.get_origin(expected_type)
         args = typing.get_args(expected_type)
         
-        if origin is typing.Union and len(args) == 2 and type(None) in args:
-            non_none_type = next(t for t in args if t is not type(None))
-            try:
-                return non_none_type(value)
-            except (ValueError, TypeError):
-                return value
+        if origin is typing.Union:
+            valid_types = [t for t in args if t is not type(None)]
+            for valid_type in valid_types:
+                try:
+                    if valid_type is bool:
+                        return value.lower() == "true"
+                    return valid_type(value)
+                except (ValueError, TypeError):
+                    continue
+            return value  # Fallback if no conversion succeeded
+        
+        # Handle boolean conversion properly
+        if expected_type is bool:
+            return value.lower() == "true"
         
         try:
             return expected_type(value)
