@@ -1,5 +1,6 @@
 from clearml import PipelineController
 from automation.docker import DEFAULT_DOCKER_IMAGE
+from typing import Optional
 
 class BasePipeline():
 
@@ -8,7 +9,7 @@ class BasePipeline():
     def __init__(self,
         project_name: str,
         pipeline_name: str,
-        version=None,
+        version: Optional[str]=None,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
     ):
         self.project_name = project_name

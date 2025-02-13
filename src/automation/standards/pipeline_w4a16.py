@@ -4,12 +4,13 @@ from automation.docker import DEFAULT_DOCKER_IMAGE
 from typing import List
 
 class QuantizationW4A16Pipeline(Pipeline):
-    def __init__(self,
+    def __init__(
+        self,
         project_name: str,
         pipeline_name: str,
         model_id: str,
         execution_queues: List[str],
-        version=None,
+        version: str=None,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         damping_frac: float=0.01,
         observer: str="mse",
