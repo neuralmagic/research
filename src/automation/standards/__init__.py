@@ -3,6 +3,11 @@ from automation.standards.benchmarking_chat import BenchmarkingChatTask
 from automation.standards.benchmarking_instruction import BenchmarkingInstructionTask
 from automation.standards.benchmarking_docstring_generation import BenchmarkingDocstringGenerationTask
 from automation.standards.benchmarking_summarization import BenchmarkingSummarizationTask
+from automation.standards.benchmarking_long_rag import BenchmarkingLongRAGTask
+from automation.standards.benchmarking_16k import Benchmarking16kTask
+from automation.standards.benchmarking_32k import Benchmarking32kTask
+from automation.standards.benchmarking_64k import Benchmarking64kTask
+from automation.standards.benchmarking_128k import Benchmarking128kTask
 from automation.standards.openllm import OpenLLMTask
 from automation.standards.quantization_w4a16 import QuantizationW4A16Task
 from automation.standards.pipeline_w4a16 import QuantizationW4A16Pipeline
