@@ -6,7 +6,7 @@ import sys
 from urllib.parse import urlparse
 from clearml import Task
 import torch
-from automation.utils import resolve_model_id
+from automation.utils import resolve_model_id, cast_args
 from guidellm import generate_benchmark_report
 import psutil
 
@@ -46,7 +46,6 @@ def start_vllm_server(vllm_args, model_id, target, server_wait_time):
             v = "true"
         server_command.extend([f"--{k}", str(v)])
 
-    print(server_command)
     server_log_file = open(SERVER_LOG_FILE, "w")
     server_process = subprocess.Popen(server_command, stdout=server_log_file, stderr=server_log_file, shell=False)
 
@@ -94,6 +93,7 @@ def main():
   
     guidellm_args["model"] = model_id
 
+    guidellm_args = cast_args(guidellm_args, generate_benchmark_report)
     report = generate_benchmark_report(**guidellm_args)
     kill_process_tree(server_process.pid)
 

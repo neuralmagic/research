@@ -1,6 +1,6 @@
 from clearml import Task
 import torch
-from automation.utils import resolve_model_id, dict_to_argparse
+from automation.utils import resolve_model_id, cast_args
 import lm_eval
 
 
@@ -30,6 +30,7 @@ def main():
 
     # Run lm_eval
     task_manager = lm_eval.tasks.TaskManager()
+    lm_eval_args = cast_args(lm_eval_args, lm_eval.simple_evaluate)
     results = lm_eval.simple_evaluate( # call simple_evaluate
         model="vllm",
         task_manager=task_manager,
