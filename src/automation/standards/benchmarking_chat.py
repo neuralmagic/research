@@ -3,7 +3,7 @@ from automation.configs import DEFAULT_DOCKER_IMAGE
 from typing import Optional, Sequence
 
 
-class CodeGenerationBenchmarkingTask(GuideLLMTask):
+class BenchmarkingChatTask(GuideLLMTask):
 
     def __init__(
         self,
@@ -33,7 +33,7 @@ class CodeGenerationBenchmarkingTask(GuideLLMTask):
             packages=packages,
             clearml_model=clearml_model,
             data_type="emulated",
-            data="prompt_tokens=768,generated_tokens=128",
+            data="prompt_tokens=512,generated_tokens=256",
             vllm_kwargs=vllm_kwargs,
             **kwargs,
         )
