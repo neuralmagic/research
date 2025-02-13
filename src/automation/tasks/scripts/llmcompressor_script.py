@@ -59,6 +59,12 @@ def main():
         if os.path.isfile(recipe):
             with open(recipe, "r", encoding="utf-8") as file:
                 recipe = file.read()
+
+    if args["recipe_args"] is not None:
+        for key, value in args["recipe_args"].items():
+            recipe = recipe.replace(f"${key}", str(value))
+
+    task.upload_artifact("recipe", recipe)
         
     # Load dataset
     if args["dataset_name"] in ["calibration", CALIBRATION_DATASET]:

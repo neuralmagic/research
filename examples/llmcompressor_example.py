@@ -7,6 +7,7 @@ quant_stage:
       ignore: ["lm_head"]
       scheme: "W8A16"
       targets: "Linear"
+      observer: $observer
 """
 
 task = LLMCompressorTask(
@@ -14,7 +15,8 @@ task = LLMCompressorTask(
     task_name="test_llmcompressor_task",
     model_id="meta-llama/Llama-3.2-1B-Instruct",
     recipe=recipe,
+    recipe_args={"observer": "mse"},
 )
 
-task.execute_remotely("oneshot-a6000x1")
-#task.execute_locally()
+#task.execute_remotely("oneshot-a6000x1")
+task.execute_locally()

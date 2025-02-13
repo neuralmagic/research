@@ -12,6 +12,7 @@ class LLMCompressorTask(BaseTask):
         task_name: str,
         model_id: str,
         recipe: Any,
+        recipe_args: Optional[dict]=None,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
         dataset_name: str="calibration",
@@ -41,6 +42,7 @@ class LLMCompressorTask(BaseTask):
         # Store class attributes
         self.model_id = model_id
         self.recipe = recipe
+        self.recipe_args = recipe_args
         self.clearml_model = clearml_model
         self.save_directory = save_directory
         self.dataset_name = dataset_name
@@ -53,7 +55,7 @@ class LLMCompressorTask(BaseTask):
 
 
     def script(self):
-        from automation.scripts.llmcompressor_script import main
+        from automation.tasks.scripts.llmcompressor_script import main
         main()
 
 
@@ -68,6 +70,7 @@ class LLMCompressorTask(BaseTask):
             "Args": {
                 "model_id": self.model_id,
                 "recipe": self.recipe,
+                "recipe_args": self.recipe_args,
                 "dataset_name": self.dataset_name,
                 "clearml_model": self.clearml_model,
                 "save_directory": self.save_directory,
