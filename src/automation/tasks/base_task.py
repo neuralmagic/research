@@ -63,6 +63,7 @@ class BaseTask():
             repo="https://github.com/neuralmagic/research.git",
             branch="alex-development",
         )
+        self.task.output_uri = "gs://neuralmagic-clearml"
         self.set_arguments()
 
 
