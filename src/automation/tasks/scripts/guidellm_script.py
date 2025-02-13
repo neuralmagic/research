@@ -78,7 +78,7 @@ def main():
     vllm_args = args.get("vLLM", {})
 
     # Resolve model_id
-    model_id = resolve_model_id(args["Args"]["model_id"], args["Args"]["clearml_model"], task)
+    model_id = resolve_model_id(args["Args"]["model_id"], bool(args["Args"]["clearml_model"]), task)
 
     # Start vLLM server
     server_process, server_initialized = start_vllm_server(vllm_args, model_id, guidellm_args["target"], args["Args"]["server_wait_time"])

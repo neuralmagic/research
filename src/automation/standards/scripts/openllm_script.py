@@ -12,7 +12,7 @@ def main():
     winogrande_score = task.get_reported_single_value("winogrande/5shot/acc,none")
     truthfulqa_score = task.get_reported_single_value("truthfulqa_mc2/0shot/acc,none")
 
-    openllm_score = (arc_challenge_score + gsm8k_score + hellaswag_score + mmlu_score + winogrande_score + truthfulqa_score) / 6
+    openllm_score = (arc_challenge_score + gsm8k_score + hellaswag_score + mmlu_score + winogrande_score + truthfulqa_score) / 6.
 
     task.get_logger().report_single_value(name="openllm", value=openllm_score)
 
