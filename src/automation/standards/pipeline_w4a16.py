@@ -11,6 +11,10 @@ class QuantizationW4A16Pipeline(Pipeline):
         execution_queues: List[str],
         version=None,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
+        damping_frac: float=0.01,
+        observer: str="mse",
+        group_size: int=128,
+        actorder: str="weight",
     ):
         super().__init__(
             project_name, 
@@ -21,11 +25,15 @@ class QuantizationW4A16Pipeline(Pipeline):
         
         self.model_id = model_id
         self.execution_queues = execution_queues
+        self.damping_frac = damping_frac
+        self.observer = observer
+        self.group_size = group_size
+        self.actorder = actorder
 
-        self.add_parameter("damping_frac", "float", default=0.01)
-        self.add_parameter("observer", "str", default="mse")
-        self.add_parameter("group_size", "int", default=128)
-        self.add_parameter("actorder", "str", default="weight")
+        self.add_parameter("damping_frac", default=self.damping_frac, param_type="float")
+        self.add_parameter("observer", default=self.observer, param_type="str")
+        self.add_parameter("group_size", default=self.group_size, param_type="int")
+        self.add_parameter("actorder", default=self.actorder, param_type="str")
 
         self.add_quantization_step()
         self.add_evaluation_step()
@@ -33,22 +41,22 @@ class QuantizationW4A16Pipeline(Pipeline):
     
     def add_quantization_step(self):
         parameter_override = {
-            "Args/damping_frac": "${pipeline.damping_frac}",
-            "Args/observer": "${pipeline.observer}",
-            "Args/group_size": "${pipeline.group_size}",
-            "Args/actorder": "${pipeline.actorder}",
+            "Args/recipe_args/damping_frac": "${pipeline.damping_frac}",
+            "Args/recipe_args/observer": "${pipeline.observer}",
+            "Args/recipe_args/group_size": "${pipeline.group_size}",
+            "Args/recipe_args/actorder": "${pipeline.actorder}",
         }
         step1 = QuantizationW4A16Task(
             project_name=self.project_name,
             task_name=self.pipeline_name + "_quantization_draft",
             model_id=self.model_id,
-            parameter_override=parameter_override,
         )
         step1.create_task()
         self.add_step(
             name=self.pipeline_name + "_quantization",
             base_task_id=step1.id,
             execution_queue=self.execution_queues[0],
+            parameter_override=parameter_override,
             monitor_models=[step1.get_arguments()["Args"]["save_directory"]],
             monitor_artifacts=["recipe"],
         )
@@ -56,21 +64,22 @@ class QuantizationW4A16Pipeline(Pipeline):
 
     def add_evaluation_step(self):
 
-        step1_model_id = "${pipeline_example_quantization.models.output.-1.id}"
+        step1_model_id = f"${{{self.pipeline_name}_quantization.models.output.-1.id}}"
 
         step2 = OpenLLMTask(
             project_name=self.project_name,
             task_name=self.pipeline_name + "evaluation_draft",
             model_id="dummy",
             clearml_model=True,
-            parameter_override={"Args/model_id": step1_model_id},
         )
+        step2.create_task()
 
         self.add_step(
             name=self.pipeline_name + "_evaluation",
             base_task_id = step2.id,
             parents=[self.pipeline_name + "_quantization"],
             execution_queue=self.execution_queues[1],
+            parameter_override={"Args/model_id": step1_model_id},
             monitor_metrics=[("Summary", "openllm")],
         )
         
