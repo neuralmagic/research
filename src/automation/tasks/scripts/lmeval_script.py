@@ -8,8 +8,9 @@ def main():
     task = Task.current_task()
 
     args = task.get_parameters_as_dict(cast=True)
-    print(task.name)
-    print(args)
+    print(task.get_parameters(cast=True))
+    print(task.get_parameters(cast=True)["Args/clearml_model"])
+    print(type(task.get_parameters(cast=True)["Args/clearml_model"]))
     lm_eval_args = args["lm_eval"]
     model_id = args["Args"]["model_id"]
     clearml_model = args["Args"]["clearml_model"]
