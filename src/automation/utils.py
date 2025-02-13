@@ -1,5 +1,8 @@
 import argparse
 from clearml import InputModel, Task
+import inspect
+import typing
+
 
 def dict_to_argparse(data: dict) -> argparse.Namespace:
     """Converts a dictionary to an argparse.Namespace."""
@@ -17,9 +20,6 @@ def resolve_model_id(model_id: str, clearml_model: bool, task: Task) -> str:
     else:
         return model_id
     
-import inspect
-
-
 def cast_args(data: dict[str, str], func: callable) -> dict:
     """
     Converts dictionary values to match the expected argument types of a given callable.
@@ -31,19 +31,32 @@ def cast_args(data: dict[str, str], func: callable) -> dict:
     sig = inspect.signature(func)
     converted_data = {}
     
+    def convert_value(value: str, expected_type):
+        if expected_type is inspect.Parameter.empty:
+            return value  # Keep as string if no type hint
+        
+        # Handle Optional and Union types
+        origin = typing.get_origin(expected_type)
+        args = typing.get_args(expected_type)
+        
+        if origin is typing.Union and len(args) == 2 and type(None) in args:
+            non_none_type = next(t for t in args if t is not type(None))
+            try:
+                return non_none_type(value)
+            except (ValueError, TypeError):
+                return value
+        
+        try:
+            return expected_type(value)
+        except (ValueError, TypeError):
+            return value
+    
     for key, value in data.items():
         if key in sig.parameters:
             param = sig.parameters[key]
-            expected_type = param.annotation
-            
-            if expected_type is not inspect.Parameter.empty:
-                try:
-                    converted_data[key] = expected_type(value)
-                except (ValueError, TypeError):
-                    converted_data[key] = value  # Fallback to original string if conversion fails
-            else:
-                converted_data[key] = value  # Keep as string if no type hint
+            converted_data[key] = convert_value(value, param.annotation)
         else:
             converted_data[key] = value  # Keep as string if not in function signature
     
     return converted_data
+
