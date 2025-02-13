@@ -16,6 +16,8 @@ class QuantizationW4A16Pipeline(Pipeline):
         observer: str="mse",
         group_size: int=128,
         actorder: str="weight",
+        llmcompressor_kwargs: dict={},
+        openllm_kwargs: dict={},
     ):
         super().__init__(
             project_name, 
@@ -30,6 +32,8 @@ class QuantizationW4A16Pipeline(Pipeline):
         self.observer = observer
         self.group_size = group_size
         self.actorder = actorder
+        self.llmcompressor_kwargs = llmcompressor_kwargs
+        self.openllm_kwargs = openllm_kwargs
 
         self.add_parameter("damping_frac", default=self.damping_frac, param_type="float")
         self.add_parameter("observer", default=self.observer, param_type="str")
@@ -51,6 +55,7 @@ class QuantizationW4A16Pipeline(Pipeline):
             project_name=self.project_name,
             task_name=self.pipeline_name + "_quantization_draft",
             model_id=self.model_id,
+            **self.llmcompressor_kwargs,
         )
         step1.create_task()
         self.add_step(
@@ -71,6 +76,7 @@ class QuantizationW4A16Pipeline(Pipeline):
             task_name=self.pipeline_name + "_evaluation_draft",
             model_id="dummy",
             clearml_model=True,
+            **self.openllm_kwargs,
         )
         step2.create_task()
 

@@ -6,6 +6,7 @@ pipeline = QuantizationW4A16Pipeline(
     model_id="meta-llama/Llama-3.2-1B-Instruct",
     execution_queues=["oneshot-a5000x1", "oneshot-a6000x1"],
     damping_frac=0.1,
+    openllm_kwargs={"model_args": "gpu_memory_utilization=0.6"}
 )
 
 pipeline.execute_remotely()
