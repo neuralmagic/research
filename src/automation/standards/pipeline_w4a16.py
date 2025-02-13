@@ -68,7 +68,7 @@ class QuantizationW4A16Pipeline(Pipeline):
 
         step2 = OpenLLMTask(
             project_name=self.project_name,
-            task_name=self.pipeline_name + "evaluation_draft",
+            task_name=self.pipeline_name + "_evaluation_draft",
             model_id="dummy",
             clearml_model=True,
         )
