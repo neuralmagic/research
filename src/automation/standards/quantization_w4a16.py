@@ -9,7 +9,7 @@ class QuantizationW4A16Task(LLMCompressorTask):
         project_name: str,
         task_name: str,
         model_id: str,
-        damping_frac: float,
+        damping_frac: float=0.01,
         observer: str="mse",
         group_size: int=128,
         actorder: str="weight",
