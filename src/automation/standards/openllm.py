@@ -1,6 +1,7 @@
 from automation.tasks import LMEvalTask
 from automation.docker import DEFAULT_DOCKER_IMAGE
 from typing import Optional, Sequence
+import os
 
 
 class OpenLLMTask(LMEvalTask):
@@ -38,3 +39,10 @@ class OpenLLMTask(LMEvalTask):
             model_args=model_args,
             **kwargs,
         )
+
+        self.script_path = os.path.join(".", "src", "automation", "standards", "scripts", "openllm_script.py")
+
+
+    def script(self):
+        from automation.standards.scripts.openllm_script import main
+        main()
