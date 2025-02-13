@@ -10,7 +10,7 @@ step1 = QuantizationW4A16Task(
 )
 step1.create_task()
 
-step1_model_id = "${{pipeline_example_quantization_step1.models.output.-1.id}}"
+step1_model_id = "${pipeline_example_quantization_step1.models.output.-1.id}"
 
 step2 = OpenLLMTask(
     project_name="alexandre_debug",
