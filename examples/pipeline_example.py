@@ -21,7 +21,7 @@ step1.create_task()
 
 step2 = LMEvalTask(
     project_name="alexandre_debug",
-    task_name="pipeline_example_openllm",
+    task_name="pipeline_example_evaluation",
     model_id="dummy",
     clearml_model=True,
     tasks="gsm8k",

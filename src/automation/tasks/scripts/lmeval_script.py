@@ -8,9 +8,12 @@ def main():
     task = Task.current_task()
 
     args = task.get_parameters_as_dict(cast=True)
+    print(task.name)
+    print(args)
     lm_eval_args = args["lm_eval"]
     model_id = args["Args"]["model_id"]
     clearml_model = args["Args"]["clearml_model"]
+    print(clearml_model, type(clearml_model))
 
     # Resolve model_id
     model_id = resolve_model_id(model_id, clearml_model, task)
