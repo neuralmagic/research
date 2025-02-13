@@ -11,6 +11,8 @@ class QuantizationW4A16Task(LLMCompressorTask):
         model_id: str,
         damping_frac: float,
         observer: str="mse",
+        group_size: int=128,
+        actorder: str="weight",
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
         dataset_name: str="calibration",
@@ -28,7 +30,7 @@ class QuantizationW4A16Task(LLMCompressorTask):
                 "quant_modifiers": {
                     "GPTQModifier": {
                         "ignore": ["lm_head"],
-                        "damping_frac": damping_frac,
+                        "damping_frac": "$damping_frac",
                         "config_groups": {
                             "group_0": {
                                 "weights": {
@@ -36,9 +38,9 @@ class QuantizationW4A16Task(LLMCompressorTask):
                                     "type": "int",
                                     "symmetric": True,
                                     "strategy": "group",
-                                    "group_size": 128,
-                                    "actorder": "group",
-                                    "observer": observer,
+                                    "group_size": "$group_size",
+                                    "actorder": "$actorder",
+                                    "observer": "$observer",
                                 },
                                 "targets": ["Linear"],
                             },
@@ -49,6 +51,13 @@ class QuantizationW4A16Task(LLMCompressorTask):
         }
 
         recipe = yaml.dump(recipe, default_flow_style=False)
+
+        recipe_args = {
+            "damping_frac": damping_frac,
+            "observer": observer,
+            "group_size": group_size,
+            "actorder": actorder,
+        }
         
         super().__init__(
             project_name=project_name,
@@ -65,4 +74,5 @@ class QuantizationW4A16Task(LLMCompressorTask):
             max_memory_per_gpu=max_memory_per_gpu,
             tags=tags,
             recipe=recipe,
+            recipe_args=recipe_args,
         )
