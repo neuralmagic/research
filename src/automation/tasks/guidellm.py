@@ -24,7 +24,7 @@ class GuideLLMTask(BaseTask):
         task_type: str="training",
         vllm_kwargs: dict={},
         target: str="http://localhost:8000/v1",
-        backend="aiohttp_server",
+        backend: str="aiohttp_server",
         **kwargs,
     ):
         if packages is not None:
@@ -42,8 +42,8 @@ class GuideLLMTask(BaseTask):
 
         # Sort guidellm kwargs from environment variables
         guidellm_kwargs = {
-            target: target,
-            backend: backend,
+            "target": target,
+            "backend": backend,
         }
         environment_variables = {}
         for k, v in kwargs.items():
