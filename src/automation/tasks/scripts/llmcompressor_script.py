@@ -14,6 +14,8 @@ def main():
     task = Task.current_task()
 
     args = task.get_parameters_as_dict(cast=True)["Args"]
+    print(task.name)
+    print(args)
 
     # Resolve model_id
     model_id = resolve_model_id(args["model_id"], args["clearml_model"], task)

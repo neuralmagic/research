@@ -64,7 +64,6 @@ class QuantizationW4A16Pipeline(Pipeline):
 
 
     def add_evaluation_step(self):
-
         step1_model_id = f"${{{self.pipeline_name}_quantization.models.output.-1.id}}"
 
         step2 = OpenLLMTask(
