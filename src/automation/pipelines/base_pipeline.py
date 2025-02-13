@@ -51,12 +51,12 @@ class BasePipeline():
         self.pipeline.start(None)
 
 
-    def execute_remotely(self, queue_name: str="services") -> None:
+    def execute_remotely(self, *args, **kwargs) -> None:
         if self.pipeline is not None:
             raise Exception("Can only execute locally if pipeline is not yet created.")
         
         self._create()
-        self.pipeline.start(queue_name)
+        self.pipeline.start(*args, **kwargs)
 
         #Note: this is a temporary fix because ClearML 1.14 does not support creating a
         # pipeline separetaly from starting it.
