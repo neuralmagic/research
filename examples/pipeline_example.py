@@ -22,7 +22,7 @@ step1.create_task()
 step2 = LMEvalTask(
     project_name="alexandre_debug",
     task_name="pipeline_example_evaluation",
-    model_id="dummy",
+    model_id="dummuy",
     clearml_model=True,
     tasks="gsm8k",
     num_fewshot=5,

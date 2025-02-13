@@ -5,7 +5,7 @@ from llmcompressor.transformers.compression.helpers import (
     custom_offload_device_map,
 )
 from llmcompressor.transformers import oneshot
-from transformers import AutoModelForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from clearml import OutputModel, Task
 import torch
 from automation.utils import resolve_model_id
@@ -14,9 +14,13 @@ def main():
     task = Task.current_task()
 
     args = task.get_parameters_as_dict(cast=True)["Args"]
+    clearml_model = bool(args["clearml_model"])
+    trust_remote_code = bool(args["trust_remote_code"])
+    max_seq_len = int(args["max_seq_len"])
+    num_samples = int(args["num_samples"])
 
     # Resolve model_id
-    model_id = resolve_model_id(args["model_id"], bool(args["clearml_model"]), task)
+    model_id = resolve_model_id(args["model_id"], clearml_model, task)
 
     # Set dtype
     dtype = "auto"
@@ -34,7 +38,7 @@ def main():
                 reserve_for_hessians=True, 
                 num_gpus=num_gpus, 
                 torch_dtype=dtype,
-                trust_remote_code=args["trust_remote_code"],
+                trust_remote_code=trust_remote_code,
             )
         else:
             device_map = custom_offload_device_map(
@@ -42,7 +46,7 @@ def main():
                 max_memory_per_gpu=args["max_memory_per_gpu"] + "GB",
                 num_gpus=num_gpus, 
                 torch_dtype=dtype,
-                trust_remote_code=args["trust_remote_code"],
+                trust_remote_code=trust_remote_code,
             )
 
     # Load model
@@ -50,7 +54,7 @@ def main():
         model_id, 
         torch_dtype=dtype, 
         device_map=device_map, 
-        trust_remote_code=args["trust_remote_code"],
+        trust_remote_code=trust_remote_code,
     )
 
     # Load recipe
@@ -66,8 +70,16 @@ def main():
     task.upload_artifact("recipe", recipe)
         
     # Load dataset
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_id, 
+        trust_remote_code=trust_remote_code,
+    )
     if args["dataset_name"] in ["calibration", CALIBRATION_DATASET]:
-        dataset = load_calibration_dataset()
+        dataset = load_calibration_dataset(
+            num_samples=num_samples,
+            max_seq_len=max_seq_len,
+            tokenizer=tokenizer,
+        )
     else:
         raise ValueError("Dataset not supported.")
 
@@ -76,12 +88,13 @@ def main():
         model=model,
         dataset=dataset,
         recipe=recipe,
-        max_seq_length=args["max_seq_len"],
-        num_calibration_samples=args["num_samples"],
+        max_seq_length=max_seq_len,
+        num_calibration_samples=num_samples,
     )
 
     # Save model compressed
     model.save_pretrained(args["save_directory"], save_compressed=True)
+    tokenizer.save_pretrained(args["save_directory"])
 
     # Upload model to ClearML
     clearml_model = OutputModel(
