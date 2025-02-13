@@ -41,13 +41,18 @@ def start_vllm_server(vllm_args, model_id, target, server_wait_time):
         "--tensor-parallel-size", str(num_gpus)
     ]
 
+    subprocess_env = os.environ.copy()
+
     for k, v in vllm_args.items():
-        if v == True:
-            v = "true"
-        server_command.extend([f"--{k}", str(v)])
+        if k.startswith("VLLM_"):
+            subprocess_env[k] = str(v)
+        else:
+            if v == True or v == "True":
+                v = "true"
+            server_command.extend([f"--{k}", str(v)])
 
     server_log_file = open(SERVER_LOG_FILE, "w")
-    server_process = subprocess.Popen(server_command, stdout=server_log_file, stderr=server_log_file, shell=False)
+    server_process = subprocess.Popen(server_command, stdout=server_log_file, stderr=server_log_file, shell=False, env=subprocess_env)
 
     delay = 5
     server_initialized = False
