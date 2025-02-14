@@ -18,9 +18,13 @@ def main():
     if isinstance(clearml_model, str):
         clearml_model = clearml_model.lower() == "true"
 
-    trust_remote_code = bool(args["trust_remote_code"])
+    trust_remote_code = args["trust_remote_code"]
     if isinstance(trust_remote_code, str):
         trust_remote_code = trust_remote_code.lower() == "true"
+
+    dataset_name = args["dataset_name"]
+    if isinstance(dataset_name, str) and dataset_name.lower() == "none":
+        dataset_name = None
 
     max_seq_len = int(args["max_seq_len"])
     num_samples = int(args["num_samples"])
@@ -80,7 +84,9 @@ def main():
         model_id, 
         trust_remote_code=trust_remote_code,
     )
-    if args["dataset_name"] in ["calibration", CALIBRATION_DATASET]:
+    if dataset_name is None:
+        dateset = None
+    elif args["dataset_name"] in ["calibration", CALIBRATION_DATASET]:
         dataset = load_calibration_dataset(
             num_samples=num_samples,
             max_seq_len=max_seq_len,

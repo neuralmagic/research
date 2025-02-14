@@ -12,4 +12,5 @@ from automation.standards.benchmarking.benchmarking_64k import Benchmarking64kTa
 from automation.standards.benchmarking.benchmarking_128k import Benchmarking128kTask
 from automation.standards.evaluations.openllm import OpenLLMTask
 from automation.standards.compression.quantization_w4a16 import QuantizationW4A16Task
+from automation.standards.compression.quantization_w8a8 import QuantizationW8A8Task
 from automation.standards.pipelines.pipeline_w4a16 import QuantizationW4A16Pipeline

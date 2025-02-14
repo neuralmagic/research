@@ -15,6 +15,7 @@ def main():
 
     task = Task.current_task()
     task.get_logger().report_single_value(name="openllm", value=openllm_score)
+    task.get_logger().report_scalar(title="openllm", series="average", iteration=0, value=openllm_score)
 
 if __name__ == '__main__':
     main()

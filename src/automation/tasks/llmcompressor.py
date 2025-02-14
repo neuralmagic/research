@@ -15,7 +15,7 @@ class LLMCompressorTask(BaseTask):
         recipe_args: Optional[dict]=None,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
-        dataset_name: str="calibration",
+        dataset_name: Optional[str]="calibration",
         clearml_model: bool=False,
         save_directory: str="output",
         num_samples: int=512,
