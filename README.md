@@ -8,30 +8,25 @@ This repository provides a Python interface for creating, managing, and executin
   - **LMEval** for evaluation.  
   - **GuideLLM** for benchmarking.  
 
-## Repository Structure  
+## Repository Structure
+```
 / (root)
- │── examples/ # Example scripts
- │── src/
-  │
-  ├── automation/ # Main source code
-  │ 
-   │ 
-   ├── tasks/ # Base task class and specialized tasks
-   │
-    │
-    │
-    ├── scripts/ # Core scripts executed in tasks
-    │
-   │
-   ├── pipelines/ # Base pipeline class
-   │
-   │
-   ├── standards/ # Standardized tasks & pipelines for research team
-   │ 
-    │
-    │
-    ├── scripts/ # Extensions of core scripts for standard tasks
-
+  │── examples/ # Example scripts
+  └── src/
+      │
+      ├── automation/ # Main source code
+          │ 
+          ├── tasks/ # Base task class and specialized tasks
+          │   │
+          │   └── scripts/ # Core scripts executed in tasks
+          │
+          │
+          ├── pipelines/ # Base pipeline class
+          │
+          ├── standards/ # Standardized tasks & pipelines for research team
+              │ 
+              └── scripts/ # Extensions of core scripts for standard tasks
+```
 
 ### Task Creation & Execution  
 
