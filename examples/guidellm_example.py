@@ -7,6 +7,7 @@ task = GuideLLMTask(
     rate_type="throughput",
     backend="aiohttp_server",
     GUIDELLM__MAX_CONCURRENCY=256,
+    GUIDELLM__REQUEST_TIMEOUT=21600,
     target="http://localhost:8000/v1",
     data_type="emulated",
     max_seconds=30,

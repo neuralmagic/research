@@ -7,7 +7,6 @@ from urllib.parse import urlparse
 from clearml import Task
 import torch
 from automation.utils import resolve_model_id, cast_args
-from guidellm import generate_benchmark_report
 import psutil
 
 
@@ -98,9 +97,10 @@ def main():
     # Parse through environment variables
     for k, v in environment_args.items():
         os.environ[k] = str(v)
-  
+
     guidellm_args["model"] = model_id
 
+    from guidellm import generate_benchmark_report
     guidellm_args = cast_args(guidellm_args, generate_benchmark_report)
     report = generate_benchmark_report(**guidellm_args)
     kill_process_tree(server_process.pid)
