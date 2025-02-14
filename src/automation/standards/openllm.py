@@ -20,7 +20,7 @@ class OpenLLMTask(LMEvalTask):
             raise ValueError("taks should not be specified with OpenLLMTask")
         
         if "model_args" not in kwargs:
-            model_args = "dtype=auto,max_model_len=4096"
+            model_args = "dtype=auto,max_model_len=4096,enable_chunked_prefill=True"
         else:
             model_args = kwargs.pop("model_args")
             if "max_model_len" in model_args:
