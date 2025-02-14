@@ -58,6 +58,7 @@ def main():
                 else:
                     name = lm_eval_task + "/" + f"{num_fewshot:d}" + "shot/" + metric
                 task.get_logger().report_single_value(name=name, value=value)
+                task.get_logger().report_scalar(title=lm_eval_task, series=metric, iteration=num_fewshot, value=value)
 
     # Print results to console
     print(lm_eval.utils.make_table(results))
