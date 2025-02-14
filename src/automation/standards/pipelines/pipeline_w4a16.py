@@ -86,6 +86,6 @@ class QuantizationW4A16Pipeline(Pipeline):
             parents=[self.pipeline_name + "_quantization"],
             execution_queue=self.execution_queues[1],
             parameter_override={"Args/model_id": step1_model_id},
-            monitor_metrics=[("Summary", "openllm")],
+            monitor_metrics=[("openllm", "average")],
         )
         
