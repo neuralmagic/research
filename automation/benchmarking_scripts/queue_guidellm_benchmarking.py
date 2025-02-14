@@ -136,7 +136,7 @@ for _ in range(args["server_wait_time"] // delay):
     time.sleep(delay)
 
 if server_initialized:
-    inputs = [f"{guidellm_path}"]a
+    inputs = [f"{guidellm_path}"]
     for k, v in guidellm_args.items():
         argument_name = k.replace("_","-")
         inputs.append(f"--{argument_name}")
