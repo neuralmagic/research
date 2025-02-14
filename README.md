@@ -14,7 +14,7 @@ This repository provides a Python interface for creating, managing, and executin
   │── examples/ # Example scripts
   └── src/
       │
-      ├── automation/ # Main source code
+      └── automation/ # Main source code
           │ 
           ├── tasks/ # Base task class and specialized tasks
           │   │
