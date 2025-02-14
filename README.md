@@ -23,7 +23,7 @@ This repository provides a Python interface for creating, managing, and executin
           │
           ├── pipelines/ # Base pipeline class
           │
-          ├── standards/ # Standardized tasks & pipelines for research team
+          └── standards/ # Standardized tasks & pipelines for research team
               │ 
               └── scripts/ # Extensions of core scripts for standard tasks
 ```
