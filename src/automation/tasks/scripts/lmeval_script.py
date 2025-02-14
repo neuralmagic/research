@@ -65,6 +65,8 @@ def main():
     if "groups" in results:
         print(lm_eval.utils.make_table(results, "groups"))
 
+    return results
+
 
 if __name__ == '__main__':
     main()
