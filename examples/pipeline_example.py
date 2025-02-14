@@ -49,7 +49,7 @@ pipeline.add_step(
     parents=["pipeline_example_quantization_step1"],
     execution_queue="oneshot-a5000x1",
     parameter_override={"Args/model_id": "${pipeline_example_quantization_step1.models.output.-1.id}"},
-    monitor_metrics=[("Summary", "gsm8k/5shot/exact_match,strict-match")],
+    monitor_metrics=[("gsm8k", "exact_match,strict-match")],
 )
 
 pipeline.execute_remotely()
