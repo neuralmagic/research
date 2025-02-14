@@ -28,21 +28,21 @@ This repository provides a Python interface for creating, managing, and executin
               └── scripts/ # Extensions of core scripts for standard tasks
 ```
 
-### Task Creation & Execution  
-
-To ensure clear separation between task creation and execution, we use:  
-
-- **`Task.create()` instead of `Task.init()`**  
-  - `Task.create()` points to a script within the repository that will be executed remotely.  
-  - This allows task objects to be instantiated, created, and manipulated locally in Python scripts or Jupyter notebooks, even if execution happens remotely.  
-  - This separation simplifies pipeline construction and prevents outdated task environments by ensuring fresh, up-to-date task creation.  
-
 ## Tasks & Scripts  
 
-- **Core scripts** are never executed locally—only on remote servers.  
-- These scripts access parameters **exclusively** via `task.get_parameters()` or `task.get_parameters_as_dict()`.  
+- The classes implemented here allow the separation betweem task creation and execution.
+  - This separation is achieved by using **`Task.create()` instead of `Task.init()`**.  
+  - This allows task objects to be instantiated, created, and manipulated locally in Python scripts or Jupyter notebooks, even if execution happens remotely.  
+  - This separation simplifies pipeline construction and prevents outdated task environments by ensuring fresh, up-to-date task creation.
+
+- `Task.create()` points to a script (**core script**) within the repository that will be executed remotely.  
+  - **Core scripts** are never executed locally—only on remote servers.  
+  - These scripts access parameters **exclusively** via `task.get_parameters()` or `task.get_parameters_as_dict()`.  
 - Each task class defines its own `get_parameters()` method to parse relevant arguments.  
-- The `BaseTask` class (which all tasks inherit from) connects the defined parameters automatically.  
+  - The `BaseTask` class (which all tasks inherit from) connects the defined parameters automatically.
+- `BaseTask` implements two execution methods: `execute_remotely()` and `execute_locally()`.
+  - This allows the same script to be deplpyed seamlessly locally or remotely.
+  - `execute_locally()` is built on top of `Task.init()`, so it doesn't support separate task creation and execution and must be used with caution.
 
 ## Pipelines  
 
