@@ -93,4 +93,5 @@ class BaseTask():
         )
         self.set_arguments()        
         self.script()
+        self.task.close()
 
