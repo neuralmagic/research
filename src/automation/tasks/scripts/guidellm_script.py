@@ -50,7 +50,7 @@ def start_vllm_server(vllm_args, model_id, target, server_wait_time, suffix):
                 v = "true"
             server_command.extend([f"--{k}", str(v)])
 
-    server_log_file = open(f"{SERVER_LOG_FILE}_{suffix}.txt", "w")
+    server_log_file = open(f"{SERVER_LOG_PREFIX}_{suffix}.txt", "w")
     server_process = subprocess.Popen(server_command, stdout=server_log_file, stderr=server_log_file, shell=False, env=subprocess_env)
 
     delay = 5
@@ -92,12 +92,12 @@ def main():
         model_id,
         guidellm_args["target"],
         args["Args"]["server_wait_time"],
-        task.id
+        task.id,
     )
 
     if not server_initialized:
         kill_process_tree(server_process.pid)
-        task.upload_artifact(name="vLLM server log", artifact_object=SERVER_LOG_FILE)
+        task.upload_artifact(name="vLLM server log", artifact_object=f"{SERVER_LOG_PREFIX}_{task.id}.txt")
         raise AssertionError("Server failed to intialize")
 
     # Parse through environment variables
@@ -112,7 +112,7 @@ def main():
     kill_process_tree(server_process.pid)
 
     task.upload_artifact(name="guidellm guidance report", artifact_object=report.to_json())
-    task.upload_artifact(name="vLLM server log", artifact_object=SERVER_LOG_FILE)
+    task.upload_artifact(name="vLLM server log", artifact_object=f"{SERVER_LOG_PREFIX}_{task.id}.txt")
 
 if __name__ == '__main__':
     main()
