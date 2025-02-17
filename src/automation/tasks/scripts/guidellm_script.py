@@ -10,7 +10,7 @@ from automation.utils import resolve_model_id, cast_args
 import psutil
 
 
-SERVER_LOG_FILE = "vllm_server_log.txt"
+SERVER_LOG_PREFIX = "vllm_server_log"
 
 
 def kill_process_tree(pid):
@@ -24,7 +24,7 @@ def kill_process_tree(pid):
         pass
 
 
-def start_vllm_server(vllm_args, model_id, target, server_wait_time):
+def start_vllm_server(vllm_args, model_id, target, server_wait_time, suffix):
     executable_path = os.path.dirname(sys.executable)
     vllm_path = os.path.join(executable_path, "vllm")
 
@@ -50,7 +50,7 @@ def start_vllm_server(vllm_args, model_id, target, server_wait_time):
                 v = "true"
             server_command.extend([f"--{k}", str(v)])
 
-    server_log_file = open(SERVER_LOG_FILE, "w")
+    server_log_file = open(f"{SERVER_LOG_FILE}_{suffix}.txt", "w")
     server_process = subprocess.Popen(server_command, stdout=server_log_file, stderr=server_log_file, shell=False, env=subprocess_env)
 
     delay = 5
@@ -87,7 +87,13 @@ def main():
     model_id = resolve_model_id(args["Args"]["model_id"], bool(args["Args"]["clearml_model"]), task)
 
     # Start vLLM server
-    server_process, server_initialized = start_vllm_server(vllm_args, model_id, guidellm_args["target"], args["Args"]["server_wait_time"])
+    server_process, server_initialized = start_vllm_server(
+        vllm_args,
+        model_id,
+        guidellm_args["target"],
+        args["Args"]["server_wait_time"],
+        task.id
+    )
 
     if not server_initialized:
         kill_process_tree(server_process.pid)
