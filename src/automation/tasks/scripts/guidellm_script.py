@@ -24,7 +24,13 @@ def kill_process_tree(pid):
         pass
 
 
-def start_vllm_server(vllm_args, model_id, target, server_wait_time, suffix):
+def start_vllm_server(
+    vllm_args, 
+    model_id, 
+    target, 
+    server_wait_time, 
+    suffix,
+):
     executable_path = os.path.dirname(sys.executable)
     vllm_path = os.path.join(executable_path, "vllm")
 
