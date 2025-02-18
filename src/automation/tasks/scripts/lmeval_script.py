@@ -2,6 +2,7 @@ from clearml import Task
 import torch
 from automation.utils import resolve_model_id, cast_args
 import lm_eval
+import json
 
 
 def main():
@@ -42,9 +43,6 @@ def main():
     if results is None:
         raise Exception("Evaluation failed.")
     
-    # Upload results to ClearML
-    task.upload_artifact(name="results", artifact_object=results)
-
     for lm_eval_task in results["results"]:
         if "configs" in results and lm_eval_task in results["configs"] and "num_fewshot" in results["configs"][lm_eval_task]:
             num_fewshot = results["configs"][lm_eval_task]["num_fewshot"]
@@ -65,6 +63,17 @@ def main():
 
     if "groups" in results:
         print(lm_eval.utils.make_table(results, "groups"))
+
+    # Upload results to ClearML
+    dumped = json.dumps(
+        results,
+        indent=2,
+        default=lm_eval.utils.handle_non_serializable,
+        ensure_ascii=False,
+    )
+
+    task.upload_artifact(name="results", artifact_object=dumped)
+
 
     return results
 
