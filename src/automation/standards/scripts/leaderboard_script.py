@@ -4,7 +4,7 @@ from clearml import Task
 def compute_leaderboard_ifeval(results):
     inst_level_strict_acc = results["results"]["leaderboard_ifeval"]["inst_level_strict_acc,none"]
     prompt_level_strict_acc = results["results"]["leaderboard_ifeval"]["prompt_level_strict_acc,none"]
-    average_score = (inst_level_strict_acc + prompt_level_strict_acc) / 2 * 100  # Convert to percentage
+    average_score = (inst_level_strict_acc + prompt_level_strict_acc) / 2 
     return average_score
 
 def compute_leaderboard_math_hard(results):
@@ -21,7 +21,7 @@ def compute_leaderboard_math_hard(results):
     for subtask in subtasks:
         score = results["results"][subtask]["exact_match,none"]
         exact_match_scores.append(score)
-    average_score = sum(exact_match_scores) / len(exact_match_scores) * 100  # Convert to percentage
+    average_score = sum(exact_match_scores) / len(exact_match_scores)
     return average_score
 
 def compute_leaderboard_musr(results):
@@ -36,7 +36,7 @@ def compute_leaderboard_musr(results):
         random_baseline = 1 / num_choices
         adjusted_acc = max(actual_acc - random_baseline, 0) / (1 - random_baseline)
         adjusted_accuracies.append(adjusted_acc)
-    average_score = sum(adjusted_accuracies) / len(adjusted_accuracies) * 100  # Convert to percentage
+    average_score = sum(adjusted_accuracies) / len(adjusted_accuracies)
     return average_score
 
 def raw_compute_leaderboard_musr(results):
@@ -48,7 +48,7 @@ def raw_compute_leaderboard_musr(results):
     raw_accuracies = []
     for subtask, _ in subtasks.items():
         raw_accuracies.append(results["results"][subtask]["acc_norm,none"])
-    average_score = sum(raw_accuracies) / len(raw_accuracies) * 100  # Convert to percentage
+    average_score = sum(raw_accuracies) / len(raw_accuracies)
     return average_score
 
 def compute_leaderboard_bbh(results):
@@ -84,7 +84,7 @@ def compute_leaderboard_bbh(results):
         random_baseline = 1 / num_choices
         adjusted_acc = max(actual_acc - random_baseline, 0) / (1 - random_baseline)
         adjusted_accuracies.append(adjusted_acc)
-    average_score = sum(adjusted_accuracies) / len(adjusted_accuracies) * 100  # Convert to percentage
+    average_score = sum(adjusted_accuracies) / len(adjusted_accuracies)
     return average_score
 
 def raw_compute_leaderboard_bbh(results):
@@ -117,7 +117,7 @@ def raw_compute_leaderboard_bbh(results):
     raw_accuracies = []
     for subtask, _ in subtasks_choices.items():
         raw_accuracies.append(results["results"][subtask]["acc_norm,none"])
-    average_score = sum(raw_accuracies) / len(raw_accuracies) * 100  # Convert to percentage
+    average_score = sum(raw_accuracies) / len(raw_accuracies)
     return average_score
 
 def compute_leaderboard_gpqa(results):
@@ -133,7 +133,7 @@ def compute_leaderboard_gpqa(results):
         random_baseline = 1 / num_choices
         adjusted_acc = max(actual_acc - random_baseline, 0) / (1 - random_baseline)
         adjusted_accuracies.append(adjusted_acc)
-    average_score = sum(adjusted_accuracies) / len(adjusted_accuracies) * 100  # Convert to percentage
+    average_score = sum(adjusted_accuracies) / len(adjusted_accuracies)
     return average_score
 
 def raw_compute_leaderboard_gpqa(results):
@@ -145,17 +145,17 @@ def raw_compute_leaderboard_gpqa(results):
     raw_accuracies = []
     for subtask in subtasks:
         raw_accuracies.append(results["results"][subtask]["acc_norm,none"])
-    average_score = sum(raw_accuracies) / len(raw_accuracies) * 100  # Convert to percentage
+    average_score = sum(raw_accuracies) / len(raw_accuracies)
     return average_score
 
 def compute_leaderboard_mmlu_pro(results):
     num_choices = 10
     random_baseline = 1 / num_choices
-    adjusted_acc = max(results["results"]["leaderboard_mmlu_pro"]["acc,none"] - random_baseline, 0) / (1 - random_baseline) * 100
+    adjusted_acc = max(results["results"]["leaderboard_mmlu_pro"]["acc,none"] - random_baseline, 0) / (1 - random_baseline)
     return adjusted_acc
 
 def raw_compute_leaderboard_mmlu_pro(results):
-    return results["results"]["leaderboard_mmlu_pro"]["acc,none"] * 100
+    return results["results"]["leaderboard_mmlu_pro"]["acc,none"]
 
 def main():
     results = lmeval_main()
