@@ -3,6 +3,7 @@ import torch
 from automation.utils import resolve_model_id, cast_args
 import lm_eval
 import json
+from transformers import AutoModelForCausalLM
 
 
 def main():
@@ -14,9 +15,15 @@ def main():
     clearml_model = args["Args"]["clearml_model"]
     if isinstance(clearml_model, str):
         clearml_model = clearml_model.lower() == "true"
+    force_download = args["Args"]["force_download"]
+    if isinstance(force_download, str):
+        force_download = force_download.lower() == "true"
 
     # Resolve model_id
     model_id = resolve_model_id(model_id, clearml_model, task)
+
+    if force_download:
+        AutoModelForCausalLM.from_pretrained(model_id, force_download=True,trust_remote_code=True)
 
     # Determine number of gpus
     num_gpus = torch.cuda.device_count()

@@ -19,6 +19,7 @@ class LMEvalTask(BaseTask):
         packages: Optional[Sequence[str]]=None,
         clearml_model: bool=False,
         task_type: str="training",
+        force_download: bool=False,
         **kwargs,
     ):
         if packages is not None:
@@ -38,6 +39,7 @@ class LMEvalTask(BaseTask):
         self.model_id = model_id
         self.clearml_model = clearml_model
         self.lm_eval = kwargs
+        self.force_download = force_download
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "lmeval_script.py")
 
 
@@ -51,6 +53,7 @@ class LMEvalTask(BaseTask):
             "Args": {
                 "model_id": self.model_id,
                 "clearml_model": self.clearml_model,
+                "force_download": self.force_download,
             },
             "lm_eval": self.lm_eval,
         }
