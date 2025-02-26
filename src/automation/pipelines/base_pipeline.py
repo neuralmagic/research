@@ -58,11 +58,13 @@ class BasePipeline(BaseTask):
                     name = parameter_args[0]
                 else:
                     name = parameter_kwargs.pop("name")
-                    
-                parameters_dict[name] = {
-                    "args": parameter_args[1:] if len(parameter_args) > 1 else None,
-                    **parameter_kwargs,
-                }
+
+                if len(parameter_args) > 1:
+                    default = parameter_args[1]
+                else:
+                    default = parameter_kwargs.pop("default")
+
+                parameters_dict[name] = default
             
             args["Args"] = parameters_dict
 
