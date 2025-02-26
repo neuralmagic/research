@@ -66,6 +66,7 @@ class BaseTask():
         )
         self.task.output_uri = DEFAULT_OUTPUT_URI
         self.set_arguments()
+        self.connect_configuration()
 
 
     def get_task_id(self):
@@ -73,6 +74,10 @@ class BaseTask():
             return self.task.id
         else:
             raise ValueError("Task ID not available since ClearML task not yet created. Try task.create_task() firts.")
+
+
+    def connect_configuration(self):
+        pass
 
 
     def execute_remotely(self, queue_name):
@@ -91,7 +96,8 @@ class BaseTask():
             task_type=self.task_type,
             auto_connect_arg_parser=False,
         )
-        self.set_arguments()        
+        self.set_arguments()
+        self.connect_configuration()
         self.script()
         self.task.close()
 
