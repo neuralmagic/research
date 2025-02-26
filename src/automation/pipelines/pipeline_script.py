@@ -21,12 +21,8 @@ def main():
         version=version
     )
 
-    for parameter_name in parameters:
-        parameter_args = parameters[parameter_name].pop("args")
-        if parameter_args is not None:
-            pipeline.add_parameter(parameter_name, *parameter_args, **parameters[parameter_name])
-        else:
-            pipeline.add_parameter(parameter_name, **parameters[parameter_name])
+    for name, value in parameters:
+        pipeline.add_parameter(name, default=value)
 
     for step_args, step_kwargs in steps:
         pipeline.add_step(*step_args, **step_kwargs)
