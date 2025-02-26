@@ -19,6 +19,7 @@ class BasePipeline(BaseTask):
             task_type=Task.TaskTypes.controller,
         )
         
+        self.pipeline_name = pipeline_name
         self.version = version
         self.script_path = os.path.join(".", "src", "automation", "pipelines", "pipeline_script.py")
         self.steps = []
