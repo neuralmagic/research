@@ -45,24 +45,28 @@ class BasePipeline(BaseTask):
 
 
     def get_arguments(self):
-        parameters_dict = {}
-        for parameter_args, parameter_kwargs in self.parameters:
-            if len(parameter_args) > 0:
-                name = parameter_args[0]
-            else:
-                name = parameter_kwargs["name"]
+        args = {"pipeline": {"version": self.version}}
+        if len(self.parameters) > 0:
+            parameters_dict = {}
+            for parameter_args, parameter_kwargs in self.parameters:
+                if len(parameter_args) > 0:
+                    name = parameter_args[0]
+                else:
+                    name = parameter_kwargs["name"]
 
-            if len(parameter_args) > 1:
-                default = parameter_args[1]
-            elif "default" in parameter_kwargs:
-                default = parameter_kwargs["default"]
-            else:
-                default = None
-                
-            parameters_dict[name] = {
-                "args": parameter_args[1:] if len(parameter_args) > 1 else None,
-                **parameter_kwargs,
-            }
+                if len(parameter_args) > 1:
+                    default = parameter_args[1]
+                elif "default" in parameter_kwargs:
+                    default = parameter_kwargs["default"]
+                else:
+                    default = None
+                    
+                parameters_dict[name] = {
+                    "args": parameter_args[1:] if len(parameter_args) > 1 else None,
+                    **parameter_kwargs,
+                }
+            
+            args["Args"] = parameters_dict
 
         steps_dict = {}
         for step_args, step_kwargs in self.steps:
@@ -76,7 +80,7 @@ class BasePipeline(BaseTask):
                 **step_kwargs
             }
 
-        return {"Args": parameters_dict, "Steps": steps_dict, "pipeline": {"version": self.version}}
+        return args
 
 
     def execute_remotely(self, queue_name: str="services"):

@@ -6,7 +6,10 @@ def main():
     task = Task.current_task()
 
     args = task.get_parameters_as_dict(cast=True)
-    parameters = args["Args"]
+    if "Args" in args:
+        parameters = args["Args"]
+    else:
+        parameters = []
     steps = args["Steps"]
     version = args["pipeline"]["version"]
 
