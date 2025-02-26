@@ -1,12 +1,10 @@
 from clearml.automation.parameters import Parameter
 from clearml.automation.optuna import OptimizerOptuna
-from clearml.automation.hpbandster import OptimizerBoHB
+from clearml.automation.hpbandster import OptimizerBOHB
 from clearml.automation import RandomSearch, GridSearch
 from clearml import Task
 import ast
 import automation.hpo.callbacks as callbacks
-
-
 
 
 def main():
@@ -61,3 +59,6 @@ def main():
 
     # make sure background optimization stopped
     optimizer.stop()
+
+if __name__ == "__main__":
+    main()
