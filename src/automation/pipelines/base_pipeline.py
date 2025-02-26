@@ -15,7 +15,6 @@ class BasePipeline(BaseTask):
             project_name=project_name,
             task_name=pipeline_name,
             docker_image=docker_image,
-            packages=packages,
             task_type=Task.TaskTypes.controller,
         )
         
