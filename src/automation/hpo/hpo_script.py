@@ -3,27 +3,34 @@ from clearml.automation.optuna import OptimizerOptuna
 from clearml.automation.hpbandster import OptimizerBOHB
 from clearml.automation import RandomSearch, GridSearch
 from clearml import Task
-import ast
 import automation.hpo.callbacks as callbacks
-import json
+from pyhocon import ConfigFactory
+
+OPTIMIZERS = {
+    "GridSearch": GridSearch,
+    "RandomSearch": RandomSearch,
+    "OptimizerOptuna": OptimizerOptuna,
+    "OptimizerBOHB": OptimizerBOHB,
+    "Optuna": OptimizerOptuna,
+    "BOHB": OptimizerBOHB,
+    "hpbandster": OptimizerBOHB,
+}
 
 def main():
 
     task = Task.current_task()
 
-    task.get_parameters_as_dict(cast=True)
-
-    parameter_dicts = ast.literal_eval(task.get_configuration_object("Parameters"))
+    parameter_dicts = ConfigFactory.parse_string(task.get_configuration_object("Parameters"))
+    
     parameters = []
-
     for parameter_dict in parameter_dicts:
         parameters.append(Parameter.from_dict(parameter_dict))
 
-    optimizer_dict = task.get_configuration_object_as_dict("Optimization")
+    optimizer_args = ConfigFactory.parse_string(task.get_configuration_object("Optimization"))
 
-    assert "optimizer" in  optimizer_dict.keys()
+    assert "optimizer" in  optimizer_args.keys()
 
-    optimizer_class = getattr(__import__(__name__), optimizer_args.pop("optimizer"))
+    optimizer_class = OPTIMIZERS[optimizer_args.pop("optimizer")]
 
     job_complete_callback = optimizer_args.pop("job_complete_callback")
     if job_complete_callback is not None:

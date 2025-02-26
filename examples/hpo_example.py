@@ -31,4 +31,4 @@ hpo_task = BaseHPO(
 hpo_task.add_parameter(UniformParameterRange("Args/dampening_frac", min_value=0.01, max_value=0.1, step_size=0.01))
 hpo_task.add_parameter(DiscreteParameterRange("Args/observer", values=["mse", "minmax"]))
 
-hpo_task.execute_remotely()
+hpo_task.execute_locally()

@@ -45,8 +45,6 @@ class BaseHPO(BaseTask):
 
 
     def add_parameter(self, parameter: Parameter):
-        print(parameter.to_dict())
-        print(type(parameter.to_dict()))
         self.parameters.append(parameter.to_dict())
 
 
@@ -56,8 +54,8 @@ class BaseHPO(BaseTask):
 
 
     def connect_configuration(self):
-        self.task.connect_configuration(self.parameters, "Parameters")
-        self.task.connect_configuration(self.kwargs, "Optimization")
+        self.task.connect_configuration(self.parameters, name="Parameters")
+        self.task.connect_configuration(self.kwargs, name="Optimization")
 
 
     def get_arguments(self):
