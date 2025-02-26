@@ -39,6 +39,7 @@ class BaseHPO(BaseTask):
             "report_period_min": report_period_min,
             "time_limit_min": time_limit_min,
             "job_complete_callback": job_complete_callback,
+            "optimization_complete_callback": optimization_complete_callback,
             "optimizer": optimizer,
         })
         self.script_path = os.path.join(".", "src", "automation", "hpo", "hpo_script.py")

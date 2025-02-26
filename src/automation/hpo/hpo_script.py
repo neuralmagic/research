@@ -35,6 +35,11 @@ def main():
     job_complete_callback = optimizer_args.pop("job_complete_callback")
     if job_complete_callback is not None:
         job_complete_callback = getattr(callbacks, job_complete_callback)
+
+    optimization_complete_callback = optimizer_args.pop("optimization_complete_callback")
+    if optimization_complete_callback is not None:
+        optimization_complete_callback = getattr(callbacks, optimization_complete_callback)
+
     report_period_min = optimizer_args.pop("report_period_min")
     time_limit_min = optimizer_args.pop("time_limit_min")
 
@@ -62,8 +67,11 @@ def main():
     
     # optimization is completed, print the top performing experiments id
     print("\n\nOptimization complete\nTop experiments:")
-    for experiment in  optimizer.get_top_experiments_details(top_k=3):
+    for experiment in optimizer.get_top_experiments_details(top_k=3):
         print(experiment)
+
+    if optimization_complete_callback is not None:
+        optimization_complete_callback(optimizer.get_top_experiments(top_k=1)[0])
 
     # make sure background optimization stopped
     optimizer.stop()
