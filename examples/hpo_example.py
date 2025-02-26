@@ -7,7 +7,7 @@ pipeline = QuantizationW4A16Pipeline(
     pipeline_name="hpo_example_task",
     model_id="meta-llama/Llama-3.2-1B-Instruct",
     execution_queues=["oneshot-a100x1", "oneshot-a100x1"],
-    damping_frac=0.1,
+    dampening_frac=0.1,
     openllm_kwargs={"model_args": "gpu_memory_utilization=0.4,enable_chunked_prefill=True", "limit": 10}
 )
 
