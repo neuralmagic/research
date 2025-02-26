@@ -9,7 +9,7 @@ class QuantizationW4A16Task(LLMCompressorTask):
         project_name: str,
         task_name: str,
         model_id: str,
-        damping_frac: float=0.01,
+        dampening_frac: float=0.01,
         observer: str="mse",
         group_size: int=128,
         actorder: str="weight",
@@ -30,7 +30,7 @@ class QuantizationW4A16Task(LLMCompressorTask):
                 "quant_modifiers": {
                     "GPTQModifier": {
                         "ignore": ["lm_head"],
-                        "damping_frac": "$damping_frac",
+                        "dampening_frac": "$dampening_frac",
                         "config_groups": {
                             "group_0": {
                                 "weights": {
@@ -53,7 +53,7 @@ class QuantizationW4A16Task(LLMCompressorTask):
         recipe = yaml.dump(recipe, default_flow_style=False)
 
         recipe_args = {
-            "damping_frac": damping_frac,
+            "dampening_frac": dampening_frac,
             "observer": observer,
             "group_size": group_size,
             "actorder": actorder,

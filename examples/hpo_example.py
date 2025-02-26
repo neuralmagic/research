@@ -26,6 +26,7 @@ hpo_task = BaseHPO(
     pool_period_min=1,
     max_iteration_per_job=1,
     spawn_project="hpo_debug",
+    base_task_id= pipeline.id,
 )
 
 hpo_task.add_parameter(UniformParameterRange("Args/dampening_frac", min_value=0.01, max_value=0.1, step_size=0.01))

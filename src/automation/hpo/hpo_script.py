@@ -1,7 +1,7 @@
 from clearml.automation.parameters import Parameter
 from clearml.automation.optuna import OptimizerOptuna
 from clearml.automation.hpbandster import OptimizerBOHB
-from clearml.automation import RandomSearch, GridSearch
+from clearml.automation import RandomSearch, GridSearch, HyperParameterOptimizer
 from clearml import Task
 import automation.hpo.callbacks as callbacks
 from pyhocon import ConfigFactory

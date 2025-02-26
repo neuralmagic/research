@@ -12,7 +12,7 @@ class QuantizationW4A16Pipeline(Pipeline):
         execution_queues: List[str],
         version: str="1.0.0",
         docker_image: str=DEFAULT_DOCKER_IMAGE,
-        damping_frac: float=0.01,
+        dampening_frac: float=0.01,
         observer: str="mse",
         group_size: int=128,
         actorder: str="weight",
@@ -29,7 +29,7 @@ class QuantizationW4A16Pipeline(Pipeline):
         
         self.model_id = model_id
         self.execution_queues = execution_queues
-        self.damping_frac = damping_frac
+        self.dampening_frac = dampening_frac
         self.observer = observer
         self.group_size = group_size
         self.actorder = actorder
@@ -37,7 +37,7 @@ class QuantizationW4A16Pipeline(Pipeline):
         self.llmcompressor_kwargs = llmcompressor_kwargs
         self.openllm_kwargs = openllm_kwargs
 
-        self.add_parameter("damping_frac", default=self.damping_frac, param_type="float")
+        self.add_parameter("dampening_frac", default=self.dampening_frac, param_type="float")
         self.add_parameter("observer", default=self.observer, param_type="str")
         self.add_parameter("group_size", default=self.group_size, param_type="int")
         self.add_parameter("actorder", default=self.actorder, param_type="str")
@@ -49,7 +49,7 @@ class QuantizationW4A16Pipeline(Pipeline):
     
     def add_quantization_step(self):
         parameter_override = {
-            "Args/recipe_args/damping_frac": "${pipeline.damping_frac}",
+            "Args/recipe_args/dampening_frac": "${pipeline.dampening_frac}",
             "Args/recipe_args/observer": "${pipeline.observer}",
             "Args/recipe_args/group_size": "${pipeline.group_size}",
             "Args/recipe_args/actorder": "${pipeline.actorder}",

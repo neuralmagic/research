@@ -10,6 +10,7 @@ class BaseHPO(BaseTask):
     hpo_packages = [
         "optuna",
         "hpbandster",
+        "transformers",
     ]
 
     def __init__(
