@@ -78,7 +78,11 @@ class BasePipeline(BaseTask):
 
         return {"Args": parameters_dict, "Steps": steps_dict, "pipeline": {"version": self.version}}
 
-    
+
+    def execute_remotely(self, queue_name: str="services"):
+        super().execute_remotely(queue_name)
+
+
     def start(self, queue_name: str="services"):
         self.execute_remotely(queue_name)
 
