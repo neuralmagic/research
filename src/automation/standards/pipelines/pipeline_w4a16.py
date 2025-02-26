@@ -10,7 +10,7 @@ class QuantizationW4A16Pipeline(Pipeline):
         pipeline_name: str,
         model_id: str,
         execution_queues: List[str],
-        version: str=None,
+        version: str="1.0.0",
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         damping_frac: float=0.01,
         observer: str="mse",

@@ -9,8 +9,8 @@ class BasePipeline(BaseTask):
     def __init__(self,
         project_name: str,
         pipeline_name: str,
-        docker_image: str=DEFAULT_DOCKER_IMAGE,
         version: str="1.0.0", 
+        docker_image: str=DEFAULT_DOCKER_IMAGE,
     ):
         super().__init__(
             project_name=project_name,
