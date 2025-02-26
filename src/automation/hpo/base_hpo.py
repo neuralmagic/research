@@ -29,7 +29,7 @@ class BaseHPO(BaseTask):
             task_name=task_name,
             docker_image=docker_image,
             packages=self.hpo_packages,
-            task_type=Task.TaskTypes.optimization,
+            task_type=Task.TaskTypes.optimizer,
         )
 
         self.kwargs = kwargs
@@ -60,6 +60,9 @@ class BaseHPO(BaseTask):
     def get_arguments(self):
         return {}
 
+    
+    def execute_remotely(self, queue_name: str="services"):
+        super().execute_remotely(queue_name)
 
     
 
