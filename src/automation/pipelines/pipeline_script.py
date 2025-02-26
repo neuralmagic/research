@@ -21,7 +21,7 @@ def main():
         version=version
     )
 
-    for name, value in parameters:
+    for name, value in parameters.items():
         pipeline.add_parameter(name, default=value)
 
     for step_args, step_kwargs in steps:
