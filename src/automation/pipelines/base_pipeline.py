@@ -9,6 +9,7 @@ class BasePipeline(BaseTask):
         project_name: str,
         pipeline_name: str,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
+        version: str="1.0.0", 
     ):
         super().__init__(
             project_name=project_name,
@@ -18,6 +19,7 @@ class BasePipeline(BaseTask):
             task_type=Task.TaskTypes.controller,
         )
         
+        self.version = version
         self.script_path = os.path.join(".", "src", "automation", "pipelines", "pipeline_script.py")
         self.steps = []
         self.parameters = []
@@ -74,7 +76,7 @@ class BasePipeline(BaseTask):
                 **step_kwargs
             }
 
-        return {"Args": parameters_dict, "Steps": steps_dict}
+        return {"Args": parameters_dict, "Steps": steps_dict, "pipeline": {"version": self.version}}
 
     
     def start(self, queue_name: str="services"):

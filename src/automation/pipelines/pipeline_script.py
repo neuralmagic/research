@@ -5,15 +5,17 @@ def main():
 
     task = Task.current_task()
 
+    args = task.get_parameters_as_dict(cast=True)
+    parameters = args["Args"]
+    steps = args["Steps"]
+    version = args["pipeline"]["version"]
+
     pipeline = PipelineController(
         project=task.get_project_name(),
         name=task.name,
         target_project=task.get_project_name(),
+        version=version
     )
-
-    args = task.get_parameters_as_dict(cast=True)
-    parameters = args["Args"]
-    steps = args["Steps"]
 
     for parameter_name in parameters:
         parameter_args = parameters[parameter_name].pop("args")
