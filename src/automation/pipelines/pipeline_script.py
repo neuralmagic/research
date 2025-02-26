@@ -29,7 +29,7 @@ def main():
             pipeline.add_parameter(parameter_name, **parameters[parameter_name])
 
     for step_args, step_kwargs in steps:
-        pipeline.add_step(*step_args, **steps[step_name])
+        pipeline.add_step(*step_args, **step_kwargs)
 
     pipeline.start_locally()
 
