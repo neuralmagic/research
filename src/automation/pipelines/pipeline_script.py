@@ -33,12 +33,6 @@ def main():
 
     pipeline.start_locally()
 
-    for node in pipeline._monitored_nodes:
-        if "metrics" in pipeline._monitored_nodes[node]:
-            for title in pipeline._monitored_nodes[node]["metric"]:
-                for series, value in pipeline._monitored_nodes[node]["metric"][title].items():
-                    task.get_logger().report_scalar(title=title, series=series, iteration=0, value=value)
-
 
 if __name__ == "__main__":
     main()
