@@ -3,6 +3,7 @@ from automation.configs import DEFAULT_DOCKER_IMAGE
 from typing import Optional
 from clearml import Task
 from clearml.automation.parameters import Parameter
+import os
 
 class BaseHPO(BaseTask):
 

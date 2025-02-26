@@ -11,7 +11,7 @@ pipeline = QuantizationW4A16Pipeline(
     openllm_kwargs={"model_args": "gpu_memory_utilization=0.4,enable_chunked_prefill=True", "limit": 10}
 )
 
-pipeline.create()
+pipeline.create_pipeline()
 
 hpo_task = BaseHPO(
     project_name="alexandre_debug",
@@ -28,5 +28,7 @@ hpo_task = BaseHPO(
     spawn_project="hpo_debug",
 )
 
-hpo_task.add_parameter(UniformParameterRange("Args/dampening_frac", min_value=0.01, max_value=0.1, step_size=0.01)),
-hpo_task.add_parameter(DiscreteParameterRange("Args/observer", values=["mse", "minmax"]),
+hpo_task.add_parameter(UniformParameterRange("Args/dampening_frac", min_value=0.01, max_value=0.1, step_size=0.01))
+hpo_task.add_parameter(DiscreteParameterRange("Args/observer", values=["mse", "minmax"]))
+
+hpo_task.execute_locally()
