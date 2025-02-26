@@ -28,7 +28,11 @@ def main():
             pipeline.add_parameter(parameter_name, **parameters[parameter_name])
 
     for step_name in steps:
+        print(steps[step_name])
+        print(step_args)
+        
         step_args = steps[step_name].pop("args")
+
         if step_args is not None:
             pipeline.add_step(step_name, *step_args, **steps[step_name])
         else:
