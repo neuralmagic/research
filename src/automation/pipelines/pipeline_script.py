@@ -1,5 +1,5 @@
 from clearml import PipelineController
-
+import ast
 
 def main():
 
@@ -10,7 +10,8 @@ def main():
         parameters = args["Args"]
     else:
         parameters = []
-    steps = task.get_configuration_object("Steps")
+    steps = ast.literal_eval(task.get_configuration_object("Steps"))
+
     version = args["pipeline"]["version"]
 
     pipeline = PipelineController(
