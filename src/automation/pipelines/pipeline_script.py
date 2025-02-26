@@ -16,7 +16,7 @@ def main():
 
     pipeline = PipelineController(
         project=task.get_project_name(),
-        name=task.name,
+        name=task.name + "_pipeline",
         target_project=task.get_project_name(),
         version=version
     )
