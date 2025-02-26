@@ -15,8 +15,8 @@ setup(
     install_requires=[
         "clearml==1.14.4",
         "google-cloud-storage>=1.13.2",
-        "datasets"
-        "pyhocon"
+        "datasets",
+        "pyhocon",
     ],
     python_requires=">=3.7",
 )
