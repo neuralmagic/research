@@ -45,6 +45,8 @@ class BaseHPO(BaseTask):
 
 
     def add_parameter(self, parameter: Parameter):
+        print(parameter.to_dict())
+        print(type(parameter.to_dict()))
         self.parameters.append(parameter.to_dict())
 
 

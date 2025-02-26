@@ -5,12 +5,13 @@ from clearml.automation import RandomSearch, GridSearch
 from clearml import Task
 import ast
 import automation.hpo.callbacks as callbacks
-
+import json
 
 def main():
 
     task = Task.current_task()
 
+    task.get_parameters_as_dict(cast=True)
 
     parameter_dicts = ast.literal_eval(task.get_configuration_object("Parameters"))
     parameters = []
