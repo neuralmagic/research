@@ -38,7 +38,7 @@ pipeline = Pipeline(
 pipeline.add_step(
     name="pipeline_example_quantization_step1",
     base_task_id = step1.id,
-    execution_queue="oneshot-a5000x1",
+    execution_queue="oneshot-a100x1",
     monitor_models=[step1.get_arguments()["Args"]["save_directory"]],
     monitor_artifacts=["recipe"],
 )
@@ -47,7 +47,7 @@ pipeline.add_step(
     name="pipeline_example_quantization_step2",
     base_task_id = step2.id,
     parents=["pipeline_example_quantization_step1"],
-    execution_queue="oneshot-a5000x1",
+    execution_queue="oneshot-a100x1",
     parameter_override={"Args/model_id": "${pipeline_example_quantization_step1.models.output.-1.id}"},
     monitor_metrics=[("gsm8k", "exact_match,strict-match")],
 )

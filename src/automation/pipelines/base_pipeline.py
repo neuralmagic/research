@@ -1,71 +1,86 @@
-from clearml import PipelineController
+from clearml import Task
 from automation.configs import DEFAULT_DOCKER_IMAGE
+from automation.tasks import BaseTask
 from typing import Optional
 
-class BasePipeline():
-
-    packages = ["git+https://github.com/neuralmagic/research.git@alex-development"]
+class BasePipeline(BaseTask):
 
     def __init__(self,
         project_name: str,
         pipeline_name: str,
-        version: Optional[str]=None,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
     ):
-        self.project_name = project_name
-        self.pipeline_name = pipeline_name
-        self.version = version
-        self.pipeline = None
-        self.docker_image = docker_image
+        super().__init__(
+            project_name=project_name,
+            task_name=pipeline_name,
+            docker_image=docker_image,
+            packages=packages,
+            task_type=Task.TaskTypes.controller,
+        )
+        
+        self.script_path = os.path.join(".", "src", "automation", "pipelines", "pipeline_script.py")
         self.steps = []
         self.parameters = []
-    
+
+
+    def script(self):
+        from automation.pipelines.pipeline_script import main
+        main()
+
 
     def add_step(self, *args, **kwargs,) -> None:
+        assert len(args) > 0 or "name" in kwargs
         self.steps.append((args, kwargs))
 
 
     def add_parameter(self, *args, **kwargs,) -> None:
+        assert len(args) > 0 or "name" in kwargs
         self.parameters.append((args, kwargs))
 
 
-    def _create(self) -> None:
-        self.pipeline = PipelineController(
-            project=self.project_name,
-            name=self.pipeline_name,
-            version=self.version,
-            target_project=self.project_name,
-            packages=self.packages,
-            docker=self.docker_image,
-        )
-
-        for parameter_args, parameter_kwargs in self.parameters:
-            self.pipeline.add_parameter(*parameter_args, **parameter_kwargs)
-
-        for step_args, step_kwargs in self.steps:
-            self.pipeline.add_step(*step_args, **step_kwargs)
-
-
     def create_pipeline(self) -> None:
-        self._create()
-        self.pipeline.start(None)
+        self.create_task()
 
 
-    def execute_remotely(self, *args, **kwargs) -> None:
-        if self.pipeline is not None:
-            raise Exception("Can only execute locally if pipeline is not yet created.")
-        
-        self._create()
-        self.pipeline.start(*args, **kwargs)
+    def get_arguments(self):
+        parameters_dict = {}
+        for parameter_args, parameter_kwargs in self.parameters:
+            if len(parameter_args) > 0:
+                name = parameter_args[0]
+            else:
+                name = parameter_kwargs["name"]
 
-        #Note: this is a temporary fix because ClearML 1.14 does not support creating a
-        # pipeline separetaly from starting it.
-        # This is fixed in ClearML 1.17 and this code can be updated to use
-        # PipelineController.create() once we upgrade to ClearML 1.17.
+            if len(parameter_args) > 1:
+                default = parameter_args[1]
+            elif "default" in parameter_kwargs:
+                default = parameter_kwargs["default"]
+            else:
+                default = None
+                
+            parameters_dict[name] = {
+                "args": parameter_args[1:] if len(parameter_args) > 1 else None,
+                **parameter_kwargs,
+            }
 
-    def execute_locally(self) -> None:
-        if self.pipeline is not None:
-            raise Exception("Can only execute locally if pipeline is not yet created.")
-        
-        self._create()
-        self.pipeline.start_locally() 
+        steps_dict = {}
+        for step_args, step_kwargs in self.steps:
+            if len(step_args) > 0:
+                name = step_args[0]
+            else:
+                name = step_kwargs["name"]
+            
+            steps_dict[name] = {
+                "args": step_args[1:] if len(step_args) > 1 else None,
+                **step_kwargs
+            }
+
+        return {"Args": parameters_dict, "Steps": steps_dict}
+
+    
+    def start(self, queue_name: str="services"):
+        self.execute_remotely(queue_name)
+
+
+    def start_locally(self):
+        self.execute_locally()
+
