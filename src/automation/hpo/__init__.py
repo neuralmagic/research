@@ -1,1 +1,1 @@
-from automation.hpo.base_hpo import OPTIMIZERS, PARAMETERS
+from automation.hpo.base_hpo import BaseHPO
