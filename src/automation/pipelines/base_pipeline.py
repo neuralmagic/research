@@ -80,6 +80,8 @@ class BasePipeline(BaseTask):
                 **step_kwargs
             }
 
+        arsg["Step"] = steps_dict
+
         return args
 
 
