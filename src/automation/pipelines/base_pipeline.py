@@ -45,19 +45,7 @@ class BasePipeline(BaseTask):
 
 
     def connect_configuration(self) -> None:
-        steps_dict = {}
-        for step_args, step_kwargs in self.steps:
-            if len(step_args) > 0:
-                name = step_args[0]
-            else:
-                name = step_kwargs.pop("name")
-            
-            steps_dict[name] = {
-                "args": step_args[1:] if len(step_args) > 1 else None,
-                **step_kwargs
-            }
-
-        self.task.connect_configuration(steps_dict, name="Step")
+        self.task.connect_configuration(self.steps, name="Steps")
 
 
     def get_arguments(self):

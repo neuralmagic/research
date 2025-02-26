@@ -10,7 +10,7 @@ def main():
         parameters = args["Args"]
     else:
         parameters = []
-    steps = args["Steps"]
+    steps = task.get_configuration_object("Steps")
     version = args["pipeline"]["version"]
 
     pipeline = PipelineController(
@@ -27,12 +27,8 @@ def main():
         else:
             pipeline.add_parameter(parameter_name, **parameters[parameter_name])
 
-    for step_name in steps:
-        step_args = steps[step_name].pop("args")
-        if step_args is not None:
-            pipeline.add_step(step_name, *step_args, **steps[step_name])
-        else:
-            pipeline.add_step(step_name, **steps[step_name])
+    for step_args, step_kwargs in steps:
+        pipeline.add_step(*step_args, **steps[step_name])
 
     pipeline.start_locally()
 
