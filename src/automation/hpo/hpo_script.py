@@ -31,7 +31,14 @@ def main():
 
     assert "optimizer" in  optimizer_args.keys()
 
-    optimizer_class = OPTIMIZERS[optimizer_args.pop("optimizer")]
+    optimizer_name = optimizer_args.pop("optimizer")
+    optimizer_class = OPTIMIZERS[optimizer_name]
+
+    if "Optuna" in optimizer_name:
+        from optuna.samplers import TPESampler
+        n_startup_trials = max(1, optimizer_args["total_max_jobs"] // 5)
+        sampler = TPESampler(n_startup_trials=n_startup_trials)
+        optimizer_args["optuna_sampler"] = sampler
 
     job_complete_callback = optimizer_args.pop("job_complete_callback")
     job_complete_callback_kwargs = optimizer_args.pop("job_complete_callback_kwargs")
