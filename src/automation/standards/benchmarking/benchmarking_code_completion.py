@@ -3,7 +3,7 @@ from automation.configs import DEFAULT_DOCKER_IMAGE
 from typing import Optional, Sequence
 
 
-class BenchmarkingCodeGenerationTask(GuideLLMTask):
+class BenchmarkingCodeCompletionTask(GuideLLMTask):
 
     def __init__(
         self,
