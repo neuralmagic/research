@@ -37,7 +37,7 @@ class QuantizationW8A8Pipeline(Pipeline):
 
         self.add_parameter("dampening_frac", default=self.dampening_frac, param_type="float")
         self.add_parameter("observer", default=self.observer, param_type="str")
-        self.add_parameter("smoothing_strength", default=self.group_size, param_type="int")
+        self.add_parameter("smoothing_strength", default=self.smoothing_strength, param_type="float")
         self.add_parameter("num_samples", default=self.num_samples, param_type="int")
 
         self.add_quantization_step()
