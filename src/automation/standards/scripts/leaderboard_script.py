@@ -196,6 +196,15 @@ def main():
     task.get_logger().report_scalar(title="gpqa", series="normalized", iteration=0, value=gpqa)
     task.get_logger().report_scalar(title="mmlu_pro", series="normalized", iteration=0, value=mmlu_pro)
 
+    if len(task.get_models()["input"]) == 1:
+        clearml_model_handle = task.get_models()["input"][0]
+        clearml_model_handle.report_single_value(name="ifeval", value=ifeval)
+        clearml_model_handle.report_single_value(name="math_hard", value=math)
+        clearml_model_handle.report_single_value(name="musr", value=musr)
+        clearml_model_handle.report_single_value(name="bbh", value=bbh)
+        clearml_model_handle.report_single_value(name="gpqa", value=gpqa)
+        clearml_model_handle.report_single_value(name="mmlu_pro", value=mmlu_pro)
+        clearml_model_handle.report_single_value(name="leaderboard", value=leaderboard)
 
 if __name__ == "__main__":
     main()

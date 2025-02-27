@@ -49,7 +49,12 @@ def main():
 
     if results is None:
         raise Exception("Evaluation failed.")
-    
+
+    if len(task.get_models()["input"]) == 1:
+        clearml_model_handle = task.get_models()["input"][0]
+    else:
+        clearml_model_handle = None
+
     for lm_eval_task in results["results"]:
         if "configs" in results and lm_eval_task in results["configs"] and "num_fewshot" in results["configs"][lm_eval_task]:
             num_fewshot = results["configs"][lm_eval_task]["num_fewshot"]
@@ -64,6 +69,9 @@ def main():
                     name = lm_eval_task + "/" + f"{num_fewshot:d}" + "shot/" + metric
                 task.get_logger().report_single_value(name=name, value=value)
                 task.get_logger().report_scalar(title=lm_eval_task, series=metric, iteration=num_fewshot, value=value)
+
+                if clearml_model_handle is not None:
+                    clearml_model_handle.report_single_value(name="openllm", value=openllm_score)
 
     # Print results to console
     print(lm_eval.utils.make_table(results))
