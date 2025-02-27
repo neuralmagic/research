@@ -80,6 +80,7 @@ def main():
         print(experiment)
 
     if optimization_complete_callback is not None:
+        print(optimizer.get_top_experiments(top_k=1))
         optimization_complete_callback(optimizer.get_top_experiments(top_k=1)[0])
 
     # make sure background optimization stopped
