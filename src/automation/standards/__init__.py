@@ -15,4 +15,5 @@ from automation.standards.evaluations.leaderboard import LeaderboardTask
 from automation.standards.compression.quantization_w4a16 import QuantizationW4A16Task
 from automation.standards.compression.quantization_w8a8 import QuantizationW8A8Task
 from automation.standards.compression.quantization_fp8_dynamic import QuantizationFP8DynamicTask
-from automation.standards.pipelines.pipeline_w4a16 import QuantizationW4A16Pipeline
+from automation.standards.compression.pipeline_w4a16 import QuantizationW4A16Pipeline
+from automation.standards.compression.pipeline_w8a8 import QuantizationW8A8Pipeline
