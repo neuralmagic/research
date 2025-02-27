@@ -5,6 +5,7 @@ from clearml.automation import RandomSearch, GridSearch, HyperParameterOptimizer
 from clearml import Task
 import automation.hpo.callbacks as callbacks
 from pyhocon import ConfigFactory
+from functools import partial
 
 OPTIMIZERS = {
     "GridSearch": GridSearch,
@@ -33,12 +34,20 @@ def main():
     optimizer_class = OPTIMIZERS[optimizer_args.pop("optimizer")]
 
     job_complete_callback = optimizer_args.pop("job_complete_callback")
+    job_complete_callback_kwargs = optimizer_args.pop("job_complete_callback_kwargs")
     if job_complete_callback is not None:
         job_complete_callback = getattr(callbacks, job_complete_callback)
+        if job_complete_callback_kwargs is not None and len(job_complete_callback_kwargs) > 0:
+            job_complete_callback = partial(job_complete_callback, **job_complete_callback_kwargs)
+
+
 
     optimization_complete_callback = optimizer_args.pop("optimization_complete_callback")
+    optimization_complete_callback_kwargs = optimizer_args.pop("optimization_complete_callback_kwargs")
     if optimization_complete_callback is not None:
         optimization_complete_callback = getattr(callbacks, optimization_complete_callback)
+        if optimization_complete_callback_kwargs is not None and len(optimization_complete_callback_kwargs) > 0:
+            optimization_complete_callback = partial(optimization_complete_callback, **optimization_complete_callback_kwargs)
 
     report_period_min = optimizer_args.pop("report_period_min")
     time_limit_min = optimizer_args.pop("time_limit_min")

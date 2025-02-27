@@ -21,7 +21,9 @@ class BaseHPO(BaseTask):
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         report_period_min: Optional[float]=None,
         job_complete_callback: Optional[str]="job_summary",
+        job_complete_callback_kwargs: Optional[dict] = None,
         optimization_complete_callback: Optional[str]="push_to_hf",
+        optimization_complete_callback_kwargs: Optional[dict] = None,
         time_limit_min: Optional[float]=None,
         **kwargs,
     ):
@@ -39,7 +41,9 @@ class BaseHPO(BaseTask):
             "report_period_min": report_period_min,
             "time_limit_min": time_limit_min,
             "job_complete_callback": job_complete_callback,
+            "job_complete_callback_kwargs": job_complete_callback_kwargs,
             "optimization_complete_callback": optimization_complete_callback,
+            "optimization_complete_callback_kwargs": optimization_complete_callback_kwargs,
             "optimizer": optimizer,
         })
         self.script_path = os.path.join(".", "src", "automation", "hpo", "hpo_script.py")
