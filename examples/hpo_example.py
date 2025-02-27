@@ -27,11 +27,12 @@ hpo_task = BaseHPO(
     max_iteration_per_job=1,
     spawn_project="hpo_debug",
     base_task_id= pipeline.id,
-    job_complete_callback="push_to_hf",
-    job_complete_callback_kwargs={"model_name": "Llama-3.2-1B-Instruct-quantized.w4a16-test"},
+    optimization_complete_callback="push_to_hf",
+    optimization_complete_callback_kwargs={"model_name": "Llama-3.2-1B-Instruct-quantized.w4a16-test"},
 )
 
 hpo_task.add_parameter(UniformParameterRange("Args/dampening_frac", min_value=0.01, max_value=0.1, step_size=0.01))
 hpo_task.add_parameter(DiscreteParameterRange("Args/observer", values=["mse", "minmax"]))
 
-hpo_task.execute_remotely()
+#hpo_task.execute_remotely()
+hpo_task.execute_locally()
