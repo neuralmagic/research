@@ -22,7 +22,7 @@ hpo_task = BaseHPO(
     objective_metric_title="openllm",
     objective_metric_series="average",
     objective_metric_sign="max",
-    total_max_jobs=20,
+    total_max_jobs=5,
     pool_period_min=1,
     max_iteration_per_job=1,
     spawn_project="hpo_debug",
@@ -34,4 +34,4 @@ hpo_task = BaseHPO(
 hpo_task.add_parameter(UniformParameterRange("Args/dampening_frac", min_value=0.01, max_value=0.1, step_size=0.01))
 hpo_task.add_parameter(DiscreteParameterRange("Args/observer", values=["mse", "minmax"]))
 
-hpo_task.execute_locally()
+hpo_task.execute_remotely()
