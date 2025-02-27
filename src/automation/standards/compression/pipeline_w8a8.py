@@ -48,7 +48,7 @@ class QuantizationW8A8Pipeline(Pipeline):
         parameter_override = {
             "Args/recipe_args/dampening_frac": "${pipeline.dampening_frac}",
             "Args/recipe_args/observer": "${pipeline.observer}",
-            "Args/recipe_args/smoothing_strength": "${pipeline.group_size}",
+            "Args/recipe_args/smoothing_strength": "${pipeline.smoothing_strength}",
             "Args/num_samples": "${pipeline.num_samples}",
         }
         step1 = QuantizationW8A8Task(
