@@ -85,7 +85,7 @@ def main():
         trust_remote_code=trust_remote_code,
     )
     if dataset_name is None:
-        dateset = None
+        dataset = None
     elif args["dataset_name"] in ["calibration", CALIBRATION_DATASET]:
         dataset = load_calibration_dataset(
             num_samples=num_samples,
