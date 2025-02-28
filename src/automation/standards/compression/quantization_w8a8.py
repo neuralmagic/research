@@ -3,6 +3,7 @@ from automation.configs import DEFAULT_DOCKER_IMAGE
 from typing import List, Optional, Sequence, Union
 import yaml
 from automation.standards.compression.smoothquant_mappings import MAPPINGS_PER_MODEL_CONFIG
+from collections import OrderedDict
 
 class QuantizationW8A8Task(LLMCompressorTask):
     def __init__(
@@ -28,38 +29,41 @@ class QuantizationW8A8Task(LLMCompressorTask):
 
         smoothquant_mappings = MAPPINGS_PER_MODEL_CONFIG[smoothquant_mappings]
         
-        recipe = {
-            "quant_stage": {
-                "quant_modifiers": {
-                    "SmoothQuantModifier": {
-                        "smoothing_strength": "$smoothing_strength",
-                        "mappings": smoothquant_mappings,
+        SmoothQuantModifier = {
+            "smoothing_strength": "$smoothing_strength",
+            "mappings": smoothquant_mappings,
+        }
+        GPTQModifier = {
+            "ignore": ["lm_head"],
+            "dampening_frac": "$dampening_frac",
+            "config_groups": {
+                "group_0": {
+                    "targets": ["Linear"],
+                    "weights": {
+                        "num_bits": 8,
+                        "type": "int",
+                        "symmetric": True,
+                        "strategy": "channel",
+                        "observer": "$observer",
                     },
-                    "GPTQModifier": {
-                        "ignore": ["lm_head"],
-                        "dampening_frac": "$dampening_frac",
-                        "config_groups": {
-                            "group_0": {
-                                "targets": ["Linear"],
-                                "weights": {
-                                    "num_bits": 8,
-                                    "type": "int",
-                                    "symmetric": True,
-                                    "strategy": "channel",
-                                    "observer": "$observer",
-                                },
-                                "input_activations": {
-                                    "num_bits": 8,
-                                    "type": "int",
-                                    "symmetric": True,
-                                    "strategy": "token",
-                                    "dynamic": True,
-                                    "observer": "memoryless",
-                                },
-                            },
-                        },
+                    "input_activations": {
+                        "num_bits": 8,
+                        "type": "int",
+                        "symmetric": True,
+                        "strategy": "token",
+                        "dynamic": True,
+                        "observer": "memoryless",
                     },
                 },
+            },
+        }
+        quantization_modifiers = OrderedDict()
+        quantization_modifiers["SmoothQuantModifier"] = SmoothQuantModifier
+        quantization_modifiers["GPTQModifier"] = GPTQModifier
+
+        recipe = {
+            "quant_stage": {
+                "quant_modifiers": quantization_modifiers,
             },
         }
 
