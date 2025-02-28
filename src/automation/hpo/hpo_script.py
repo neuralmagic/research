@@ -34,11 +34,25 @@ def main():
     optimizer_name = optimizer_args.pop("optimizer")
     optimizer_class = OPTIMIZERS[optimizer_name]
 
-    if "Optuna" in optimizer_name:
-        from optuna.samplers import TPESampler
-        n_startup_trials = max(1, optimizer_args["total_max_jobs"] // 5)
-        sampler = TPESampler(n_startup_trials=n_startup_trials)
+    if "optuna_sampler" in optimizer_args:
+        sampler_name = optimizer_args.pop("optuna_sampler")
+        sampler_class = getattr(optuna.sampler, sampler_name)
+        if "optuna_sampler_kwargs" in optimizer_args:
+            optuna_sampler_kwargs = optimizer_args.pop("optuna_sampler_kwargs")
+        else:
+            optuna_sampler_kwargs = {}
+        sampler = sampler_class(**optuna_sampler_kwargs)
         optimizer_args["optuna_sampler"] = sampler
+
+    if "optuna_pruner" in optimizer_args:
+        pruner_name = optimizer_args.pop("optuna_pruner")
+        pruner_class = getattr(optuna.pruner, pruner_name)
+        if "optuna_pruner_kwargs" in optimizer_args:
+            optuna_pruner_kwargs = optimizer_args.pop("optuna_pruner_kwargs")
+        else:
+            optuna_pruner_kwargs = {}
+        pruner = pruner_class(**optuna_pruner_kwargs)
+        optimizer_args["optuna_pruner"] = pruner
 
     job_complete_callback = optimizer_args.pop("job_complete_callback")
     job_complete_callback_kwargs = optimizer_args.pop("job_complete_callback_kwargs")
