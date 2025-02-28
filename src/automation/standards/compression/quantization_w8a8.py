@@ -2,12 +2,7 @@ from automation.tasks import LLMCompressorTask
 from automation.configs import DEFAULT_DOCKER_IMAGE
 from typing import List, Optional, Sequence, Union
 import yaml
-
-LLAMA_MAPPINGS = [
-    [["re:.*q_proj", "re:.*k_proj", "re:.*v_proj"], "re:.*input_layernorm"],
-    [["re:.*gate_proj", "re:.*up_proj"], "re:.*post_attention_layernorm"],
-    [["re:.*down_proj"], "re:.*up_proj"],
-]
+from automation.standards.compression.smoothquant_mappings import MAPPINGS_PER_MODEL_CONFIG
 
 class QuantizationW8A8Task(LLMCompressorTask):
     def __init__(
@@ -18,7 +13,7 @@ class QuantizationW8A8Task(LLMCompressorTask):
         dampening_frac: float=0.01,
         observer: str="mse",
         smoothing_strength: float=0.8,
-        smoothquant_mappings: dict=LLAMA_MAPPINGS,
+        smoothquant_mappings: str="llama",
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
         dataset_name: str="calibration",
@@ -30,6 +25,8 @@ class QuantizationW8A8Task(LLMCompressorTask):
         max_memory_per_gpu: str="hessian",
         tags: Union[str, List[str]]=None,
     ):
+
+        smoothquant_mappings = MAPPINGS_PER_MODEL_CONFIG[smoothquant_mappings]
         
         recipe = {
             "quant_stage": {
