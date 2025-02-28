@@ -15,7 +15,7 @@ class QuantizationW8A8Task(LLMCompressorTask):
         project_name: str,
         task_name: str,
         model_id: str,
-        damping_frac: float=0.01,
+        dampening_frac: float=0.01,
         observer: str="mse",
         smoothing_strength: float=0.8,
         smoothquant_mappings: dict=LLAMA_MAPPINGS,
@@ -40,7 +40,7 @@ class QuantizationW8A8Task(LLMCompressorTask):
                     },
                     "GPTQModifier": {
                         "ignore": ["lm_head"],
-                        "damping_frac": "$damping_frac",
+                        "dampening_frac": "$dampening_frac",
                         "config_groups": {
                             "group_0": {
                                 "targets": ["Linear"],
@@ -69,7 +69,7 @@ class QuantizationW8A8Task(LLMCompressorTask):
         recipe = yaml.dump(recipe, default_flow_style=False)
 
         recipe_args = {
-            "damping_frac": damping_frac,
+            "dampening_frac": dampening_frac,
             "observer": observer,
             "smoothing_strength": smoothing_strength,
         }
