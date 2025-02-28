@@ -16,6 +16,7 @@ class QuantizationW8A8Pipeline(Pipeline):
         observer: str="mse",
         num_samples: int=512,
         smoothing_strength: float=0.8,
+        smoothquant_mappings: str="llama",
         llmcompressor_kwargs: dict={},
         openllm_kwargs: dict={},
     ):
@@ -31,6 +32,7 @@ class QuantizationW8A8Pipeline(Pipeline):
         self.dampening_frac = dampening_frac
         self.observer = observer
         self.smoothing_strength = smoothing_strength
+        self.smoothing_mappings = smoothquant_mappings
         self.num_samples = num_samples
         self.llmcompressor_kwargs = llmcompressor_kwargs
         self.openllm_kwargs = openllm_kwargs
@@ -55,6 +57,7 @@ class QuantizationW8A8Pipeline(Pipeline):
             project_name=self.project_name,
             task_name=self.pipeline_name + "_quantization_draft",
             model_id=self.model_id,
+            smoothquant_mappings=self.smoothing_mappings,
             **self.llmcompressor_kwargs,
         )
         step1.create_task()
