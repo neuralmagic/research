@@ -34,6 +34,7 @@ class QuantizationW4A16Pipeline(Pipeline):
         self.observer = observer
         self.group_size = group_size
         self.actorder = actorder
+        self.symmetric = symmetric
         self.num_samples = num_samples
         self.llmcompressor_kwargs = llmcompressor_kwargs
         self.openllm_kwargs = openllm_kwargs
