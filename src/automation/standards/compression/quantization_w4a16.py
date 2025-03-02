@@ -13,6 +13,7 @@ class QuantizationW4A16Task(LLMCompressorTask):
         observer: str="mse",
         group_size: int=128,
         actorder: str="weight",
+        symmetric: bool=True,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
         dataset_name: str="calibration",
@@ -27,7 +28,7 @@ class QuantizationW4A16Task(LLMCompressorTask):
         
         recipe = {
             "quant_stage": {
-                "quant_modifiers": {
+                "quant_modifiers": {    
                     "GPTQModifier": {
                         "ignore": ["lm_head"],
                         "dampening_frac": "$dampening_frac",
@@ -36,7 +37,7 @@ class QuantizationW4A16Task(LLMCompressorTask):
                                 "weights": {
                                     "num_bits": 4,
                                     "type": "int",
-                                    "symmetric": True,
+                                    "symmetric": "$symmetric",
                                     "strategy": "group",
                                     "group_size": "$group_size",
                                     "actorder": "$actorder",
@@ -57,6 +58,7 @@ class QuantizationW4A16Task(LLMCompressorTask):
             "observer": observer,
             "group_size": group_size,
             "actorder": actorder,
+            "symmetric": symmetric,
         }
         
         super().__init__(

@@ -16,6 +16,7 @@ class QuantizationW4A16Pipeline(Pipeline):
         observer: str="mse",
         group_size: int=128,
         actorder: str="weight",
+        symmetric: bool=True,
         num_samples: int=512,
         llmcompressor_kwargs: dict={},
         openllm_kwargs: dict={},
@@ -41,6 +42,7 @@ class QuantizationW4A16Pipeline(Pipeline):
         self.add_parameter("observer", default=self.observer, param_type="str")
         self.add_parameter("group_size", default=self.group_size, param_type="int")
         self.add_parameter("actorder", default=self.actorder, param_type="str")
+        self.add_parameter("symmetric", default=self.symmetric, param_type="bool")
         self.add_parameter("num_samples", default=self.num_samples, param_type="int")
 
         self.add_quantization_step()
@@ -53,6 +55,7 @@ class QuantizationW4A16Pipeline(Pipeline):
             "Args/recipe_args/observer": "${pipeline.observer}",
             "Args/recipe_args/group_size": "${pipeline.group_size}",
             "Args/recipe_args/actorder": "${pipeline.actorder}",
+            "Args/recipe_args/symmetric": "${pipeline.symmetric}",
             "Args/num_samples": "${pipeline.num_samples}",
         }
         step1 = QuantizationW4A16Task(
