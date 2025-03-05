@@ -1,0 +1,158 @@
+packages:
+  - "langdetect"
+  - "immutabledict"
+  - "antlr4-python3-runtime==4.11"
+tasks: leaderboard
+job_complete_callback: average
+job_complete_callback_kwargs:
+  metrics:
+    leaderboard:
+      math_lvl5:
+        leaderboard_math_algebra_hard:
+          series: "exact_match,none"
+        leaderboard_math_counting_and_prob_hard:
+          series: "exact_match,none"
+        leaderboard_math_geometry_hard:
+          series: "exact_match,none"
+        leaderboard_math_intermediate_algebra_hard:
+          series: "exact_match,none"
+        leaderboard_math_num_theory_hard:
+          series: "exact_match,none"
+        leaderboard_math_prealgebra_hard:
+          series: "exact_match,none"
+        leaderboard_math_precalculus_hard:
+          series: "exact_match,none"
+      musr:
+        leaderboard_musr_murder_mysteries:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.5
+        leaderboard_musr_object_placements:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.2
+        leaderboard_musr_team_allocation:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.333333
+      bbh:
+        leaderboard_bbh_sports_understanding:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.5
+        leaderboard_bbh_tracking_shuffled_objects_three_objects:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.333333
+        leaderboard_bbh_navigate:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.5
+        leaderboard_bbh_snarks:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.5
+        leaderboard_bbh_date_understanding:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.166667
+        leaderboard_bbh_reasoning_about_colored_objects:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.055556
+        leaderboard_bbh_object_counting:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.052632
+        leaderboard_bbh_logical_deduction_seven_objects:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.142857
+        leaderboard_bbh_geometric_shapes:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.090909
+        leaderboard_bbh_web_of_lies:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.5
+        leaderboard_bbh_movie_recommendation:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.166667
+        leaderboard_bbh_logical_deduction_five_objects:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.2    
+        leaderboard_bbh_salient_translation_error_detection:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.166667
+        leaderboard_bbh_disambiguation_qa:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.333333
+        leaderboard_bbh_temporal_sequences:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.25
+        leaderboard_bbh_hyperbaton:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.5
+        leaderboard_bbh_logical_deduction_three_objects:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.333333
+        leaderboard_bbh_causal_judgement:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.5
+        leaderboard_bbh_formal_fallacies:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.5
+        leaderboard_bbh_tracking_shuffled_objects_seven_objects:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.142857
+        leaderboard_bbh_ruin_names:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.166667
+        leaderboard_bbh_penguins_in_a_table:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.2
+        leaderboard_bbh_boolean_expressions:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.5
+        leaderboard_bbh_tracking_shuffled_objects_five_objects:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.2
+      gpqa:
+        leaderboard_gpqa_main:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.25
+        leaderboard_gpqa_diamond:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.25
+        leaderboard_gpqa_extended:
+          series: "acc_norm,none"
+          normalize: True
+          random_score: 0.25
+      leaderboard_mmlu_pro:
+        series: "acc,none"
+        normalize: True
+        random_score: 0.1
+      ifeval:
+        ifeval_instlevel:
+          leaderboard_ifeval:
+            series: "inst_level_strict_acc,none"
+        ifeval_promptlevel:
+          leaderboard_ifeval:
+            series: "prompt_level_strict_acc,none"
