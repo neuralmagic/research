@@ -29,10 +29,7 @@ class LLMCompressorTask(BaseTask):
     ):
 
         # Process config if provided
-        if config is not None:
-            config_kwargs = self.process_config(config)
-        else:
-            config_kwargs = {}
+        config_kwargs = self.process_config(config)
 
         # Set packages, taking into account default packages
         # for the LMEvalTask and packages set in the config

@@ -24,9 +24,8 @@ class LMEvalTask(BaseTask):
         **kwargs,
     ):
 
-        # Process config if provided
-        if config is not None:
-            config_kwargs = self.process_config(config)
+        # Process config
+        config_kwargs = self.process_config(config)
 
         # Set packages, taking into account default packages
         # for the LMEvalTask and packages set in the config

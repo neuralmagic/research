@@ -43,6 +43,9 @@ class BaseTask():
 
     
     def process_config(self, config):
+        if config is None:
+            return {}
+            
         if config in STANDARD_CONFIGS:
             return yaml.safe_load(open(STANDARD_CONFIGS[config], "r"))
         elif os.path.exists(config):
