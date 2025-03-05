@@ -1,5 +1,6 @@
 import os
 from automation.datasets import load_calibration_dataset, CALIBRATION_DATASET
+from automation.standards.compression.smoothquant_mappings import MAPPINGS_PER_MODEL_CONFIG
 from llmcompressor.transformers.compression.helpers import (
     calculate_offload_device_map,
     custom_offload_device_map,
@@ -74,7 +75,11 @@ def main():
         with open(recipe, "r", encoding="utf-8") as file:
             recipe = file.read()
 
-    if args["recipe_args"] is not None:
+    recipe_args = args.get("recipe_args", None)
+    if recipe_args is not None:
+        if "smoothquant_mappings" in recipe_args and recipe_args["smoothquant_mappings"] in MAPPINGS_PER_MODEL_CONFIG:
+            recipe_args["smoothquant_mappings"] = MAPPINGS_PER_MODEL_CONFIG[recipe_args["smoothquant_mappings"]]
+            
         for key, value in args["recipe_args"].items():
             recipe = recipe.replace(f"${key}", str(value))
 
