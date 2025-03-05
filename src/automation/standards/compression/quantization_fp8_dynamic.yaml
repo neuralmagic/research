@@ -1,29 +1,22 @@
 recipe_args:
-  dampening_frac: 0.01
   observer: "mse"
-  smoothing_strength: 0.8
-  smoothquant_mappings: "llama"
 recipe:
   quant_stage:
     quant_modifiers:
-      SmoothQuantModifier:
-        smoothing_strength: "$smoothing_strength"
-        mappings: "$smoothquant_mappings"
-      GPTQModifier:
+      QuantizationModifier:
         ignore: ["lm_head"]
-        dampening_frac: "$dampening_frac"
         config_groups:
           group_0:
             targets: ["Linear"]
             weights:
               num_bits: 8
-              type: "int"
+              type: "float"
               symmetric: true
               strategy: "channel"
               observer: "$observer"
             input_activations:
               num_bits: 8
-              type: "int"
+              type: "float"
               symmetric: true
               strategy: "token"
               dynamic: true
