@@ -1,6 +1,7 @@
 from clearml import Task
 from typing import Sequence, Optional
 from automation.configs import DEFAULT_OUTPUT_URI
+from automation.standards import STANDARD_CONFIGS
 import yaml
 import os
 
@@ -42,7 +43,9 @@ class BaseTask():
 
     
     def process_config(self, config):
-        if os.path.exists(config):
+        if config in STANDARD_CONFIGS:
+            return yaml.safe_load(open(STANDARD_CONFIGS[config], "r"))
+        elif os.path.exists(config):
             return yaml.safe_load(open(config, "r"))
         elif os.path.exists(os.path.join("..", "standatrds", config)):
             return yaml.safe_load(open(os.path.join("..", "standatrds", config)), "r")
@@ -66,7 +69,7 @@ class BaseTask():
 
     def set_configurations(self):
         configurations = self.get_configurations()
-        for name, config in self.get_configurations.items():
+        for name, config in configurations.items():
             self.task.connect_configuration(config, name=name)
             self.task.connect_configuration(config, name=name)
 
