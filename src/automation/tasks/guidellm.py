@@ -60,6 +60,8 @@ class GuideLLMTask(BaseTask):
             if key in kwargs:
                 ValueError(f"{key} already defined in config's model_args. It can't be defined again in task instantiation.")
 
+        kwargs.update(config_kwargs)
+
         # Sort guidellm kwargs from environment variables
         guidellm_kwargs = {
             "target": target,
