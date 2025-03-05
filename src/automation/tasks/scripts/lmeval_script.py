@@ -1,16 +1,18 @@
 from clearml import Task
 import torch
 from automation.utils import resolve_model_id, cast_args
+from automation.tasks.callbacks import lmeval_callbacks
 import lm_eval
 import json
 from transformers import AutoModelForCausalLM
+from pyhocon import ConfigFactory
 
 
 def main():
     task = Task.current_task()
 
     args = task.get_parameters_as_dict(cast=True)
-    lm_eval_args = args["lm_eval"]
+    lm_eval_args = ConfigFactory.parse_string(task.get_configuration_object("lm_eval"))
     model_id = args["Args"]["model_id"]
     clearml_model = args["Args"]["clearml_model"]
     if isinstance(clearml_model, str):
@@ -18,6 +20,8 @@ def main():
     force_download = args["Args"]["force_download"]
     if isinstance(force_download, str):
         force_download = force_download.lower() == "true"
+    job_complete_callback = lm_eval_args.pop("job_complete_callback", None)
+    job_complete_callback_kwargs = lm_eval_args.pop("job_complete_callback_kwargs", {})
 
     # Resolve model_id
     model_id = resolve_model_id(model_id, clearml_model, task)
@@ -87,8 +91,11 @@ def main():
         ensure_ascii=False,
     )
 
-    task.upload_artifact(name="results", artifact_object=dumped)
+    if job_complete_callback is not None:
+        job_complete_callback_function = getattr(lmeval_callbacks, job_complete_callback)
+        results = job_complete_callback_function(results, **job_complete_callback_kwargs)
 
+    task.upload_artifact(name="results", artifact_object=dumped)
 
     return results
 
