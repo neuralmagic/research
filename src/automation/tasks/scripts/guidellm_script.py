@@ -8,6 +8,7 @@ from clearml import Task
 import torch
 from automation.utils import resolve_model_id, cast_args
 import psutil
+from pyhocon import ConfigFactory
 
 
 SERVER_LOG_PREFIX = "vllm_server_log"
