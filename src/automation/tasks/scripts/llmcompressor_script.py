@@ -9,6 +9,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from clearml import OutputModel, Task
 import torch
 from automation.utils import resolve_model_id
+from pyhocon import ConfigFactory
 
 def main():
     task = Task.current_task()

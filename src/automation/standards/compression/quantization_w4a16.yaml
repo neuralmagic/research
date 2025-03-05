@@ -1,0 +1,23 @@
+recipe_args:
+  dampening_frac: 0.01
+  observer: "mse"
+  group_size: 128
+  actorder: "weight"
+  symmetric: true
+recipe:
+  quant_stage:
+    quant_modifiers:
+      GPTQModifier:
+        ignore: ["lm_head"]
+        dampening_frac: "$dampening_frac"
+        config_groups:
+          group_0:
+            targets: ["Linear"]
+            weights:
+              num_bits: 4
+              type: "int"
+              symmetric: "$symmetric"
+              strategy: "group"
+              group_size: "$group_size"
+              actorder: "$actorder"
+              observer: "$observer"
