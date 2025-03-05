@@ -31,13 +31,15 @@ class LLMCompressorTask(BaseTask):
         # Process config if provided
         if config is not None:
             config_kwargs = self.process_config(config)
+        else:
+            config_kwargs = {}
 
         # Set packages, taking into account default packages
         # for the LMEvalTask and packages set in the config
         if packages is not None:
             packages = list(set(packages + self.llmcompressor_packages))
         else:
-            packages = self.lmeval_packages
+            packages = self.llmcompressor_packages
 
         if "packages" in config_kwargs:
             packages = list(set(packages + config_kwargs.pop("packages")))
@@ -73,18 +75,10 @@ class LLMCompressorTask(BaseTask):
             tags = config_kwargs.pop("tags", None)
         self.tags = tags
 
-        # Check for conflicts in configs and constructor arguments
-        for key in config_kwargs:
-            if key in kwargs:
-                ValueError(f"{key} already defined in config's model_args. It can't be defined again in task instantiation.")
-
-        kwargs.update(config_kwargs)
-
         # Store class attributes
         self.model_id = model_id
         self.clearml_model = clearml_model
         self.save_directory = save_directory
-        self.kwargs = kwargs
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "llmcompressor_script.py")
 
 
