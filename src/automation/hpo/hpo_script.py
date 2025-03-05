@@ -39,10 +39,7 @@ def main():
         from optuna import samplers
         sampler_name = optimizer_args.pop("optuna_sampler")
         sampler_class = getattr(samplers, sampler_name)
-        if "optuna_sampler_kwargs" in optimizer_args:
-            optuna_sampler_kwargs = optimizer_args.pop("optuna_sampler_kwargs")
-        else:
-            optuna_sampler_kwargs = {}
+        optuna_sampler_kwargs = optimizer_args.pop("optuna_sampler_kwargs", {})
         sampler = sampler_class(**optuna_sampler_kwargs)
         optimizer_args["optuna_sampler"] = sampler
 
@@ -50,10 +47,7 @@ def main():
         from optuna import pruners
         pruner_name = optimizer_args.pop("optuna_pruner")
         pruner_class = getattr(pruners, pruner_name)
-        if "optuna_pruner_kwargs" in optimizer_args:
-            optuna_pruner_kwargs = optimizer_args.pop("optuna_pruner_kwargs")
-        else:
-            optuna_pruner_kwargs = {}
+        optuna_pruner_kwargs = optimizer_args.pop("optuna_pruner_kwargs", {})
         pruner = pruner_class(**optuna_pruner_kwargs)
         optimizer_args["optuna_pruner"] = pruner
 
