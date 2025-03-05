@@ -47,6 +47,8 @@ class LMEvalTask(BaseTask):
             task_type=task_type,
         )
 
+        # Check for conflicts in configs and constructor arguments
+        # Deal with model_args_separetely
         for key in config_kwargs:
             if key == "model_args":
                 continue
@@ -78,7 +80,7 @@ class LMEvalTask(BaseTask):
         if "enable_chunked_prefill" not in model_args:
             model_args["enable_chunked_prefill"] = True
 
-        kwargs["args_model"] = ",".join(f"{k}=v" for k, v in model_args.items())
+        kwargs["model_args"] = ",".join(f"{k}={v}" for k, v in model_args.items())
         
         kwargs.update(config_kwargs)
 
