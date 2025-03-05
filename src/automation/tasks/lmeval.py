@@ -20,13 +20,25 @@ class LMEvalTask(BaseTask):
         clearml_model: bool=False,
         task_type: str="training",
         force_download: bool=False,
+        config: Optional[str]=None,
         **kwargs,
     ):
+
+        # Process config if provided
+        if config is not None:
+            config_kwargs = self.process_config(config)
+
+        # Set packages, taking into account default packages
+        # for the LMEvalTask and packages set in the config
         if packages is not None:
             packages = list(set(packages + self.lmeval_packages))
         else:
             packages = self.lmeval_packages
 
+        if "packages" in config_kwargs:
+            packages = list(set(packages + config_kwargs.pop("packages")))
+
+        # Initialize base parameters
         super().__init__(
             project_name=project_name,
             task_name=task_name,
@@ -34,6 +46,41 @@ class LMEvalTask(BaseTask):
             packages=packages,
             task_type=task_type,
         )
+
+        for key in config_kwargs:
+            if key == "model_args":
+                continue
+
+            if key in kwargs:
+                ValueError(f"{key} already defined in config's model_args. It can't be defined again in task instantiation.")
+
+        # model_args is the only argument that can be provided
+        # in both the config and in the constructor, assuming
+        # the keys used in model_args are complementary
+        if "model_args" in kwargs:
+            model_args = dict(item.split("=") for item in kwargs.pop("model_args").split(","))
+        else:
+            model_args = {}
+
+        if "model_args" in config_kwargs:
+            config_model_args = dict(item.split("=") for item in config_kwargs.pop("model_args").split(","))
+
+            for key in model_args.keys():
+                if key in config_model_args:
+                    ValueError(f"{key} already defined in config. It can't be defined again in task instantiation.")
+
+            model_args.update(config_model_args)
+
+        # Set default dtype and enable_chunked_prefill
+        if "dtype" not in model_args:
+            model_args["dtype"] = "auto"
+
+        if "enable_chunked_prefill" not in model_args:
+            model_args["enable_chunked_prefill"] = True
+
+        kwargs["args_model"] = ",".join(f"{k}=v" for k, v in model_args.items())
+        
+        kwargs.update(config_kwargs)
 
         # Store class attributes
         self.model_id = model_id
@@ -48,6 +95,12 @@ class LMEvalTask(BaseTask):
         main()
 
 
+    def get_configurations(self):
+        return {
+            "lm_eval": self.lm_eval,
+        }
+
+
     def get_arguments(self):
         return {
             "Args": {
@@ -55,5 +108,4 @@ class LMEvalTask(BaseTask):
                 "clearml_model": self.clearml_model,
                 "force_download": self.force_download,
             },
-            "lm_eval": self.lm_eval,
         }
