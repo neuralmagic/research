@@ -12,7 +12,7 @@ class LLMCompressorTask(BaseTask):
         project_name: str,
         task_name: str,
         model_id: str,
-        recipe: Any,
+        recipe: Optional[Any]=None,
         recipe_args: Optional[dict]=None,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
@@ -51,15 +51,28 @@ class LLMCompressorTask(BaseTask):
         )
 
         # Store class attributes that may be part of config
+        if "recipe" in config_kwargs and recipe is not None:
+            raise ValueError("Recipe is already provided in config. It can't be provided in task instantiation.")
+        
         recipe = config_kwargs.pop("recipe", recipe)
+        if recipe is None:
+            raise ValueError("Recipe must be provided.")
+
         if isinstance(recipe, dict):
             recipe = yaml.dump(recipe, default_flow_style=False, sort_keys=False)
         elif not isinstance(recipe, str):
             from llmcompressor.recipe import Recipe
             recipe = Recipe.from_modifiers(recipe).yaml()
-    
+
         self.recipe = recipe
-        self.recipe_args = config_kwargs.pop("recipe", recipe_args)
+
+        if recipe_args is None:
+            self.recipe_args = config_kwargs.pop("recipe_args", None)
+        else:
+            config_recipe_args = config_kwargs.pop("recipe_args", {})
+            config_recipe_args.update(recipe_args)
+            self.recipe_args = config_recipe_args
+
         self.dataset_name = config_kwargs.pop("dataset_name", dataset_name)
         self.num_samples = config_kwargs.pop("num_samples", num_samples)
         self.max_seq_len = config_kwargs.pop("max_seq_len", max_seq_len)
@@ -98,7 +111,6 @@ class LLMCompressorTask(BaseTask):
                 "trust_remote_code": self.trust_remote_code,
                 "max_memory_per_gpu": self.max_memory_per_gpu,
                 "tags": self.tags,
-                **kwargs,
             },
         }
 

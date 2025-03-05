@@ -56,7 +56,7 @@ class GuideLLMTask(BaseTask):
         # Check for conflicts in configs and constructor arguments
         for key in config_kwargs:
             if key in kwargs:
-                ValueError(f"{key} already defined in config's model_args. It can't be defined again in task instantiation.")
+                raise ValueError(f"{key} already defined in config's model_args. It can't be defined again in task instantiation.")
 
         kwargs.update(config_kwargs)
 

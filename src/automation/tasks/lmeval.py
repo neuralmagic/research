@@ -53,7 +53,7 @@ class LMEvalTask(BaseTask):
                 continue
 
             if key in kwargs:
-                ValueError(f"{key} already defined in config's model_args. It can't be defined again in task instantiation.")
+                raise ValueError(f"{key} already defined in config's model_args. It can't be defined again in task instantiation.")
 
         # model_args is the only argument that can be provided
         # in both the config and in the constructor, assuming
@@ -68,7 +68,7 @@ class LMEvalTask(BaseTask):
 
             for key in model_args.keys():
                 if key in config_model_args:
-                    ValueError(f"{key} already defined in config. It can't be defined again in task instantiation.")
+                    raise ValueError(f"{key} already defined in config. It can't be defined again in task instantiation.")
 
             model_args.update(config_model_args)
 
