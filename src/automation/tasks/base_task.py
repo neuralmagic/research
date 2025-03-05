@@ -1,6 +1,8 @@
 from clearml import Task
 from typing import Sequence, Optional
 from automation.configs import DEFAULT_OUTPUT_URI
+import yaml
+import os
 
 class BaseTask():
 
@@ -13,6 +15,7 @@ class BaseTask():
         docker_image: str,
         packages: Optional[Sequence[str]]=None,
         task_type: str="training",
+        config: Optional[str]=None,
     ):
         
         if packages is not None:
@@ -37,15 +40,35 @@ class BaseTask():
     def name(self):
         return self.task_name
 
+    
+    def process_config(self, config):
+        if os.path.exists(config):
+            return yaml.safe_load(open(config, "r"))
+        elif os.path.exists(os.path.join("..", "standatrds", config)):
+            return yaml.safe_load(open(os.path.join("..", "standatrds", config)), "r")
+        else:
+            return yaml.safe_load(config)
+
 
     def get_arguments(self):
-        return NotImplementedError
+        return {}
 
 
     def set_arguments(self):
         args = self.get_arguments()
         for args_name, args_dict in args.items():
             self.task.connect(args_dict, args_name)
+
+
+    def get_configurations(self):
+        return {}
+
+
+    def set_configurations(self):
+        configurations = self.get_configurations()
+        for name, config in self.get_configurations.items():
+            self.task.connect_configuration(config, name=name)
+            self.task.connect_configuration(config, name=name)
 
 
     def script(self):
@@ -66,7 +89,7 @@ class BaseTask():
         )
         self.task.output_uri = DEFAULT_OUTPUT_URI
         self.set_arguments()
-        self.connect_configuration()
+        self.set_configurations()
 
 
     def get_task_id(self):
@@ -74,10 +97,6 @@ class BaseTask():
             return self.task.id
         else:
             raise ValueError("Task ID not available since ClearML task not yet created. Try task.create_task() firts.")
-
-
-    def connect_configuration(self):
-        pass
 
 
     def execute_remotely(self, queue_name):
@@ -97,7 +116,7 @@ class BaseTask():
             auto_connect_arg_parser=False,
         )
         self.set_arguments()
-        self.connect_configuration()
+        self.set_configurations()
         self.script()
         self.task.close()
 
