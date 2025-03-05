@@ -1,0 +1,2 @@
+data_type: "emulated"
+data: "prompt_tokens=64000,generated_tokens=2048"

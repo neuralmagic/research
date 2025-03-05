@@ -26,13 +26,26 @@ class GuideLLMTask(BaseTask):
         vllm_kwargs: dict={},
         target: str="http://localhost:8000/v1",
         backend: str="aiohttp_server",
+        force_download: bool=False,
+        config: Optional[str]=None,
         **kwargs,
     ):
+
+        # Process config if provided
+        if config is not None:
+            config_kwargs = self.process_config(config)
+
+        # Set packages, taking into account default packages
+        # for the LMEvalTask and packages set in the config
         if packages is not None:
             packages = list(set(packages + self.guidellm_packages))
         else:
             packages = self.guidellm_packages
 
+        if "packages" in config_kwargs:
+            packages = list(set(packages + config_kwargs.pop("packages")))
+
+        # Initialize base parameters
         super().__init__(
             project_name=project_name,
             task_name=task_name,
@@ -40,6 +53,12 @@ class GuideLLMTask(BaseTask):
             packages=packages,
             task_type=task_type,
         )
+
+        # Check for conflicts in configs and constructor arguments
+        # Deal with model_args_separetely
+        for key in config_kwargs:
+            if key in kwargs:
+                ValueError(f"{key} already defined in config's model_args. It can't be defined again in task instantiation.")
 
         # Sort guidellm kwargs from environment variables
         guidellm_kwargs = {
@@ -68,20 +87,24 @@ class GuideLLMTask(BaseTask):
         main()
 
 
+    def get_configurations(self):
+        configs = {
+            "GuideLLM": self.guidellm_kwargs,
+        }
+        if len(self.vllm_kwargs) > 0:
+            configs["vLLM"] = self.vllm_kwargs
+
+        if len(self.environment_variables) > 0:
+            configs["environment"] = self.environment_variables
+
+        return configs
+
+
     def get_arguments(self):
-        args = {
+        return {
             "Args": {
                 "model_id": self.model_id,
                 "clearml_model": self.clearml_model,
                 "server_wait_time": self.server_wait_time,
             },
-            "GuideLLM": self.guidellm_kwargs,
         }
-
-        if len(self.vllm_kwargs) > 0:
-            args["vLLM"] = self.vllm_kwargs
-
-        if len(self.environment_variables) > 0:
-            args["environment"] = self.environment_variables
-
-        return args
