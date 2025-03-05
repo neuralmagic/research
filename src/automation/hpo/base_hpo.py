@@ -59,15 +59,13 @@ class BaseHPO(BaseTask):
         main()
 
 
-    def connect_configuration(self):
-        self.task.connect_configuration(self.parameters, name="Parameters")
-        self.task.connect_configuration(self.kwargs, name="Optimization")
+    def get_configuration(self):
+        return {
+            "Arguments": self.parameters,
+            "Optimization": self.kwargs,
+        }
 
-
-    def get_arguments(self):
-        return {}
-
-    
+   
     def execute_remotely(self, queue_name: str="services"):
         super().execute_remotely(queue_name)
 
