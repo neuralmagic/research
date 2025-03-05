@@ -18,5 +18,5 @@ task = LLMCompressorTask(
     recipe_args={"observer": "mse"},
 )
 
-#task.execute_remotely("oneshot-a6000x1")
-task.execute_locally()
+task.execute_remotely("oneshot-a100x1")
+#task.execute_locally()
