@@ -88,7 +88,7 @@ class LLMCompressorLMEvalPipeline(Pipeline):
         monitor_metrics = [tuple(entry) for entry in self.lmeval_kwargs["monitor_metrics"]]
 
         self.add_step(
-            name=step2_name,
+            name=self.step2_name,
             base_task_id = step2.id,
             parents=[self.step1_name],
             execution_queue=self.execution_queues[1],
