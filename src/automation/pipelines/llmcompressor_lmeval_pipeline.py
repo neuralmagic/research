@@ -54,7 +54,7 @@ class LLMCompressorLMEvalPipeline(Pipeline):
             if recipe_arg:
                 parameter_override[f"Args/recipe_args/{parameter_name}"] = f"${{pipeline.{parameter_name}}}"
 
-        step1_name = self.pipeline_name + "_" + self.llmcompressor_kwargs.pop("name")
+        step1_name = self.pipeline_name + "_" + self.llmcompressor_kwargs.get("name", "llmcompressor")
         step1 = LLMCompressorTask(
             project_name=self.project_name,
             task_name=step1_name + "_draft",
@@ -73,10 +73,10 @@ class LLMCompressorLMEvalPipeline(Pipeline):
 
 
     def add_lmeval_step(self):
-        step1_name = self.pipeline_name + "_" + self.llmcompressor_kwargs.pop("name")
+        step1_name = self.pipeline_name + "_" + self.llmcompressor_kwargs.get("name", "llmcompressor")
         step1_model_id = f"${{{step1_name}_quantization.models.output.-1.id}}"
 
-        step2_name = self.pipeline_name + "_" + self.lmeval_kwargs.pop("name")
+        step2_name = self.pipeline_name + "_" + self.lmeval_kwargs.get("name", "lmeval")
         step2 = LMEvalTask(
             project_name=self.project_name,
             task_name=step2_name + "_draft",
