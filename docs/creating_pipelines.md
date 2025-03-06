@@ -5,8 +5,8 @@ For the sake of example, let us create a pipeline that uses `LLMCompressorTask` 
 
 ```mermaid
 graph TD;
-    A[Top Box] --> B[Left Box];
-    A --> C[Right Box];
+    LLMCompressorTask["LLMCompressorTask<br>w4a16"] --> OpenLLM["LMEvalTask<br>openllm"];
+    LLMCompressorTask --> Leaderboard["LMEvalTask<br>leaderboard"];
 ```
 
 There are four main steps when creating a pipeline:
