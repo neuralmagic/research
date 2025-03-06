@@ -54,16 +54,16 @@ class LLMCompressorLMEvalPipeline(Pipeline):
             if recipe_arg:
                 parameter_override[f"Args/recipe_args/{parameter_name}"] = f"${{pipeline.{parameter_name}}}"
 
-        step1_name = self.pipeline_name + "_" + self.llmcompressor_kwargs.get("name", "llmcompressor")
+        self.step1_name = self.pipeline_name + "_" + self.llmcompressor_kwargs.pop("name", "llmcompressor")
         step1 = LLMCompressorTask(
             project_name=self.project_name,
-            task_name=step1_name + "_draft",
+            task_name=self.step1_name + "_draft",
             model_id=self.model_id,
             **self.llmcompressor_kwargs,
         )
         step1.create_task()
         self.add_step(
-            name=step1_name,
+            name=self.step1_name,
             base_task_id=step1.id,
             execution_queues=self.execution_queues[0],
             parameter_override=parameter_override,
@@ -73,13 +73,12 @@ class LLMCompressorLMEvalPipeline(Pipeline):
 
 
     def add_lmeval_step(self):
-        step1_name = self.pipeline_name + "_" + self.llmcompressor_kwargs.get("name", "llmcompressor")
-        step1_model_id = f"${{{step1_name}_quantization.models.output.-1.id}}"
+        step1_model_id = f"${{{self.step1_name}_quantization.models.output.-1.id}}"
 
-        step2_name = self.pipeline_name + "_" + self.lmeval_kwargs.get("name", "lmeval")
+        self.step2_name = self.pipeline_name + "_" + self.lmeval_kwargs.pop("name", "lmeval")
         step2 = LMEvalTask(
             project_name=self.project_name,
-            task_name=step2_name + "_draft",
+            task_name=self.execute_remotelystep2_name + "_draft",
             model_id="dummy",
             clearml_model=True,
             **self.lmeval_kwargs,
@@ -91,7 +90,7 @@ class LLMCompressorLMEvalPipeline(Pipeline):
         self.add_step(
             name=step2_name,
             base_task_id = step2.id,
-            parents=[step1_name],
+            parents=[self.step1_name],
             execution_queue=self.execution_queues[1],
             parameter_override={"Args/model_id": step1_model_id},
             monitor_metrics=monitor_metrics,
