@@ -76,6 +76,7 @@ class LLMCompressorLMEvalPipeline(Pipeline):
         step1_model_id = f"${{{self.step1_name}.models.output.-1.id}}"
 
         self.step2_name = self.pipeline_name + "_" + self.lmeval_kwargs.pop("name", "lmeval")
+        monitor_metrics = [tuple(entry) for entry in self.lmeval_kwargs.pop("monitor_metrics", [])]
         step2 = LMEvalTask(
             project_name=self.project_name,
             task_name=self.step2_name + "_draft",
@@ -84,8 +85,6 @@ class LLMCompressorLMEvalPipeline(Pipeline):
             **self.lmeval_kwargs,
         )
         step2.create_task()
-
-        monitor_metrics = [tuple(entry) for entry in self.lmeval_kwargs["monitor_metrics"]]
 
         self.add_step(
             name=self.step2_name,
