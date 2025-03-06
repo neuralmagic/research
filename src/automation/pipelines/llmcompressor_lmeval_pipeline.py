@@ -1,5 +1,5 @@
 from automation.pipelines import Pipeline
-from automation.standards import LLMCompressorTask, OpenLLMTask
+from automation.tasks import LLMCompressorTask, LMEvalTask
 from automation.configs import DEFAULT_DOCKER_IMAGE
 from typing import List
 
@@ -77,7 +77,7 @@ class LLMCompressorLMEvalPipeline(Pipeline):
         step1_model_id = f"${{{step1_name}_quantization.models.output.-1.id}}"
 
         step2_name = self.pipeline_name + "_" + self.lmeval_kwargs.pop("name")
-        step2 = OpenLLMTask(
+        step2 = LMEvalTask(
             project_name=self.project_name,
             task_name=step2_name + "_draft",
             model_id="dummy",
