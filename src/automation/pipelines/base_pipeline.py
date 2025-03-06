@@ -45,8 +45,8 @@ class BasePipeline(BaseTask):
         self.create_task()
 
 
-    def connect_configuration(self) -> None:
-        self.task.connect_configuration(self.steps, name="Steps")
+    def get_configurations(self) -> None:
+        return {"Steps": self.steps}
 
 
     def get_arguments(self):
