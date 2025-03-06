@@ -78,7 +78,7 @@ class LLMCompressorLMEvalPipeline(Pipeline):
         self.step2_name = self.pipeline_name + "_" + self.lmeval_kwargs.pop("name", "lmeval")
         step2 = LMEvalTask(
             project_name=self.project_name,
-            task_name=self.execute_remotelystep2_name + "_draft",
+            task_name=self.step2_name + "_draft",
             model_id="dummy",
             clearml_model=True,
             **self.lmeval_kwargs,
