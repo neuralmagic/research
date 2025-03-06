@@ -16,7 +16,6 @@ class BaseTask():
         docker_image: str,
         packages: Optional[Sequence[str]]=None,
         task_type: str="training",
-        config: Optional[str]=None,
     ):
         
         if packages is not None:
