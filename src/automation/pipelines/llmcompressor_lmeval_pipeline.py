@@ -82,7 +82,7 @@ class LLMCompressorLMEvalPipeline(Pipeline):
             task_name=step2_name + "_draft",
             model_id="dummy",
             clearml_model=True,
-            **self.openllm_kwargs,
+            **self.lmeval_kwargs,
         )
         step2.create_task()
 
