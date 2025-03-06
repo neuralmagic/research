@@ -1,0 +1,35 @@
+parameters:
+  dampening_frac:
+    default: 0.01
+    param_type: "float"
+    recipe_arg: true
+  observer: 
+    default: "mse"
+    param_type: "str"
+    recipe_arg: true
+  group_size:
+    default: 128
+    param_type: "int"
+    recipe_arg: true
+  actorder:
+    default: "weight"
+    param_type: "str"
+    recipe_arg: true
+  symmetric: 
+    default: true
+    param_type: "bool"
+    recipe_arg: true
+  num_samples:
+    default: 1024
+    param_type:  int
+    recipe_arg: false
+llmcompressor_kwargs:
+  name: quantization
+  config: quantization_w4a16
+lmeval_kwargs:
+  name: evaluation
+  config: openllm
+  monitor_metrics: [["openllm", "average"]]
+  
+
+
