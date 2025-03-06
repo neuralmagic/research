@@ -55,7 +55,7 @@ class LLMCompressorLMEvalPipeline(Pipeline):
                 parameter_override[f"Args/recipe_args/{parameter_name}"] = f"${{pipeline.{parameter_name}}}"
 
         step1_name = self.pipeline_name + "_" + self.llmcompressor_kwargs.pop("name")
-        step1 = QuantizationW4A16Task(
+        step1 = LLMCompressorTask(
             project_name=self.project_name,
             task_name=step1_name + "_draft",
             model_id=self.model_id,
