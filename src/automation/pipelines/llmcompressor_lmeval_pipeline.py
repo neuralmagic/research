@@ -1,7 +1,7 @@
 from automation.pipelines import Pipeline
 from automation.tasks import LLMCompressorTask, LMEvalTask
 from automation.configs import DEFAULT_DOCKER_IMAGE
-from typing import List
+from typing import List, Optional
 
 class LLMCompressorLMEvalPipeline(Pipeline):
     def __init__(
