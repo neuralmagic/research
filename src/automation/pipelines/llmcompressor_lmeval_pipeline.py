@@ -65,7 +65,7 @@ class LLMCompressorLMEvalPipeline(Pipeline):
         self.add_step(
             name=self.step1_name,
             base_task_id=step1.id,
-            execution_queues=self.execution_queues[0],
+            execution_queue=self.execution_queues[0],
             parameter_override=parameter_override,
             monitor_models=[step1.get_arguments()["Args"]["save_directory"]],
             monitor_artifacts=["recipe"],
