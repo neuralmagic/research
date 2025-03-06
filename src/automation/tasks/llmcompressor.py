@@ -28,7 +28,7 @@ class LLMCompressorTask(BaseTask):
         config: Optional[str]=None,
     ):
 
-        # Process config if provided
+        # Process config
         config_kwargs = self.process_config(config)
 
         # Set packages, taking into account default packages
