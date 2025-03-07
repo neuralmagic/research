@@ -1,14 +1,14 @@
-from automation.standards import QuantizationW4A16Pipeline
+from automation.pipeline import LLMCompressorLMEvalPipeline
 from automation.hpo import BaseHPO
 from clearml.automation import UniformParameterRange, DiscreteParameterRange
 
-pipeline = QuantizationW4A16Pipeline(
+pipeline = LLMCompressorLMEvalPipeline(
     project_name="alexandre_debug",
-    pipeline_name="hpo_example_task",
+    pipeline_name="hpo_example_pipeline",
     model_id="meta-llama/Llama-3.2-1B-Instruct",
     execution_queues=["oneshot-a100x1", "oneshot-a100x1"],
-    dampening_frac=0.1,
-    openllm_kwargs={"model_args": "gpu_memory_utilization=0.4,enable_chunked_prefill=True", "limit": 10}
+    config="pipeline_w4a16",
+    lmeval_kwargs={"model_args": "gpu_memory_utilization=0.4,enable_chunked_prefill=True", "batch_size": 10}
 )
 
 pipeline.create_pipeline()
@@ -27,12 +27,9 @@ hpo_task = BaseHPO(
     max_iteration_per_job=1,
     spawn_project="hpo_debug",
     base_task_id= pipeline.id,
-    optimization_complete_callback="push_to_hf",
-    optimization_complete_callback_kwargs={"model_name": "Llama-3.2-1B-Instruct-quantized.w4a16-test"},
 )
 
 hpo_task.add_parameter(UniformParameterRange("Args/dampening_frac", min_value=0.01, max_value=0.1, step_size=0.01))
 hpo_task.add_parameter(DiscreteParameterRange("Args/observer", values=["mse", "minmax"]))
 
-#hpo_task.execute_remotely()
-hpo_task.execute_locally()
+hpo_task.execute_remotely()
