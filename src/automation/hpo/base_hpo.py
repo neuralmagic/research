@@ -61,7 +61,7 @@ class BaseHPO(BaseTask):
 
     def get_configurations(self):
         return {
-            "Arguments": self.parameters,
+            "Parameters": self.parameters,
             "Optimization": self.kwargs,
         }
 
