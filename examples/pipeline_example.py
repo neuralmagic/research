@@ -32,8 +32,8 @@ step2.create_task()
 pipeline = Pipeline(
     project_name="alexandre_debug",
     pipeline_name="pipeline_example",
-    version="0.0.1",
 )
+
 
 pipeline.add_step(
     name="pipeline_example_quantization_step1",

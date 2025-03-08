@@ -9,7 +9,7 @@ def main():
     if "Args" in args:
         parameters = args["Args"]
     else:
-        parameters = []
+        parameters = {}
     steps = ast.literal_eval(task.get_configuration_object("Steps"))
 
     version = args["pipeline"]["version"]
