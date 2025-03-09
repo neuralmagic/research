@@ -75,12 +75,14 @@ class LLMCompressorLMEvalPipeline(Pipeline):
     def add_lmeval_steps(self):
         step1_model_id = f"${{{self.step1_name}.models.output.-1.id}}"
         
+        queue_id = 0
         for step_name, step_kwargs in self.lmeval_kwargs.items():
+            queue_id += 1
             step_name = self.pipeline_name + "_" + step_name
             monitor_metrics = [tuple(entry) for entry in step_kwargs.pop("monitor_metrics", [])]
             step = LMEvalTask(
                 project_name=self.project_name,
-                task_name=self.step_name + "_draft",
+                task_name=step_name + "_draft",
                 model_id="dummy",
                 clearml_model=True,
                 **step_kwargs,
@@ -88,10 +90,10 @@ class LLMCompressorLMEvalPipeline(Pipeline):
             step.create_task()
 
             self.add_step(
-                name=self.step_name,
+                name=step_name,
                 base_task_id = step.id,
                 parents=[self.step1_name],
-                execution_queue=self.execution_queues[1],
+                execution_queue=self.execution_queues[queue_id],
                 parameter_override={"Args/model_id": step1_model_id},
                 monitor_metrics=monitor_metrics,
             )
