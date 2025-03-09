@@ -18,7 +18,7 @@ def load_openthoughts_dataset(num_samples=None, max_seq_len=None, tokenizer=None
                 messages = [{"role": "system", "content": example["system"]}]
                 for conversation in example["conversations"]:
                     messages.append({"role": conversation["from"], "content": conversation["value"]})
-                return {"text": tokenizer.apply_chat_template(example["messages"], tokenize=False, add_generation_prompt=False)}
+                return {"text": tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=False)}
 
         ds = ds.map(preprocess_calibration, remove_columns=ds.column_names)
         ds = ds.map(lambda example: tokenizer(example["text"], padding=False, max_length=max_seq_len, truncation=True), remove_columns=ds.column_names)
