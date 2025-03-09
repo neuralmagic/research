@@ -1,5 +1,5 @@
 import os
-from automation.datasets import load_calibration_dataset, CALIBRATION_DATASET
+from automation.datasets import SUPPORTED_DATASETS
 from automation.standards.compression.smoothquant_mappings import MAPPINGS_PER_MODEL_CONFIG
 from llmcompressor.transformers.compression.helpers import (
     calculate_offload_device_map,
@@ -92,8 +92,8 @@ def main():
     )
     if dataset_name is None:
         dataset = None
-    elif args["dataset_name"] in ["calibration", CALIBRATION_DATASET]:
-        dataset = load_calibration_dataset(
+    elif args["dataset_name"] in SUPPORTED_DATASETS:
+        dataset = SUPPORTED_DATASETS[args["dataset_name"]](
             num_samples=num_samples,
             max_seq_len=max_seq_len,
             tokenizer=tokenizer,

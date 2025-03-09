@@ -1,10 +1,10 @@
 from datasets import load_dataset
 
-CALIBRATION_DATASET = "neuralmagic/LLM_compression_calibration"
+DATASET_PATH = "neuralmagic/LLM_compression_calibration"
 
 def load_calibration_dataset(num_samples=None, max_seq_len=None, tokenizer=None):
 
-    ds = load_dataset(CALIBRATION_DATASET, split="train")
+    ds = load_dataset(DATASET_PATH, split="train")
 
     if tokenizer is not None:
         def preprocess_calibration(example):
