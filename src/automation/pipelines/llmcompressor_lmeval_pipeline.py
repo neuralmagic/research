@@ -42,7 +42,7 @@ class LLMCompressorLMEvalPipeline(Pipeline):
         self._parameters = parameters
 
         self.add_llmcompressor_step()
-        self.add_lmeval_step()
+        self.add_lmeval_steps()
         
     
     def add_llmcompressor_step(self):
@@ -74,24 +74,25 @@ class LLMCompressorLMEvalPipeline(Pipeline):
 
     def add_lmeval_step(self):
         step1_model_id = f"${{{self.step1_name}.models.output.-1.id}}"
+        
+        for step_name, step_kwargs in self.lmeval_kwargs.items():
+            step_name = self.pipeline_name + "_" + step_name
+            monitor_metrics = [tuple(entry) for entry in step_kwargs.pop("monitor_metrics", [])]
+            step = LMEvalTask(
+                project_name=self.project_name,
+                task_name=self.step_name + "_draft",
+                model_id="dummy",
+                clearml_model=True,
+                **step_kwargs,
+            )
+            step.create_task()
 
-        self.step2_name = self.pipeline_name + "_" + self.lmeval_kwargs.pop("name", "lmeval")
-        monitor_metrics = [tuple(entry) for entry in self.lmeval_kwargs.pop("monitor_metrics", [])]
-        step2 = LMEvalTask(
-            project_name=self.project_name,
-            task_name=self.step2_name + "_draft",
-            model_id="dummy",
-            clearml_model=True,
-            **self.lmeval_kwargs,
-        )
-        step2.create_task()
-
-        self.add_step(
-            name=self.step2_name,
-            base_task_id = step2.id,
-            parents=[self.step1_name],
-            execution_queue=self.execution_queues[1],
-            parameter_override={"Args/model_id": step1_model_id},
-            monitor_metrics=monitor_metrics,
-        )
+            self.add_step(
+                name=self.step_name,
+                base_task_id = step.id,
+                parents=[self.step1_name],
+                execution_queue=self.execution_queues[1],
+                parameter_override={"Args/model_id": step1_model_id},
+                monitor_metrics=monitor_metrics,
+            )
         

@@ -27,9 +27,9 @@ llmcompressor_kwargs:
   name: quantization
   config: quantization_w4a16
 lmeval_kwargs:
-  name: evaluation
-  config: openllm
-  monitor_metrics: [["openllm", "average"]]
+  evaluation:
+    config: openllm
+    monitor_metrics: [["openllm", "average"]]
   
 
 
