@@ -72,7 +72,7 @@ class LLMCompressorLMEvalPipeline(Pipeline):
         )
 
 
-    def add_lmeval_step(self):
+    def add_lmeval_steps(self):
         step1_model_id = f"${{{self.step1_name}.models.output.-1.id}}"
         
         for step_name, step_kwargs in self.lmeval_kwargs.items():
