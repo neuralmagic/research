@@ -12,7 +12,7 @@ class LLMCompressorLMEvalPipeline(Pipeline):
         execution_queues: List[str],
         version: str="1.0.0",
         docker_image: str=DEFAULT_DOCKER_IMAGE,
-        parameters: Optional[dict]=None,
+        parameters: Optional[dict]={},
         llmcompressor_kwargs: dict={},
         lmeval_kwargs: dict={},
         config: Optional[str]=None,
