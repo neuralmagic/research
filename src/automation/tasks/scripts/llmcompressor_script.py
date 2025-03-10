@@ -1,5 +1,5 @@
 import os
-from automation.datasets import SUPPORTED_DATASETS
+from automation.datasets import SUPPORTED_DATASETS, load_dataset_messages
 from automation.standards.compression.smoothquant_mappings import MAPPINGS_PER_MODEL_CONFIG
 from llmcompressor.transformers.compression.helpers import (
     calculate_offload_device_map,
@@ -99,7 +99,12 @@ def main():
             tokenizer=tokenizer,
         )
     else:
-        raise ValueError("Dataset not supported.")
+        dataset = load_dataset_messages(
+            args["dataset_name"], 
+            num_samples=num_samples, 
+            max_seq_len=max_seq_len,
+            tokenizer=tokenizer,
+        )
 
     # Apply recipe to the model
     oneshot(
