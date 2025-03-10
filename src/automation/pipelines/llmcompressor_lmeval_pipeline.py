@@ -32,13 +32,10 @@ class LLMCompressorLMEvalPipeline(Pipeline):
             else:
                 parameters = config_kwargs.pop("parameters")
 
-        llmcompressor_kwargs.update(config_kwargs.pop("llmcompressor_kwargs", {}))
-        lmeval_kwargs.update(config_kwargs.pop("lmeval_kwargs", {}))
-
         self.model_id = model_id
         self.execution_queues = execution_queues
-        self.llmcompressor_kwargs = llmcompressor_kwargs
-        self.lmeval_kwargs = lmeval_kwargs
+        self.llmcompressor_kwargs = config_kwargs.pop("llmcompressor_kwargs", {}).update(llmcompressor_kwargs)
+        self.lmeval_kwargs = config_kwargs.pop("lmeval_kwargs", {}).update(lmeval_kwargs)
         self._parameters = parameters
 
         self.add_llmcompressor_step()
