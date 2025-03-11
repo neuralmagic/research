@@ -27,7 +27,7 @@ class LLMCompressorLMEvalPipeline(Pipeline):
         # Process config
         config_kwargs = self.process_config(config)
         if "parameters" in config_kwargs:
-            if parameters is not None and len(parameters) == 0:
+            if parameters is not None and len(parameters) > 0:
                 raise ValueError("parameters specified in config. Can't specify again in pipeline instantiation.")
             else:
                 parameters = config_kwargs.pop("parameters")
