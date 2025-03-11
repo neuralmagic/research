@@ -1,27 +1,34 @@
 # How to run LMEvalTask
 
-The `LMEvalTask` class intializer accepts both general ClearML task arguments and lm_eval arguments.
+The `LMEvalTask` class allows running evaluations using `lm_eval` within a ClearML task.
+It supports both general ClearML task arguments and lm_eval-specific parameters.
 
 ## ClearML task arguments
+The following arguments configure the ClearML environment for the evaluation task:
 - **project_name (required)**: name of ClearML project
 - **task_name (required)**: name of ClearML task
 - docker_image (optional): path to docker image. Will use default image if one is not provided.
-- packages (optional): list of additional pip packages to be installed in the evaluation environment. Syntax similar to a `requirements.txt` file for pip install.
+- packages (optional): list of additional Python packages to be installed in the evaluation environment. Syntax similar to a `requirements.txt` file for pip install.
 
 ## Model ID
-Instead of specifying the model ID in `model_args` (`pretrained` field) use the following arguments:
+Instead of specifying the model ID in `model_args` (specifically the `pretrained` field), use the following arguments:
 - **model_id (required):** Model ID (HF or ClearML) or local path
-- clearml_model: boolean to indicate whether the model is a CLearML model
+- clearml_model: boolean to indicate whether the model is a ClearML model
 
 ## lm_eval arguments
-Regular arguments passed directly to `lm_eval`, such as
-- model_args (DO NOT INCLUDE `pretrained`)
+The following arguments are passed directly to `lm_eval`:
+- model_args
 - tasks
 - num_fewshot
 - batch_size
 - etc.
 
-**Note**: The argument `model` is not valid. It is hardcoded to `model=vllm` in `lmeval_script.py`.
+⚠️ **Important:**  
+The `pretrained` field **must not be included** in `model_args`, as `LMEvalTask` handles model initialization separately.
+
+⚠️ **Note:**  
+The `model` argument is not user-configurable. It is **hardcoded to `model=vllm`** in `lmeval_script.py` to ensure compatibility with `vLLM`-based inference.
+
 
 ## GSM8k Example
 
