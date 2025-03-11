@@ -1,7 +1,7 @@
 # How to Create a Pipeline
 
-Pipelines are composed of a collection of tasks that are executed in a direct acyclic graph (DAG).
-For the sake of example, let us create a pipeline that uses `LLMCompressorTask` with the `quantization_w4a16` standard, followed by evaluation of two benchmarks (OpenLLM and Leaderboard) using `LMEvalTask`, as illustrated in the schematic below.
+A pipeline consists of multiple tasks executed in a directed acyclic graph (DAG), ensuring dependencies are resolved before execution.
+As an example, we will create a pipeline that first runs LLMCompressorTask with the quantization_w4a16 configuration. Then, the compressed model is evaluated using LMEvalTask on two benchmarks: OpenLLM and Leaderboard. The execution flow is illustrated below:
 
 ```mermaid
 graph TD;
@@ -33,12 +33,12 @@ step1 = LLMCompressorTask(
 step1.create_task()
 
 # Create OpenLLM eval task
-# model_id can be dummy, since it will be replaced by the output of step1
-# Set clearml_model=True since the output of step1 will be a ClearML model id
+# Set model_id as a placeholder, as it will be dynamically replaced with the output of step1
+# Setting clearml_model=True ensures step1's output is properly linked
 step2 = LMEvalTask(
     project_name="alexandre_debug",
     task_name="step2_draft",
-    model_id="dummuy",
+    model_id="dummy",
     clearml_model=True,
     config="openllm",
 )
@@ -47,8 +47,8 @@ step2 = LMEvalTask(
 step2.create_task()
 
 # Create Leaderboard eval task
-# model_id can be dummy, since it will be replaced by the output of step1
-# Set clearml_model=True since the output of step1 will be a ClearML model id
+# Set model_id as a placeholder, as it will be dynamically replaced with the output of step1
+# Setting clearml_model=True ensures step1's output is properly linked
 step3 = LMEvalTask(
     project_name="alexandre_debug",
     task_name="step3_draft",
@@ -84,7 +84,7 @@ pipeline.add_step(
 
 # Add OpenLLM step
 # Make step1 as parent to tell the pipeline it must wait for step1 to complete before starting step2
-# Use parameter_override to point model_id to the output of step1
+# The placeholder ${step1.models.output.-1.id} dynamically retrieves the most recent model output (-1 refers to the last generated model) from step1. This ensures that subsequent tasks always receive the correct model version.
 pipeline.add_step(
     name="step2",
     base_task_id = step2.id,
@@ -98,7 +98,7 @@ pipeline.add_step(
 # Use parameter_override to point model_id to the output of step1
 pipeline.add_step(
     name="step3",
-    base_task_id = step2.id,
+    base_task_id = step3.id,
     parents=["step1"],
     execution_queue="oneshot-a100x1",
     parameter_override={"Args/model_id": "${step1.models.output.-1.id}"},
@@ -111,7 +111,7 @@ pipeline.add_step(
 pipeline.execute_remotely()
 ```
 
-- For pipelines there is a default queue for remote execution, called `services`.
-This is a CPU-only queue meant to be used for processes such as a pipeline controller, which do not need GPUs.
+- By default, pipeline execution is handled by the `services` queue, a CPU-only queue designed for orchestration rather than computation.
+The actual tasks are scheduled on the specified execution queues.
 - The pipeline task itself only manages the executions of the other tasks, and thus does not need GPUs.
-- If one uses `pipeline.execute_remotely()` the pipeline controller will run locally, but the tasks will still be submitted to the queue.
+- If one uses `pipeline.execute_locally()` the pipeline controller will run locally, while the individual tasks still execute on their designated remote queues.
