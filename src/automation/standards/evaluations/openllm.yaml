@@ -1,18 +1,16 @@
 tasks: openllm
 model_args: "max_model_len=4096"
-job_complete_callback: average
-job_complete_callback_kwargs:
-  metrics:
-    openllm:
-      arc_challenge:
-        series: "acc,none"
-      gsm8k:
-        series: "exact_match,strict-match"
-      hellaswag:
-        series: "acc_norm,none"
-      mmlu:
-        series: "acc,none"
-      winogrande:
-        series: "acc,none"
-      truthfulqa_mc2:
-        series: "acc,none"
+groups:
+  openllm:
+    arc_challenge:
+      series: "acc,none"
+    gsm8k:
+      series: "exact_match,strict-match"
+    hellaswag:
+      series: "acc_norm,none"
+    mmlu:
+      series: "acc,none"
+    winogrande:
+      series: "acc,none"
+    truthfulqa_mc2:
+      series: "acc,none"

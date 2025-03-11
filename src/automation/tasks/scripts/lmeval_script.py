@@ -3,9 +3,50 @@ import torch
 from automation.utils import resolve_model_id, cast_args
 from automation.tasks.callbacks import lmeval_callbacks
 import lm_eval
+import numpy
 import json
 from transformers import AutoModelForCausalLM
 from pyhocon import ConfigFactory
+
+
+def average_groups(results:dict, groups:dict):
+
+    task = Task.current_task()
+    if len(task.get_models()["input"]) == 1:
+        clearml_model_handle = task.get_models()["input"][0]
+    else:
+        clearml_model_handle = None
+
+    def compute_average(metric_name: str, metric_config: dict):
+        if metric_name in results["results"] and "series" in metric_config:
+            score = results["results"][metric_name][metric_config["series"]]
+            weight = metric_config.get("weight", 1.0)
+            normalize = metric_config.get("normalize", False)
+        
+            if normalize:
+                score = (score - metric_config["random_score"]) / (1.0 - metric_config["random_score"])
+
+            return score * weight
+        else:
+            scores = []
+            for _metric_name, _options in metric_config.items():
+                scores.append(compute_average(_metric_name, _options))
+            average_score = numpy.mean(scores).item()
+
+            task.get_logger().report_single_value(name=metric_name, value=average_score)
+            task.get_logger().report_scalar(title=metric_name, series="average", iteration=0, value=average_score)
+
+            if clearml_model_handle is not None:
+                clearml_model_handle.report_single_value(name=metric_name, value=average_score)
+
+            results["results"][metric_name] = {"average": average_score}
+
+            return average_score
+
+    for metric_name, metric_config in groups.items():
+        compute_average(metric_name, metric_config)
+
+    return results
 
 
 def main():
@@ -20,8 +61,8 @@ def main():
     force_download = args["Args"]["force_download"]
     if isinstance(force_download, str):
         force_download = force_download.lower() == "true"
-    job_complete_callback = lm_eval_args.pop("job_complete_callback", None)
-    job_complete_callback_kwargs = lm_eval_args.pop("job_complete_callback_kwargs", {})
+    groups = lm_eval_args.pop("groups", None)
+
 
     # Resolve model_id
     model_id = resolve_model_id(model_id, clearml_model, task)
@@ -91,9 +132,8 @@ def main():
         ensure_ascii=False,
     )
 
-    if job_complete_callback is not None:
-        job_complete_callback_function = getattr(lmeval_callbacks, job_complete_callback)
-        results = job_complete_callback_function(results, **job_complete_callback_kwargs)
+    if groups is not None and len(groups) > 0:
+        results = average_groups(results, groups)
 
     task.upload_artifact(name="results", artifact_object=dumped)
 
