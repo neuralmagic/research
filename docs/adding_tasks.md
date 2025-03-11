@@ -3,9 +3,9 @@
 Below is a template on how to create a class for a specialized task.
 This task is responsible for:
 - Parsing arguments and registering task parameters and configurations.
-  - The core script will potentially be executed in a different environment. It only has access to the information registered as parameter and configurations.
+  - The core script may run in a separate execution environment, such as a remote worker or cloud instance. It only has access to the information registered as parameter and configurations.
   - Parameters are serialized as text, whereas configurations are serialized as HOCON objects (similar to json or yaml).
-    - Configurations offer more flexible and robust serialization. Ideal for arguments that need to be passed to core script and **need not** be overriden by pipelines or hyperparameter optimization.
+    - Configurations provide more flexible and robust serialization. They are ideal for arguments passed to the core script that should not be overridden by pipelines or hyperparameter optimization.
     - Parameters can be overriden by pipelines and hyperparameter optimization.
 - Defining packages needed to execute the task in the target environment.
 - Pointing to the core script that will execute the task in the target environment.
@@ -14,10 +14,10 @@ This task is responsible for:
 ## Specialized Task Class
 
 ```python
+import os
 from automation.tasks import BaseTask
 
 class SpecializedTask(BaseTask):
-
     # Define minimum set of packages needed by this class
     specialized_packages = ["library1", "library2"]
 
@@ -31,7 +31,7 @@ class SpecializedTask(BaseTask):
         config=None,
         packages=None,
         *args,
-        *kwargs,
+        **kwargs,
     ):
 
     # Parse arguments defined in config file
@@ -90,7 +90,7 @@ class SpecializedTask(BaseTask):
 
 ## Core script
 ```python
-from clearml import Task
+from clearml import Task, OutputModel
 from pyhocon import ConfigFactory
 # Specialized imports
 import library1
@@ -108,18 +108,19 @@ def main():
     arg1 = config_args["arg1"]
     arg3 = config_args["arg3"]
 
-    # Task stuff goes here
-    # ...
+    # Task processing
+    results = some_function(arg1, arg2, arg3)  # Placeholder for actual task logic
 
     # Don't forget to upload any relevant data (files, results, models)
     task.upload_artifact(name="results", artifact_object=results)
+
     task.get_logger().report_scalar(title="awesome results", series="accuracy", iteration=0, value=my_awesome_value)
 
     clearml_model = OutputModel(
         task=task, 
         name=task.name,
         framework="PyTorch", 
-        tags=tags,
+        tags=["specialized_task"],
     )
     clearml_model.update_weights(weights_filename=model_path, auto_delete_file=False)
 
@@ -130,7 +131,7 @@ if __name__ == "__main__":
 
 ## Add to src/automation/tasks.__init__.py
 ```python
-from automation.tasks.specialized_task.py import SpecializedTask
+from automation.tasks.specialized_task import SpecializedTask
 ```
 
 ## How to use it
@@ -141,7 +142,7 @@ task = SpecializedTask(
     project_name="alexandre_debug",
     task_name="specialized_task",
     specialized_arg1=1,
-    specialized_arg2="cool"
+    specialized_arg2="cool",
     specialized_arg3=2,
 )
 
