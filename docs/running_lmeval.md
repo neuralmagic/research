@@ -29,6 +29,31 @@ The `pretrained` field **must not be included** in `model_args`, as `LMEvalTask`
 ⚠️ **Note:**  
 The `model` argument is not user-configurable. It is **hardcoded to `model=vllm`** in `lmeval_script.py` to ensure compatibility with `vLLM`-based inference.
 
+## Groups
+
+This class supports computing **weighted averages** of multiple metrics.  
+For example, this feature can be used to compute an **aggregate OpenLLM or LeaderboardV2 score** instead of displaying the separate metrics individually.
+
+The feature is controlled via the optional `group` argument, which is a nested dictionary.  
+- The **top-level keys** represent the names of the aggregate metrics.
+- The **lower-level dictionaries** define the individual metrics to be included.
+- Each metric entry must include a `series` key, which specifies the name of the metric used in aggregation.
+
+### **Example: OpenLLM Aggregation**
+```python
+group = {
+    "openllm": {
+        "arc_challenge": {"series": "acc,none"},
+        "gsm8k": {"series": "exact_match,strict-match"},
+        "hellaswag": {"series": "acc_norm,none"},
+        "mmlu": {"series": "acc,none"},
+        "winogrande": {"series": "acc,none"},
+        "truthfulqa_mc2": {"series": "acc,none"},
+    }
+}
+```
+
+
 
 ## GSM8k Example
 
