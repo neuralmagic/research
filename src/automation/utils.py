@@ -4,6 +4,16 @@ import inspect
 import typing
 
 
+def dict_recursive_update(d: dict, u: dict) -> dict:
+    """Recursively updates a dictionary."""
+    for k, v in u.items():
+        if isinstance(v, dict):
+            d[k] = dict_recursive_update(d.get(k, {}), v)
+        else:
+            d[k] = v
+    return d
+
+
 def dict_to_argparse(data: dict) -> argparse.Namespace:
     """Converts a dictionary to an argparse.Namespace."""
     namespace = argparse.Namespace()

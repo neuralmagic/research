@@ -1,6 +1,7 @@
 from automation.pipelines import Pipeline
 from automation.tasks import LLMCompressorTask, LMEvalTask
 from automation.configs import DEFAULT_DOCKER_IMAGE
+from automation.utils import dict_recursive_update
 from typing import List, Optional
 
 class LLMCompressorLMEvalPipeline(Pipeline):
@@ -33,10 +34,10 @@ class LLMCompressorLMEvalPipeline(Pipeline):
                 parameters = config_kwargs.pop("parameters")
 
         llmcompressor_kwargs_ = config_kwargs.pop("llmcompressor_kwargs", {})
-        llmcompressor_kwargs_.update(llmcompressor_kwargs)
+        llmcompressor_kwargs_ = dict_recursive_update(llmcompressor_kwargs_, llmcompressor_kwargs)
 
         lmeval_kwargs_ = config_kwargs.pop("lmeval_kwargs", {})
-        lmeval_kwargs_.update(lmeval_kwargs)
+        lmeval_kwargs_ = dict_recursive_update(lmeval_kwargs_, lmeval_kwargs)
 
         self.model_id = model_id
         self.execution_queues = execution_queues
