@@ -1,7 +1,6 @@
 from clearml import Task
 import torch
 from automation.utils import resolve_model_id, cast_args
-from automation.tasks.callbacks import lmeval_callbacks
 import lm_eval
 import numpy
 import json
