@@ -2,6 +2,7 @@ import argparse
 from clearml import InputModel, Task
 import inspect
 import typing
+import psutil
 
 
 def dict_recursive_update(d: dict, u: dict) -> dict:
@@ -78,4 +79,15 @@ def cast_args(data: dict[str, str], func: callable) -> dict:
             converted_data[key] = value  # Keep as string if not in function signature
     
     return converted_data
+
+
+def kill_process_tree(pid):
+    try:
+        parent = psutil.Process(pid)
+        children = parent.children(recursive=True)
+        for child in children:
+            child.terminate()  # or child.kill()
+        parent.terminate()
+    except psutil.NoSuchProcess:
+        pass
 
