@@ -18,6 +18,7 @@ class LLMCompressorTask(BaseTask):
         packages: Optional[Sequence[str]]=None,
         dataset_name: Optional[str]="calibration",
         clearml_model: bool=False,
+        force_download: bool=False,
         save_directory: str="output",
         num_samples: int=512,
         max_seq_len: int=8192,
@@ -88,6 +89,7 @@ class LLMCompressorTask(BaseTask):
         # Store class attributes
         self.model_id = model_id
         self.clearml_model = clearml_model
+        self.force_download = force_download
         self.save_directory = save_directory
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "llmcompressor_script.py")
 
@@ -105,6 +107,7 @@ class LLMCompressorTask(BaseTask):
                 "recipe_args": self.recipe_args,
                 "dataset_name": self.dataset_name,
                 "clearml_model": self.clearml_model,
+                "self.force_download": self.force_download,
                 "save_directory": self.save_directory,
                 "num_samples": self.num_samples,
                 "max_seq_len": self.max_seq_len,

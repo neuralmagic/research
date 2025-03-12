@@ -19,6 +19,10 @@ def main():
     if isinstance(clearml_model, str):
         clearml_model = clearml_model.lower() == "true"
 
+    force_download = args["force_download"]
+    if isinstance(force_download, str):
+        force_download = force_download.lower() == "true"
+
     trust_remote_code = args["trust_remote_code"]
     if isinstance(trust_remote_code, str):
         trust_remote_code = trust_remote_code.lower() == "true"
@@ -31,7 +35,7 @@ def main():
     num_samples = int(args["num_samples"])
 
     # Resolve model_id
-    model_id = resolve_model_id(args["model_id"], clearml_model, task)
+    model_id = resolve_model_id(args["model_id"], clearml_model, force_download)
 
     # Set dtype
     dtype = "auto"

@@ -64,10 +64,7 @@ def main():
 
 
     # Resolve model_id
-    model_id = resolve_model_id(model_id, clearml_model, task)
-
-    if force_download:
-        AutoModelForCausalLM.from_pretrained(model_id, force_download=True,trust_remote_code=True)
+    model_id = resolve_model_id(model_id, clearml_model, force_download)
 
     # Determine number of gpus
     num_gpus = torch.cuda.device_count()

@@ -29,8 +29,13 @@ def main():
     if isinstance(clearml_model, str):
         clearml_model = clearml_model.lower() == "true"
 
+    force_download = args["Args"]["force_download"]
+    if isinstance(force_download, str):
+        force_download = force_download.lower() == "true"
+
+
     # Resolve model_id
-    model_id = resolve_model_id(args["Args"]["model_id"], bool(args["Args"]["clearml_model"]), task)
+    model_id = resolve_model_id(args["Args"]["model_id"], clearml_model, force_download)
 
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(

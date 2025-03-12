@@ -23,12 +23,16 @@ def dict_to_argparse(data: dict) -> argparse.Namespace:
     return namespace
 
 
-def resolve_model_id(model_id: str, clearml_model: bool, task: Task) -> str:
+def resolve_model_id(model_id: str, clearml_model: bool, force_download: bool=False) -> str:
     if clearml_model:
+        task = Task.current_task()
         input_model = InputModel(model_id=model_id)
         task.connect(input_model)
         return input_model.get_local_copy()
     else:
+        if force_download:
+            from torch import AutoModelForCausalLM
+            AutoModelForCausalLM.from_pretrained(model_id, force_download=True,trust_remote_code=True)
         return model_id
 
 

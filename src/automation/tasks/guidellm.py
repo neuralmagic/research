@@ -79,6 +79,7 @@ class GuideLLMTask(BaseTask):
         self.vllm_kwargs = vllm_kwargs
         self.guidellm_kwargs = guidellm_kwargs
         self.environment_variables = environment_variables
+        self.force_download = force_download
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "guidellm_script.py")
 
 
@@ -106,5 +107,6 @@ class GuideLLMTask(BaseTask):
                 "model_id": self.model_id,
                 "clearml_model": self.clearml_model,
                 "server_wait_time": self.server_wait_time,
+                "force_download": self.force_download,
             },
         }
