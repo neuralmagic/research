@@ -29,7 +29,8 @@ def resolve_model_id(model_id: str, clearml_model: bool, task: Task) -> str:
         return input_model.get_local_copy()
     else:
         return model_id
-    
+
+
 def cast_args(data: dict[str, str], func: callable) -> dict:
     """
     Converts dictionary values to match the expected argument types of a given callable.
