@@ -35,7 +35,7 @@ def main():
 
 
     # Resolve model_id
-    model_id = resolve_model_id(args["Args"]["model_id"], clearml_model, force_download)
+    model_id = resolve_model_id(args["Args"]["model"], clearml_model, force_download)
 
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(

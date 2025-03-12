@@ -17,7 +17,7 @@ class GuideLLMTask(BaseTask):
         self,
         project_name: str,
         task_name: str,
-        model_id: str,
+        model: str,
         server_wait_time: int=DEFAULT_SERVER_WAIT_TIME,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
@@ -73,7 +73,7 @@ class GuideLLMTask(BaseTask):
                 guidellm_kwargs[k] = v
 
         # Store class attributes
-        self.model_id = model_id
+        self.model = model
         self.clearml_model = clearml_model
         self.server_wait_time = server_wait_time
         self.vllm_kwargs = vllm_kwargs
@@ -104,7 +104,7 @@ class GuideLLMTask(BaseTask):
     def get_arguments(self):
         return {
             "Args": {
-                "model_id": self.model_id,
+                "model": self.model,
                 "clearml_model": self.clearml_model,
                 "server_wait_time": self.server_wait_time,
                 "force_download": self.force_download,
