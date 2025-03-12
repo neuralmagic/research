@@ -12,8 +12,12 @@ The following arguments configure the ClearML environment for the evaluation tas
 
 ## Model ID
 Instead of specifying the model ID in `model_args` (specifically the `pretrained` field), use the following arguments:
-- **model_id (required):** Model ID (HF or ClearML) or local path
-- clearml_model: boolean to indicate whether the model is a ClearML model
+- **model_id** (required): Model identifier, which can be:
+  - A **Hugging Face** model ID (e.g., `"meta-llama/Llama-3.2-1B-Instruct"`)
+  - A **ClearML model ID**
+  - A **local file path**
+- clearml_model (optional): boolean to indicate whether the model is a ClearML model
+- force_download (optional): boolean to indicate whether to force a fresh download of the model (valid for HF models only).
 
 ## lm_eval arguments
 The following arguments are passed directly to `lm_eval`:
