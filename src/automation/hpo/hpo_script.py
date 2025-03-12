@@ -6,7 +6,6 @@ from clearml import Task
 import automation.hpo.callbacks as callbacks
 from pyhocon import ConfigFactory
 from functools import partial
-import optuna
 
 OPTIMIZERS = {
     "GridSearch": GridSearch,
