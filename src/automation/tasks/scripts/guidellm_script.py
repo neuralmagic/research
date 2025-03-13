@@ -43,7 +43,6 @@ def main():
         model_id,
         guidellm_args["target"],
         args["Args"]["server_wait_time"],
-        task.id,
     )
 
     if not server_initialized:

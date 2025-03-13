@@ -15,5 +15,5 @@ task = GuideLLMTask(
     vllm_kwargs={"enable-chunked-prefill": True}
 )
 
-task.execute_remotely("oneshot-a6000x1")
+task.execute_remotely("oneshot-a100x1")
 #task.execute_locally()
