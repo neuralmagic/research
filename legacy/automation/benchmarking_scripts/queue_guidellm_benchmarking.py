@@ -14,8 +14,11 @@ parser.add_argument("--clearml-model", action="store_true", default=False)
 parser.add_argument("--packages", type=str, nargs="+", default=None)
 parser.add_argument("--build-vllm", action="store_true", default=False)
 parser.add_argument("--dtype", type=str, default=None)
+parser.add_argument("--enable-chunked-prefill", action="store_true", default=False)
 parser.add_argument("--max-model-len", type=int, default=None)
 parser.add_argument("--num-gpus", type=int, default=None)
+parser.add_argument("--max-concurrency", type=int, default=None)
+parser.add_argument("--request-timeout", type=int, default=None)
 parser.add_argument("--server-wait-time", type=int, default=600)
 
 args, unparsed_args = parser.parse_known_args()
@@ -38,7 +41,7 @@ args = vars(args)
 additional_packages = args["packages"]
 
 packages = [
-    "git+https://github.com/neuralmagic/guidellm.git@fd04739254d8eeb5ebff21ac2dc4c79c47645703",
+    "git+https://github.com/neuralmagic/guidellm.git@http_backend",
     "sentencepiece",
 ]
 
@@ -54,7 +57,6 @@ if not vllm_specified:
     if args["build_vllm"]:
         packages.append("git+https://github.com/vllm-project/vllm.git@main")
     else:
-        #packages.append("https://vllm-wheels.s3.us-west-2.amazonaws.com/nightly/vllm-1.0.0.dev-cp38-abi3-manylinux1_x86_64.whl")
         packages.append("vllm")
 
 Task.force_store_standalone_script()
@@ -111,6 +113,8 @@ if num_gpus > 1:
     server_command.extend(["--tensor-parallel-size", str(num_gpus)])
 if args["max_model_len"] is not None:
     server_command.extend(["--max-model-len", str(args["max_model_len"])])
+if args["enable_chunked_prefill"]:
+    server_command.extend(["--enable-chunked-prefill", "true"])
 if args["dtype"] is not None:
     server_command.extend(["--dtype", args["dtype"]])
 
@@ -139,7 +143,13 @@ if server_initialized:
         inputs.append(str(v))
 
     print("Starting benchmarking...")
-    subprocess.run(" ".join(inputs), shell=True)
+    subprocess_env = os.environ.copy()
+    if args["max_concurrency"] is not None:
+        subprocess_env["GUIDELLM__MAX_CONCURRENCY"] = str(args["max_concurrency"])
+    if args["request_timeout"] is not None:
+        subprocess_env["GUIDELLM__REQUEST_TIMEOUT"] = str(args["request_timeout"])
+
+    subprocess.run(" ".join(inputs), shell=True, env=subprocess_env)
 
     server_process.kill()
 
