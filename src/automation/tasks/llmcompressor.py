@@ -107,7 +107,7 @@ class LLMCompressorTask(BaseTask):
                 "recipe_args": self.recipe_args,
                 "dataset_name": self.dataset_name,
                 "clearml_model": self.clearml_model,
-                "self.force_download": self.force_download,
+                "force_download": self.force_download,
                 "save_directory": self.save_directory,
                 "num_samples": self.num_samples,
                 "max_seq_len": self.max_seq_len,
