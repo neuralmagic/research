@@ -9,5 +9,5 @@ task = LMEvalTask(
     batch_size="auto",    
 )
 
-#task.execute_remotely("oneshot-a6000x1")
-task.execute_locally()
+task.execute_remotely("oneshot-a6000x1")
+#task.execute_locally()
