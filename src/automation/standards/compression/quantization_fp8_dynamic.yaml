@@ -1,0 +1,23 @@
+recipe_args:
+  observer: "mse"
+recipe:
+  quant_stage:
+    quant_modifiers:
+      QuantizationModifier:
+        ignore: ["lm_head"]
+        config_groups:
+          group_0:
+            targets: ["Linear"]
+            weights:
+              num_bits: 8
+              type: "float"
+              symmetric: true
+              strategy: "channel"
+              observer: "$observer"
+            input_activations:
+              num_bits: 8
+              type: "float"
+              symmetric: true
+              strategy: "token"
+              dynamic: true
+              observer: "memoryless"

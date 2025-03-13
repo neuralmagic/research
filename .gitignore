@@ -1,0 +1,8 @@
+*.pyc
+*.safetensors
+*.bin
+src/automation.egg-info/dependency_links.txt
+src/automation.egg-info/PKG-INFO
+src/automation.egg-info/requires.txt
+src/automation.egg-info/SOURCES.txt
+src/automation.egg-info/top_level.txt

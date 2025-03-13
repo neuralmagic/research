@@ -1,0 +1,3 @@
+data_type: "emulated"
+data: "prompt_tokens=512,generated_tokens=256"
+GUIDELLM__REQUEST_TIMEOUT: 21600
