@@ -1,4 +1,4 @@
-from automation.pipeline import LLMCompressorLMEvalPipeline
+from automation.pipelines import LLMCompressorLMEvalPipeline
 from automation.hpo import BaseHPO
 from clearml.automation import UniformParameterRange, DiscreteParameterRange
 
