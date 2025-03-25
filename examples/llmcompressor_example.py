@@ -5,7 +5,7 @@ quant_stage:
   quant_modifiers:
     QuantizationModifier:
       ignore: ["lm_head"]
-      scheme: "W8A16"
+      scheme: "W8A8"
       targets: "Linear"
       observer: $observer
 """
