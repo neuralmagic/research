@@ -78,6 +78,7 @@ def load_vlm_messages(
     split="train",
     num_samples=None,
     processor=None,
+    message_processor=None,
 ):
     dataset_name = dataset_name if isinstance(dataset_name, list) else [dataset_name]
     subset = subset if isinstance(subset, list) else [subset]
@@ -130,12 +131,15 @@ def load_vlm_messages(
                 }
             )
         
-        return processor.apply_chat_template(
-            messages, 
-            add_generation_prompt=False, 
-            tokenize=True,
-            return_dict=True, 
-            return_tensors="pt"
-        )
+        if message_processor is None:
+            return processor.apply_chat_template(
+                messages, 
+                add_generation_prompt=False, 
+                tokenize=True,
+                return_dict=True, 
+                return_tensors="pt"
+            )
+        else:
+            return message_processor(messages)
 
     return dataset.map(preprocess_sample, remove_columns=ds.column_names)
