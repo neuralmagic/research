@@ -7,7 +7,7 @@ import os
 
 class BaseTask():
 
-    base_packages = ["git+https://github.com/neuralmagic/research.git@alex-development"]
+    base_packages = ["git+https://github.com/neuralmagic/research.git@vision"]
 
     def __init__(
         self,
