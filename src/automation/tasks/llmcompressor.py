@@ -27,6 +27,7 @@ class LLMCompressorTask(BaseTask):
         max_seq_len: int=8192,
         trust_remote_code: bool=False,
         max_memory_per_gpu: str="hessian",
+        tracing_class: Optional[str]=None,
         tags: Union[str, List[str]]=None,
         task_type: str="training",
         config: Optional[str]=None,
@@ -85,6 +86,7 @@ class LLMCompressorTask(BaseTask):
         self.trust_remote_code = config_kwargs.pop("trust_remote_code", trust_remote_code)
         self.max_memory_per_gpu = config_kwargs.pop("max_memory_per_gpu", max_memory_per_gpu)
         self.dataset_loader = dataset_loader
+        self.tracing_class = tracing_class
 
         if tags is not None:
             tags = list(set(config_kwargs.pop("tags", []).extend(tags)))
@@ -133,6 +135,7 @@ class LLMCompressorTask(BaseTask):
                 "max_seq_len": self.max_seq_len,
                 "trust_remote_code": self.trust_remote_code,
                 "max_memory_per_gpu": self.max_memory_per_gpu,
+                "tracing_class": self.tracing_class,
                 "tags": self.tags,
             },
         }

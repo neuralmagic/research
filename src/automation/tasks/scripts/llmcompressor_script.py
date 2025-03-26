@@ -11,6 +11,7 @@ from transformers import AutoModelForCausalLM, AutoProcessor
 from clearml import OutputModel, Task
 import torch
 from automation.utils import resolve_model_id
+from llmcompressor.transformers import tracing
 
 def main():
     task = Task.current_task()
@@ -35,6 +36,10 @@ def main():
     dataset_loader = args["dataset_loader"]
     if isinstance(dataset_loader, str) and dataset_loader.lower() == "none":
         dataset_loader = None
+
+    tracing_class = args["tracing_class"]
+    if isinstance(tracing_class, str) and tracing_class.lower() == "none":
+        tracing_class = None
 
     max_seq_len = int(args["max_seq_len"])
 
@@ -88,12 +93,21 @@ def main():
             )
 
     # Load model
-    model = AutoModelForCausalLM.from_pretrained(
-        model_id, 
-        torch_dtype=dtype, 
-        device_map=device_map, 
-        trust_remote_code=trust_remote_code,
-    )
+    if tracing_class is None:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_id, 
+            torch_dtype=dtype, 
+            device_map=device_map, 
+            trust_remote_code=trust_remote_code,
+        )
+    else:
+        model_class = getattr(tracing, tracing_class)
+        model = model_class.from_pretrained(
+            model_id, 
+            torch_dtype=dtype, 
+            device_map=device_map, 
+            trust_remote_code=trust_remote_code,
+        )
 
     # Load recipe
     recipe = args["recipe"]
