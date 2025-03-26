@@ -7,11 +7,15 @@ def load_llm_messages(
     num_samples=None, 
     max_seq_len=None, 
     tokenizer=None,
+    processor=None,
 ):
 
     ds = load_dataset(dataset_name, name=subset, split=split)
     if num_samples is not None:
         ds = ds.select(range(num_samples))
+
+    if tokenizer is None:
+        tokenizer = processor
 
     if tokenizer is not None:
         def preprocess_sample(example):

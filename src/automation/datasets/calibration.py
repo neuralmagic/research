@@ -13,6 +13,9 @@ def load_calibration_dataset(
     tokenizer=None,
     processor=None,
 ):
+    if tokenizer is None:
+        tokenizer = processor
+
     if vision_samples is None and text_samples is None and num_samples is not None:
         text_samples = num_samples
 
