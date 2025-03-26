@@ -140,6 +140,6 @@ def load_vlm_messages(
                 return_tensors="pt"
             )
         else:
-            return message_processor(messages)
+            return message_processor(messages, processor)
 
     return dataset.map(preprocess_sample, remove_columns=ds.column_names)
