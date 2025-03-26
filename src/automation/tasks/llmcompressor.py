@@ -1,6 +1,6 @@
 from automation.tasks.base_task import BaseTask
 from automation.configs import DEFAULT_DOCKER_IMAGE
-from typing import Union, List, Optional, Sequence, Any
+from typing import Union, List, Optional, Sequence, Any, Callable
 import os
 import yaml
 
@@ -17,10 +17,13 @@ class LLMCompressorTask(BaseTask):
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
         dataset_name: Optional[str]="calibration",
+        dataset_loader: Optional[Callable]=None,
         clearml_model: bool=False,
         force_download: bool=False,
         save_directory: str="output",
-        num_samples: int=512,
+        text_samples: Optional[int]=None,
+        vision_samples: Optional[int]=None,
+        num_samples: Optional[int]=512,
         max_seq_len: int=8192,
         trust_remote_code: bool=False,
         max_memory_per_gpu: str="hessian",
@@ -75,10 +78,13 @@ class LLMCompressorTask(BaseTask):
             self.recipe_args = config_recipe_args
 
         self.dataset_name = config_kwargs.pop("dataset_name", dataset_name)
+        self.text_samples = config_kwargs.pop("text_samples", text_samples)
+        self.vision_samples = config_kwargs.pop("vision_samples", vision_samples)
         self.num_samples = config_kwargs.pop("num_samples", num_samples)
         self.max_seq_len = config_kwargs.pop("max_seq_len", max_seq_len)
         self.trust_remote_code = config_kwargs.pop("trust_remote_code", trust_remote_code)
         self.max_memory_per_gpu = config_kwargs.pop("max_memory_per_gpu", max_memory_per_gpu)
+        self.dataset_loader = dataset_loader
 
         if tags is not None:
             tags = list(set(config_kwargs.pop("tags", []).extend(tags)))
@@ -95,8 +101,19 @@ class LLMCompressorTask(BaseTask):
 
 
     def script(self):
+        self.set_dataset_loader()
         from automation.tasks.scripts.llmcompressor_script import main
         main()
+
+
+    def set_dataset_loader(self):
+        if self.dataset_loader is not None:
+            self.task.upload_artifact("dataset loader", self.dataset_loader)
+    
+
+    def create_task(self):
+        super().create_task()
+        self.set_dataset_loader()
 
 
     def get_arguments(self):
@@ -106,9 +123,12 @@ class LLMCompressorTask(BaseTask):
                 "recipe": self.recipe,
                 "recipe_args": self.recipe_args,
                 "dataset_name": self.dataset_name,
+                "dataset_loader": "dataset loader" if self.dataset_loader else None,
                 "clearml_model": self.clearml_model,
                 "force_download": self.force_download,
                 "save_directory": self.save_directory,
+                "text_samples": self.text_samples,
+                "vision_samples": self.vision_samples,
                 "num_samples": self.num_samples,
                 "max_seq_len": self.max_seq_len,
                 "trust_remote_code": self.trust_remote_code,

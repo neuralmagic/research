@@ -1,12 +1,13 @@
+import pickle
 import os
-from automation.datasets import SUPPORTED_DATASETS, load_dataset_messages
+from automation.datasets import SUPPORTED_DATASETS
 from automation.standards.compression.smoothquant_mappings import MAPPINGS_PER_MODEL_CONFIG
 from llmcompressor.transformers.compression.helpers import (
     calculate_offload_device_map,
     custom_offload_device_map,
 )
 from llmcompressor.transformers import oneshot
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoProcessor
 from clearml import OutputModel, Task
 import torch
 from automation.utils import resolve_model_id
@@ -31,8 +32,30 @@ def main():
     if isinstance(dataset_name, str) and dataset_name.lower() == "none":
         dataset_name = None
 
+    dataset_loader = args["dataset_loader"]
+    if isinstance(dataset_loader, str) and dataset_loader.lower() == "none":
+        dataset_loader = None
+
     max_seq_len = int(args["max_seq_len"])
-    num_samples = int(args["num_samples"])
+
+    num_samples = args["num_samples"]
+    if isinstance(num_samples, str):
+        if num_samples.lower() == "none":
+            num_samples = None
+    num_samples = int(num_samples)
+
+    text_samples = args["text_samples"]
+    if isinstance(text_samples, str):
+        if text_samples.lower() == "none":
+            text_samples = None
+    text_samples = int(text_samples)
+
+    vision_samples = args["vision_samples"]
+    if isinstance(vision_samples, str):
+        if vision_samples.lower() == "none":
+            vision_samples = None
+    vision_samples = int(vision_samples)
+
 
     # Resolve model_id
     model_id = resolve_model_id(args["model_id"], clearml_model, force_download)
@@ -89,25 +112,34 @@ def main():
     task.upload_artifact("recipe", recipe)
         
     # Load dataset
-    tokenizer = AutoTokenizer.from_pretrained(
+    processor = AutoProcessor.from_pretrained(
         model_id, 
         trust_remote_code=trust_remote_code,
     )
-    if dataset_name is None:
-        dataset = None
-    elif args["dataset_name"] in SUPPORTED_DATASETS:
-        dataset = SUPPORTED_DATASETS[args["dataset_name"]](
+
+    if dataset_loader is None:
+        if dataset_name is None:
+            dataset = None
+        elif args["dataset_name"] in SUPPORTED_DATASETS:
+            dataset = SUPPORTED_DATASETS[args["dataset_name"]](
+                text_samples=text_samples,
+                vision_samples=vision_samples,
+                num_samples=num_samples,
+                max_seq_len=max_seq_len,
+                processor=processor,
+            )
+    else:
+        dataset_loader_path = task.artifacts[dataset_loader].get_local_copy()
+        dataset_loader = pickle.load(open(dataset_loader_path), "rb")
+        dataset = dataset_loader(
+            args["dataset_name"],
+            text_samples=text_samples,
+            vision_samples=vision_samples,
             num_samples=num_samples,
             max_seq_len=max_seq_len,
-            tokenizer=tokenizer,
+            processor=processor,
         )
-    else:
-        dataset = load_dataset_messages(
-            args["dataset_name"], 
-            num_samples=num_samples, 
-            max_seq_len=max_seq_len,
-            tokenizer=tokenizer,
-        )
+
 
     # Apply recipe to the model
     oneshot(
@@ -120,7 +152,7 @@ def main():
 
     # Save model compressed
     model.save_pretrained(args["save_directory"], save_compressed=True)
-    tokenizer.save_pretrained(args["save_directory"])
+    processor.save_pretrained(args["save_directory"])
 
     # Upload model to ClearML
     clearml_model = OutputModel(
