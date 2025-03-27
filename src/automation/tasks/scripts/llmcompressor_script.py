@@ -113,7 +113,6 @@ def main(
                 processor=processor,
             )
     else:
-        dataset_loader = dill.load(task.artifacts[dataset_loader].get())
         dataset = dataset_loader(
             dataset_name,
             text_samples=text_samples,
@@ -130,7 +129,6 @@ def main(
         dataset=dataset,
         recipe=recipe,
         max_seq_length=max_seq_len,
-        num_calibration_samples=num_samples,
     )
 
     # Save model compressed
@@ -157,7 +155,6 @@ if __name__ == '__main__':
     trust_remote_code = parse_argument(args["trust_remote_code"], bool)
     model_id = parse_argument(args["model_id"], str)
     dataset_name = parse_argument(args["dataset_name"], str)
-    dataset_loader = parse_argument(args["dataset_loader"], str)
     tracing_class = parse_argument(args["tracing_class"], str)
     save_directory = parse_argument(args["save_directory"], str)
     max_memory_per_gpu = parse_argument(args["max_memory_per_gpu"], str)
@@ -168,6 +165,11 @@ if __name__ == '__main__':
     recipe = args.get("recipe", None)
     recipe_args = args.get("recipe_args", None)
     tags = args.get("tags", None)
+
+    dataset_loader = parse_argument(args["dataset_loader"], str)
+    if dataset_loader is not None:
+        dataset_loader = dill.load(task.artifacts[dataset_loader].get())
+
 
     main(
         model_id,
