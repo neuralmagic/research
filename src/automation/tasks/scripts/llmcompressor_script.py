@@ -17,10 +17,11 @@ from llmcompressor.transformers import tracing
 def main():
     task = Task.current_task()
 
+    # Parse arguments
     args = task.get_parameters_as_dict(cast=True)["Args"]
     clearml_model = parse_argument(args["clearml_model"], bool)
     force_download = parse_argument(args["force_download"], bool)
-    trust_remote_code = parse_argument(args["fortrust_remote_code"], bool)
+    trust_remote_code = parse_argument(args["trust_remote_code"], bool)
     dataset_name = parse_argument(args["dataset_name"], str)
     dataset_loader = parse_argument(args["dataset_loader"], str)
     tracing_class = parse_argument(args["tracing_class"], str)
