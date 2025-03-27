@@ -31,9 +31,8 @@ def main(
     num_samples,
     save_directory,
     tags,
+    task,
 ):
-    task = Task.current_task()
-
     # Resolve model_id
     model_id = resolve_model_id(model_id, clearml_model, force_download)
 
@@ -93,7 +92,8 @@ def main(
         for key, value in recipe_args.items():
             recipe = recipe.replace(f"${key}", str(value))
 
-    task.upload_artifact("recipe", recipe)
+    if task is not None:
+        task.upload_artifact("recipe", recipe)
         
     # Load dataset
     processor = AutoProcessor.from_pretrained(
@@ -136,13 +136,14 @@ def main(
     processor.save_pretrained(save_directory)
 
     # Upload model to ClearML
-    clearml_model = OutputModel(
-        task=task, 
-        name=task.name,
-        framework="PyTorch", 
-        tags=[tags] if isinstance(tags, str) else tags or []
-    )
-    clearml_model.update_weights(weights_filename=save_directory, auto_delete_file=False)
+    if task is not None:
+        clearml_model = OutputModel(
+            task=task, 
+            name=task.name,
+            framework="PyTorch", 
+            tags=[tags] if isinstance(tags, str) else tags or []
+        )
+        clearml_model.update_weights(weights_filename=save_directory, auto_delete_file=False)
 
 
 if __name__ == '__main__':
@@ -188,4 +189,5 @@ if __name__ == '__main__':
         num_samples,
         save_directory,
         tags,
+        task,
     )
