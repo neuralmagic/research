@@ -98,7 +98,6 @@ def load_vlm_messages(
 
     datasets = []
     for dataset_name_, subset_, split_, num_samples_ in zip(dataset_name, subset, split, num_samples):
-        print(dataset_name_, subset_, split_, num_samples_)
         if num_samples_ is None or num_samples_ == 0:
             continue
 
