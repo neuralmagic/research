@@ -10,57 +10,24 @@ from llmcompressor.transformers import oneshot
 from transformers import AutoModelForCausalLM, AutoProcessor
 from clearml import OutputModel, Task
 import torch
-from automation.utils import resolve_model_id
+from automation.utils import resolve_model_id, parse_argument
 from llmcompressor.transformers import tracing
+
 
 def main():
     task = Task.current_task()
 
     args = task.get_parameters_as_dict(cast=True)["Args"]
-    clearml_model = args["clearml_model"]
-    if isinstance(clearml_model, str):
-        clearml_model = clearml_model.lower() == "true"
-
-    force_download = args["force_download"]
-    if isinstance(force_download, str):
-        force_download = force_download.lower() == "true"
-
-    trust_remote_code = args["trust_remote_code"]
-    if isinstance(trust_remote_code, str):
-        trust_remote_code = trust_remote_code.lower() == "true"
-
-    dataset_name = args["dataset_name"]
-    if isinstance(dataset_name, str) and dataset_name.lower() == "none":
-        dataset_name = None
-
-    dataset_loader = args["dataset_loader"]
-    if isinstance(dataset_loader, str) and dataset_loader.lower() == "none":
-        dataset_loader = None
-
-    tracing_class = args["tracing_class"]
-    if isinstance(tracing_class, str) and tracing_class.lower() == "none":
-        tracing_class = None
-
-    max_seq_len = int(args["max_seq_len"])
-
-    num_samples = args["num_samples"]
-    if isinstance(num_samples, str):
-        if num_samples.lower() == "none":
-            num_samples = None
-    num_samples = int(num_samples)
-
-    text_samples = args["text_samples"]
-    if isinstance(text_samples, str):
-        if text_samples.lower() == "none":
-            text_samples = None
-    text_samples = int(text_samples)
-
-    vision_samples = args["vision_samples"]
-    if isinstance(vision_samples, str):
-        if vision_samples.lower() == "none":
-            vision_samples = None
-    vision_samples = int(vision_samples)
-
+    clearml_model = parse_argument(args["clearml_model"], bool)
+    force_download = parse_argument(args["force_download"], bool)
+    trust_remote_code = parse_argument(args["fortrust_remote_code"], bool)
+    dataset_name = parse_argument(args["dataset_name"], str)
+    dataset_loader = parse_argument(args["dataset_loader"], str)
+    tracing_class = parse_argument(args["tracing_class"], str)
+    max_seq_len = parse_argument(args["max_seq_len"], int)
+    num_samples = parse_argument(args["num_samples"], int)
+    text_samples = parse_argument(args["text_samples"], int)
+    vision_samples = parse_argument(args["vision_samples"], int)
 
     # Resolve model_id
     model_id = resolve_model_id(args["model_id"], clearml_model, force_download)

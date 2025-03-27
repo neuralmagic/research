@@ -5,6 +5,22 @@ import typing
 import psutil
 
 
+def parse_argument(argument, argument_type):
+    if argument is None:
+        return None
+    elif isinstance(argument, str) and argument.lower() == "none":
+        return None
+    elif isinstance(argument, argument_type):
+        return argument
+    elif isinstance(argument, str):
+        if argument_type is bool:
+            return argument.lower() == "true"
+        else:
+            return argument_type(argument)
+    else:
+        return argument_type(argument)
+
+
 def dict_recursive_update(d: dict, u: dict) -> dict:
     """Recursively updates a dictionary."""
     for k, v in u.items():
