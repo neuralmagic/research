@@ -112,7 +112,7 @@ class LLMCompressorTask(BaseTask):
 
     def set_dataset_loader(self):
         if self.dataset_loader is not None:
-            f = open("temp.pkl")
+            f = open("temp.pkl", "w")
             dill.dump(self.dataset_loader, f)
             f.close()
             self.task.upload_artifact("dataset loader", f)
