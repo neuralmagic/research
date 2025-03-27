@@ -30,6 +30,7 @@ def main(
     vision_samples,
     num_samples,
     save_directory,
+    data_collator,
     tags,
     task,
 ):
@@ -122,6 +123,19 @@ def main(
             processor=processor,
         )
 
+    if text_samples is None and num_samples is not None:
+        text_samples = num_samples
+
+    num_calibration_samples = 0
+    if text_samples is not None:
+        num_calibration_samples += text_samples
+
+    if vision_samples is not None:
+        num_calibration_samples += vision_samples
+
+    kwargs = {}
+    if data_collator is not None:
+        kwargs["data_collator"] = data_collator
 
     # Apply recipe to the model
     oneshot(
@@ -129,6 +143,8 @@ def main(
         dataset=dataset,
         recipe=recipe,
         max_seq_length=max_seq_len,
+        num_calibration_samples=num_calibration_samples,
+        **kwargs,
     )
 
     # Save model compressed
@@ -171,6 +187,10 @@ if __name__ == '__main__':
     if dataset_loader is not None:
         dataset_loader = dill.load(task.artifacts[dataset_loader].get())
 
+    data_collator = parse_argument(args["data_collator"], str)
+    if data_collator is not None:
+        data_collator = dill.load(task.artifacts[data_collator].get())
+
 
     main(
         model_id,
@@ -188,6 +208,7 @@ if __name__ == '__main__':
         vision_samples,
         num_samples,
         save_directory,
+        data_collator,
         tags,
         task,
     )

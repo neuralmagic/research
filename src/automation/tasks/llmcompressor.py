@@ -20,6 +20,7 @@ class LLMCompressorTask(BaseTask):
         packages: Optional[Sequence[str]]=None,
         dataset_name: Optional[str]="calibration",
         dataset_loader: Optional[Callable]=None,
+        data_collator: Optional[Callable]=None,
         clearml_model: bool=False,
         force_download: bool=False,
         save_directory: str="output",
@@ -88,6 +89,7 @@ class LLMCompressorTask(BaseTask):
         self.trust_remote_code = config_kwargs.pop("trust_remote_code", trust_remote_code)
         self.max_memory_per_gpu = config_kwargs.pop("max_memory_per_gpu", max_memory_per_gpu)
         self.dataset_loader = dataset_loader
+        self.data_collator = data_collator
         self.tracing_class = tracing_class
 
         if tags is not None:
@@ -105,22 +107,28 @@ class LLMCompressorTask(BaseTask):
 
 
     def script(self):
-        self.set_dataset_loader()
+        self.upload_callables()
         from automation.tasks.scripts.llmcompressor_script import main
         main()
 
 
-    def set_dataset_loader(self):
+    def upload_callables(self):
         if self.dataset_loader is not None:
             buffer = io.BytesIO()
             dill.dump(self.dataset_loader, buffer)
             buffer.seek(0)
             self.task.upload_artifact("dataset loader", buffer)
-    
+
+        if self.data_collator is not None:
+            buffer = io.BytesIO()
+            dill.dump(self.data_collator, buffer)
+            buffer.seek(0)
+            self.task.upload_artifact("data collator", buffer)
+
 
     def create_task(self):
         super().create_task()
-        self.set_dataset_loader()
+        self.upload_callables()
 
 
     def get_arguments(self):
