@@ -143,8 +143,7 @@ def main():
                 processor=processor,
             )
     else:
-        dataset_loader_path = task.artifacts[dataset_loader].get_local_copy()
-        dataset_loader = dill.load(open(dataset_loader_path, "rb"))
+        dataset_loader = dill.load(task.artifacts[dataset_loader].get())
         dataset = dataset_loader(
             args["dataset_name"],
             text_samples=text_samples,
