@@ -3,6 +3,8 @@ from automation.configs import DEFAULT_DOCKER_IMAGE
 from typing import Union, List, Optional, Sequence, Any, Callable
 import os
 import yaml
+import dill
+import io
 
 class LLMCompressorTask(BaseTask):
     llmcompressor_packages = ["git+https://github.com/vllm-project/llm-compressor.git"]
@@ -110,7 +112,10 @@ class LLMCompressorTask(BaseTask):
 
     def set_dataset_loader(self):
         if self.dataset_loader is not None:
-            self.task.upload_artifact("dataset loader", self.dataset_loader)
+            buffer = io.BytesIO()
+            dill.dump(self.dataset_loader, buffer)
+            buffer.seek(0)
+            self.task.upload_artifact("dataset loader", buffer.getvalue())
     
 
     def create_task(self):

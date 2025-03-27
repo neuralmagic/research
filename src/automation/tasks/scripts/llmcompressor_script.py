@@ -1,4 +1,4 @@
-import pickle
+import dill
 import os
 from automation.datasets import SUPPORTED_DATASETS
 from automation.standards.compression.smoothquant_mappings import MAPPINGS_PER_MODEL_CONFIG
@@ -144,7 +144,7 @@ def main():
             )
     else:
         dataset_loader_path = task.artifacts[dataset_loader].get_local_copy()
-        dataset_loader = pickle.load(open(dataset_loader_path, "rb"))
+        dataset_loader = dill.load(open(dataset_loader_path, "rb"))
         dataset = dataset_loader(
             args["dataset_name"],
             text_samples=text_samples,
