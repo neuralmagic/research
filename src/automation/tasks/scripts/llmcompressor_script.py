@@ -14,36 +14,40 @@ from automation.utils import resolve_model_id, parse_argument
 from llmcompressor.transformers import tracing
 
 
-def main():
+def main(
+    model_id,
+    clearml_model,
+    force_download,
+    max_memory_per_gpu,
+    tracing_class,
+    trust_remote_code,
+    recipe,
+    recipe_args,
+    dataset_loader,
+    dataset_name,
+    max_seq_len,
+    text_samples,
+    vision_samples,
+    num_samples,
+    save_directory,
+    tags,
+):
     task = Task.current_task()
 
-    # Parse arguments
-    args = task.get_parameters_as_dict(cast=True)["Args"]
-    clearml_model = parse_argument(args["clearml_model"], bool)
-    force_download = parse_argument(args["force_download"], bool)
-    trust_remote_code = parse_argument(args["trust_remote_code"], bool)
-    dataset_name = parse_argument(args["dataset_name"], str)
-    dataset_loader = parse_argument(args["dataset_loader"], str)
-    tracing_class = parse_argument(args["tracing_class"], str)
-    max_seq_len = parse_argument(args["max_seq_len"], int)
-    num_samples = parse_argument(args["num_samples"], int)
-    text_samples = parse_argument(args["text_samples"], int)
-    vision_samples = parse_argument(args["vision_samples"], int)
-
     # Resolve model_id
-    model_id = resolve_model_id(args["model_id"], clearml_model, force_download)
+    model_id = resolve_model_id(model_id, clearml_model, force_download)
 
     # Set dtype
     dtype = "auto"
 
     # Set device map
-    if args["max_memory_per_gpu"] == "auto":
+    if max_memory_per_gpu == "auto":
         device_map = "auto"
     else:
         # Determine number of gpus
         num_gpus = torch.cuda.device_count()
         
-        if args["max_memory_per_gpu"] == "hessian":
+        if max_memory_per_gpu == "hessian":
             device_map = calculate_offload_device_map(
                 model_id, 
                 reserve_for_hessians=True, 
@@ -54,7 +58,7 @@ def main():
         else:
             device_map = custom_offload_device_map(
                 model_id, 
-                max_memory_per_gpu=args["max_memory_per_gpu"] + "GB",
+                max_memory_per_gpu=max_memory_per_gpu + "GB",
                 num_gpus=num_gpus, 
                 torch_dtype=dtype,
                 trust_remote_code=trust_remote_code,
@@ -78,17 +82,15 @@ def main():
         )
 
     # Load recipe
-    recipe = args["recipe"]
     if isinstance(recipe, str) and os.path.isfile(recipe):
         with open(recipe, "r", encoding="utf-8") as file:
             recipe = file.read()
 
-    recipe_args = args.get("recipe_args", None)
     if recipe_args is not None:
         if "smoothquant_mappings" in recipe_args and recipe_args["smoothquant_mappings"] in MAPPINGS_PER_MODEL_CONFIG:
             recipe_args["smoothquant_mappings"] = MAPPINGS_PER_MODEL_CONFIG[recipe_args["smoothquant_mappings"]]
             
-        for key, value in args["recipe_args"].items():
+        for key, value in recipe_args.items():
             recipe = recipe.replace(f"${key}", str(value))
 
     task.upload_artifact("recipe", recipe)
@@ -102,8 +104,8 @@ def main():
     if dataset_loader is None:
         if dataset_name is None:
             dataset = None
-        elif args["dataset_name"] in SUPPORTED_DATASETS:
-            dataset = SUPPORTED_DATASETS[args["dataset_name"]](
+        elif dataset_name in SUPPORTED_DATASETS:
+            dataset = SUPPORTED_DATASETS[dataset_name](
                 text_samples=text_samples,
                 vision_samples=vision_samples,
                 num_samples=num_samples,
@@ -113,7 +115,7 @@ def main():
     else:
         dataset_loader = dill.load(task.artifacts[dataset_loader].get())
         dataset = dataset_loader(
-            args["dataset_name"],
+            dataset_name,
             text_samples=text_samples,
             vision_samples=vision_samples,
             num_samples=num_samples,
@@ -132,18 +134,56 @@ def main():
     )
 
     # Save model compressed
-    model.save_pretrained(args["save_directory"], save_compressed=True)
-    processor.save_pretrained(args["save_directory"])
+    model.save_pretrained(save_directory, save_compressed=True)
+    processor.save_pretrained(save_directory)
 
     # Upload model to ClearML
     clearml_model = OutputModel(
         task=task, 
         name=task.name,
         framework="PyTorch", 
-        tags=[args["tags"]] if isinstance(args["tags"], str) else args["tags"] or []
+        tags=[tags] if isinstance(tags, str) else tags or []
     )
-    clearml_model.update_weights(weights_filename=args["save_directory"], auto_delete_file=False)
+    clearml_model.update_weights(weights_filename=save_directory, auto_delete_file=False)
 
 
 if __name__ == '__main__':
-    main()
+    task = Task.current_task()
+
+    # Parse arguments
+    args = task.get_parameters_as_dict(cast=True)["Args"]
+    clearml_model = parse_argument(args["clearml_model"], bool)
+    force_download = parse_argument(args["force_download"], bool)
+    trust_remote_code = parse_argument(args["trust_remote_code"], bool)
+    model_id = parse_argument(args["model_id"], str)
+    dataset_name = parse_argument(args["dataset_name"], str)
+    dataset_loader = parse_argument(args["dataset_loader"], str)
+    tracing_class = parse_argument(args["tracing_class"], str)
+    save_directory = parse_argument(args["save_directory"], str)
+    max_memory_per_gpu = parse_argument(args["max_memory_per_gpu"], str)
+    max_seq_len = parse_argument(args["max_seq_len"], int)
+    num_samples = parse_argument(args["num_samples"], int)
+    text_samples = parse_argument(args["text_samples"], int)
+    vision_samples = parse_argument(args["vision_samples"], int)
+    recipe = args.get("recipe", None)
+    recipe_args = args.get("recipe_args", None)
+    tags = args.get("tags", None)
+
+    main(
+        model_id,
+        clearml_model,
+        force_download,
+        max_memory_per_gpu,
+        tracing_class,
+        trust_remote_code,
+        recipe,
+        recipe_args,
+        dataset_loader,
+        dataset_name,
+        max_seq_len,
+        text_samples,
+        vision_samples,
+        num_samples,
+        save_directory,
+        tags,
+    )
