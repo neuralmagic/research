@@ -139,6 +139,7 @@ class LLMCompressorTask(BaseTask):
                 "recipe_args": self.recipe_args,
                 "dataset_name": self.dataset_name,
                 "dataset_loader": "dataset loader" if self.dataset_loader else None,
+                "data_collator": "data collator" if self.data_collator else None,
                 "clearml_model": self.clearml_model,
                 "force_download": self.force_download,
                 "save_directory": self.save_directory,
