@@ -187,6 +187,7 @@ if __name__ == '__main__':
     data_collator = parse_argument(args["data_collator"], str)
     if data_collator is not None:
         data_collator = dill.load(task.artifacts[data_collator].get())
+        print(data_collator)
 
 
     main(
