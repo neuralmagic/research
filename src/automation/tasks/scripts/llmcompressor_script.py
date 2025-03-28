@@ -28,7 +28,6 @@ def main(
     max_seq_len,
     text_samples,
     vision_samples,
-    num_samples,
     save_directory,
     data_collator,
     tags,
@@ -111,7 +110,6 @@ def main(
             dataset = SUPPORTED_DATASETS[dataset_name](
                 text_samples=text_samples,
                 vision_samples=vision_samples,
-                num_samples=num_samples,
                 max_seq_len=max_seq_len,
                 processor=processor,
             )
@@ -120,15 +118,11 @@ def main(
             dataset_name,
             text_samples=text_samples,
             vision_samples=vision_samples,
-            num_samples=num_samples,
             max_seq_len=max_seq_len,
             processor=processor,
         )
     
     print("after dataset")
-
-    if text_samples is None and num_samples is not None:
-        text_samples = num_samples
 
     num_calibration_samples = 0
     if text_samples is not None:
@@ -180,7 +174,6 @@ if __name__ == '__main__':
     save_directory = parse_argument(args["save_directory"], str)
     max_memory_per_gpu = parse_argument(args["max_memory_per_gpu"], str)
     max_seq_len = parse_argument(args["max_seq_len"], int)
-    num_samples = parse_argument(args["num_samples"], int)
     text_samples = parse_argument(args["text_samples"], int)
     vision_samples = parse_argument(args["vision_samples"], int)
     recipe = args.get("recipe", None)
@@ -210,7 +203,6 @@ if __name__ == '__main__':
         max_seq_len,
         text_samples,
         vision_samples,
-        num_samples,
         save_directory,
         data_collator,
         tags,

@@ -26,7 +26,6 @@ class LLMCompressorTask(BaseTask):
         save_directory: str="output",
         text_samples: Optional[int]=None,
         vision_samples: Optional[int]=None,
-        num_samples: Optional[int]=512,
         max_seq_len: int=8192,
         trust_remote_code: bool=False,
         max_memory_per_gpu: str="hessian",
@@ -84,7 +83,6 @@ class LLMCompressorTask(BaseTask):
         self.dataset_name = config_kwargs.pop("dataset_name", dataset_name)
         self.text_samples = config_kwargs.pop("text_samples", text_samples)
         self.vision_samples = config_kwargs.pop("vision_samples", vision_samples)
-        self.num_samples = config_kwargs.pop("num_samples", num_samples)
         self.max_seq_len = config_kwargs.pop("max_seq_len", max_seq_len)
         self.trust_remote_code = config_kwargs.pop("trust_remote_code", trust_remote_code)
         self.max_memory_per_gpu = config_kwargs.pop("max_memory_per_gpu", max_memory_per_gpu)
@@ -145,7 +143,6 @@ class LLMCompressorTask(BaseTask):
                 "save_directory": self.save_directory,
                 "text_samples": self.text_samples,
                 "vision_samples": self.vision_samples,
-                "num_samples": self.num_samples,
                 "max_seq_len": self.max_seq_len,
                 "trust_remote_code": self.trust_remote_code,
                 "max_memory_per_gpu": self.max_memory_per_gpu,
