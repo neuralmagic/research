@@ -50,7 +50,7 @@ pipeline.create_pipeline()
 - `num_sampels`: will uses a log-uniform range from 512 (2^9) to 2048 (2^11).
 ```python
 dampening_frac_range = UniformParameterRange("Args/dampening_frac", min_value=0.01, max_value=0.1, step_size=0.01)
-num_samples_range = LogUniformParameterRange("Args/num_samples", min_value=9, max_value=11, "base": 2, "step_size": 1)
+text_samples_range = LogUniformParameterRange("Args/text_samples", min_value=9, max_value=11, "base": 2, "step_size": 1)
 ```
 
 ## 3. Choose optimizer
