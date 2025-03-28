@@ -1,5 +1,3 @@
-import dill
-import inspect
 import os
 from automation.datasets import SUPPORTED_DATASETS
 from automation.standards.compression.smoothquant_mappings import MAPPINGS_PER_MODEL_CONFIG
@@ -7,7 +5,7 @@ from llmcompressor.transformers.compression.helpers import (
     calculate_offload_device_map,
     custom_offload_device_map,
 )
-from llmcompressor.transformers import oneshot
+from llmcompressor import oneshot
 from transformers import AutoModelForCausalLM, AutoProcessor
 from clearml import OutputModel, Task
 import torch
@@ -177,19 +175,19 @@ if __name__ == '__main__':
     recipe_args = args.get("recipe_args", None)
     tags = args.get("tags", None)
 
-    dataset_loader = parse_argument(args["dataset_loader"], str)
-    if dataset_loader is not None:
-        # dataset_loader = dill.load(task.artifacts[dataset_loader].get())
+    dataset_loader_fn_name = parse_argument(args["dataset_loader"], str)
+    if dataset_loader_fn_name is not None:
         filepath = task.artifacts["dataset loader"].get_local_copy()
-        exec(open(filepath, "r").read())
-        dataset_loader_fn = globals().get(dataset_loader)
+        namespace = {}
+        exec(open(filepath, "r").read(), namespace)
+        dataset_loader_fn = namespace.get(dataset_loader_fn_name)
 
-    data_collator = parse_argument(args["data_collator"], str)
-    if data_collator is not None:
-        # data_collator = dill.load(task.artifacts[data_collator].get())
+    data_collator_fn_name = parse_argument(args["data_collator"], str)
+    if data_collator_fn_name is not None:
         filepath = task.artifacts["data collator"].get_local_copy()
-        exec(open(filepath, "r").read())
-        data_collator_fn = globals().get(data_collator)
+        namespace = {}
+        exec(open(filepath, "r").read(), namespace)
+        data_collator_fn = namespace.get(data_collator_fn_name)
 
 
     main(
