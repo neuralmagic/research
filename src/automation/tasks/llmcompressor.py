@@ -113,17 +113,9 @@ class LLMCompressorTask(BaseTask):
 
     def upload_callables(self):
         if self.dataset_loader is not None:
-            # buffer = io.BytesIO()
-            # dill.dump(self.dataset_loader, buffer, recurse=False)
-            # buffer.seek(0)
-            # self.task.upload_artifact("dataset loader", buffer)
             self.task.upload_artifact("dataset loader", inspect.getsource(self.dataset_loader))
 
         if self.data_collator is not None:
-            # buffer = io.BytesIO()
-            # dill.dump(self.data_collator, buffer, recurse=False)
-            # buffer.seek(0)
-            # self.task.upload_artifact("data collator", buffer)
             self.task.upload_artifact("data collator", inspect.getsource(self.data_collator))
 
 
