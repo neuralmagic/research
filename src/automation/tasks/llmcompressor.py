@@ -5,6 +5,7 @@ import os
 import yaml
 import dill
 import io
+import inspect
 
 class LLMCompressorTask(BaseTask):
     llmcompressor_packages = ["git+https://github.com/vllm-project/llm-compressor.git"]
@@ -112,16 +113,18 @@ class LLMCompressorTask(BaseTask):
 
     def upload_callables(self):
         if self.dataset_loader is not None:
-            buffer = io.BytesIO()
-            dill.dump(self.dataset_loader, buffer, recurse=False)
-            buffer.seek(0)
-            self.task.upload_artifact("dataset loader", buffer)
+            # buffer = io.BytesIO()
+            # dill.dump(self.dataset_loader, buffer, recurse=False)
+            # buffer.seek(0)
+            # self.task.upload_artifact("dataset loader", buffer)
+            self.task.upload_artifact("dataset loader", inspect.getsource(self.dataset_loader))
 
         if self.data_collator is not None:
-            buffer = io.BytesIO()
-            dill.dump(self.data_collator, buffer, recurse=False)
-            buffer.seek(0)
-            self.task.upload_artifact("data collator", buffer)
+            # buffer = io.BytesIO()
+            # dill.dump(self.data_collator, buffer, recurse=False)
+            # buffer.seek(0)
+            # self.task.upload_artifact("data collator", buffer)
+            self.task.upload_artifact("data collator", inspect.getsource(self.data_collator))
 
 
     def create_task(self):

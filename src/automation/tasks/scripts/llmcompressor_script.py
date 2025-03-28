@@ -1,4 +1,5 @@
 import dill
+import inspect
 import os
 from automation.datasets import SUPPORTED_DATASETS
 from automation.standards.compression.smoothquant_mappings import MAPPINGS_PER_MODEL_CONFIG
@@ -182,13 +183,15 @@ if __name__ == '__main__':
 
     dataset_loader = parse_argument(args["dataset_loader"], str)
     if dataset_loader is not None:
-        dataset_loader = dill.load(task.artifacts[dataset_loader].get())
+        # dataset_loader = dill.load(task.artifacts[dataset_loader].get())
+        filepath = task.artifacts[dataset_loader].get_local_copy()
+        exec(open(filepath, "r").read())
 
     data_collator = parse_argument(args["data_collator"], str)
     if data_collator is not None:
-        data_collator = dill.load(task.artifacts[data_collator].get())
-        print(data_collator)
-        
+        # data_collator = dill.load(task.artifacts[data_collator].get())
+        filepath = task.artifacts[data_collator].get_local_copy()
+        exec(open(filepath, "r").read())
 
 
 
