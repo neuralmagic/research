@@ -183,11 +183,15 @@ if __name__ == '__main__':
     dataset_loader = parse_argument(args["dataset_loader"], str)
     if dataset_loader is not None:
         dataset_loader = dill.load(task.artifacts[dataset_loader].get())
-
+        print("Captured References:", dill.detect.dataset_loader)
+        print("Function Closure:", dataset_loader.__closure__)
+        
     data_collator = parse_argument(args["data_collator"], str)
     if data_collator is not None:
         data_collator = dill.load(task.artifacts[data_collator].get())
         print(data_collator)
+        
+
 
 
     main(
