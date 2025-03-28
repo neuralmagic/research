@@ -13,7 +13,7 @@ from automation.utils import resolve_model_id, parse_argument
 from llmcompressor.transformers import tracing
 
 
-def main(
+def llmcompressor_main(
     model_id,
     clearml_model,
     force_download,
@@ -155,7 +155,7 @@ def main(
         clearml_model.update_weights(weights_filename=save_directory, auto_delete_file=False)
 
 
-if __name__ == '__main__':
+def main():
     task = Task.current_task()
 
     # Parse arguments
@@ -176,21 +176,24 @@ if __name__ == '__main__':
     tags = args.get("tags", None)
 
     dataset_loader_fn_name = parse_argument(args["dataset_loader"], str)
-    if dataset_loader_fn_name is not None:
+    if dataset_loader_fn_name is None:
+        dataset_loader_fn = None
+    else:
         filepath = task.artifacts["dataset loader"].get_local_copy()
         namespace = {}
         exec(open(filepath, "r").read(), namespace)
         dataset_loader_fn = namespace.get(dataset_loader_fn_name)
 
     data_collator_fn_name = parse_argument(args["data_collator"], str)
-    if data_collator_fn_name is not None:
+    if data_collator_fn_name is None:
+        data_collator_fn = None
+    else:
         filepath = task.artifacts["data collator"].get_local_copy()
         namespace = {}
         exec(open(filepath, "r").read(), namespace)
         data_collator_fn = namespace.get(data_collator_fn_name)
 
-
-    main(
+    llmcompressor_main(
         model_id,
         clearml_model,
         force_download,
@@ -209,3 +212,7 @@ if __name__ == '__main__':
         tags,
         task,
     )
+
+
+if __name__ == '__main__':
+    main()
