@@ -6,8 +6,10 @@ import os
 class LMEvalTask(BaseTask):
 
     lmeval_packages = [
-        "vllm",
-        "git+https://github.com/neuralmagic/lm-evaluation-harness.git@llama_3.1_instruct",
+        "vllm==0.7.3",
+        "git+https://github.com/neuralmagic/lm-evaluation-harness.git@llama_mmlu_cot",
+        #"git+https://github.com/neuralmagic/lm-evaluation-harness.git@llama_3.1_instruct",
+        #"git+https://github.com/EleutherAI/lm-evaluation-harness.git",
     ]
 
     def __init__(
