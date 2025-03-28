@@ -102,8 +102,6 @@ def main(
         trust_remote_code=trust_remote_code,
     )
 
-    print("before dataset")
-
     if dataset_loader is None:
         if dataset_name is None:
             dataset = None
@@ -123,8 +121,6 @@ def main(
             processor=processor,
         )
     
-    print("after dataset")
-
     num_calibration_samples = 0
     if text_samples is not None:
         num_calibration_samples += text_samples
@@ -184,15 +180,16 @@ if __name__ == '__main__':
     dataset_loader = parse_argument(args["dataset_loader"], str)
     if dataset_loader is not None:
         # dataset_loader = dill.load(task.artifacts[dataset_loader].get())
-        filepath = task.artifacts[dataset_loader].get_local_copy()
+        filepath = task.artifacts["dataset loader"].get_local_copy()
         exec(open(filepath, "r").read())
+        dataset_loader_fn = globals().get(dataset_loader)
 
     data_collator = parse_argument(args["data_collator"], str)
     if data_collator is not None:
         # data_collator = dill.load(task.artifacts[data_collator].get())
-        filepath = task.artifacts[data_collator].get_local_copy()
+        filepath = task.artifacts["data collator"].get_local_copy()
         exec(open(filepath, "r").read())
-
+        data_collator_fn = globals().get(data_collator)
 
 
     main(
@@ -204,13 +201,13 @@ if __name__ == '__main__':
         trust_remote_code,
         recipe,
         recipe_args,
-        dataset_loader,
+        dataset_loader_fn,
         dataset_name,
         max_seq_len,
         text_samples,
         vision_samples,
         save_directory,
-        data_collator,
+        data_collator_fn,
         tags,
         task,
     )
