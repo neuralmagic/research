@@ -102,6 +102,8 @@ def main(
         trust_remote_code=trust_remote_code,
     )
 
+    print("before dataset")
+
     if dataset_loader is None:
         if dataset_name is None:
             dataset = None
@@ -122,6 +124,8 @@ def main(
             max_seq_len=max_seq_len,
             processor=processor,
         )
+    
+    print("after dataset")
 
     if text_samples is None and num_samples is not None:
         text_samples = num_samples
