@@ -6,7 +6,8 @@ from llmcompressor.transformers.compression.helpers import (
     custom_offload_device_map,
 )
 from llmcompressor import oneshot
-from transformers import AutoModelForCausalLM, AutoProcessor
+import transformers
+from transformers import AutoProcessor
 from clearml import OutputModel, Task
 import torch
 from automation.utils import resolve_model_id, parse_argument
@@ -17,6 +18,7 @@ def llmcompressor_main(
     model_id,
     clearml_model,
     force_download,
+    model_class,
     max_memory_per_gpu,
     tracing_class,
     trust_remote_code,
@@ -33,7 +35,7 @@ def llmcompressor_main(
     task,
 ):
     # Resolve model_id
-    model_id = resolve_model_id(model_id, clearml_model, force_download)
+    model_id = resolve_model_id(model_id, clearml_model, force_download, model_class)
 
     # Set dtype
     dtype = "auto"
@@ -64,20 +66,16 @@ def llmcompressor_main(
 
     # Load model
     if tracing_class is None:
-        model = AutoModelForCausalLM.from_pretrained(
-            model_id, 
-            torch_dtype=dtype, 
-            device_map=device_map, 
-            trust_remote_code=trust_remote_code,
-        )
+        model_class = getattr(transformers, model_class)
     else:
         model_class = getattr(tracing, tracing_class)
-        model = model_class.from_pretrained(
-            model_id, 
-            torch_dtype=dtype, 
-            device_map=device_map, 
-            trust_remote_code=trust_remote_code,
-        )
+
+    model = model_class.from_pretrained(
+        model_id, 
+        torch_dtype=dtype, 
+        device_map=device_map, 
+        trust_remote_code=trust_remote_code,
+    )
 
     # Load recipe
     if isinstance(recipe, str) and os.path.isfile(recipe):
@@ -164,6 +162,7 @@ def main():
     force_download = parse_argument(args["force_download"], bool)
     trust_remote_code = parse_argument(args["trust_remote_code"], bool)
     model_id = parse_argument(args["model_id"], str)
+    model_class = parse_argument(args["model_class"], str)
     dataset_name = parse_argument(args["dataset_name"], str)
     tracing_class = parse_argument(args["tracing_class"], str)
     save_directory = parse_argument(args["save_directory"], str)
@@ -197,6 +196,7 @@ def main():
         model_id,
         clearml_model,
         force_download,
+        model_class,
         max_memory_per_gpu,
         tracing_class,
         trust_remote_code,

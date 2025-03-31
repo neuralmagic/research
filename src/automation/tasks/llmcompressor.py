@@ -19,6 +19,7 @@ class LLMCompressorTask(BaseTask):
         recipe_args: Optional[dict]=None,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
+        model_class: str="AutoModelForCausalLM",
         dataset_name: Optional[str]="calibration",
         dataset_loader: Optional[Callable]=None,
         data_collator: Optional[Callable]=None,
@@ -90,6 +91,7 @@ class LLMCompressorTask(BaseTask):
         self.dataset_loader = dataset_loader
         self.data_collator = data_collator
         self.tracing_class = tracing_class
+        self.model_class = model_class
 
         if tags is not None:
             tags = list(set(config_kwargs.pop("tags", []).extend(tags)))
@@ -130,6 +132,7 @@ class LLMCompressorTask(BaseTask):
                 "model_id": self.model_id,
                 "recipe": self.recipe,
                 "recipe_args": self.recipe_args,
+                "model_class": self.model_class,
                 "dataset_name": self.dataset_name,
                 "dataset_loader": self.dataset_loader.__name__ if self.dataset_loader else None,
                 "data_collator": self.data_collator.__name__ if self.data_collator else None,
