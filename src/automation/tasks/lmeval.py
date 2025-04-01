@@ -6,7 +6,7 @@ import os
 class LMEvalTask(BaseTask):
 
     lmeval_packages = [
-        "vllm==0.7.3",
+        "vllm",
         "git+https://github.com/EleutherAI/lm-evaluation-harness.git",
     ]
 
