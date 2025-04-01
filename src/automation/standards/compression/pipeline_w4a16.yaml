@@ -19,8 +19,12 @@ parameters:
     default: true
     param_type: "bool"
     recipe_arg: true
-  num_samples:
+  text_samples:
     default: 1024
+    param_type:  int
+    recipe_arg: false
+  vision_samples:
+    default: None
     param_type:  int
     recipe_arg: false
 llmcompressor_kwargs:
