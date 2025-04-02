@@ -24,7 +24,7 @@ def load_calibration_dataset(
             split="train", 
             num_samples=text_samples, 
             max_seq_len=max_seq_len, 
-            tokenizer=tokenizer,
+            tokenizer=processor,
         )
 
     if multimodal_loader is None:
