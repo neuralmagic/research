@@ -73,7 +73,6 @@ class BaseTask():
         configurations = self.get_configurations()
         for name, config in configurations.items():
             self.task.connect_configuration(config, name=name)
-            self.task.connect_configuration(config, name=name)
 
 
     def script(self):
