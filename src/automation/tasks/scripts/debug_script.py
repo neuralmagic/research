@@ -18,7 +18,6 @@ def main():
 
     args = task.get_parameters_as_dict(cast=True)["Args"]
     time_in_sec = int(args["time_in_sec"])
-    print(time_in_sec)
 
     print("Debugging task initiated", flush=True)
     countdown(time_in_sec)
