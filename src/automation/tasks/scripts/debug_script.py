@@ -18,9 +18,10 @@ def main():
 
     args = task.get_parameters_as_dict(cast=True)["Args"]
     time_in_sec = int(args["time_in_sec"])
+    print(time_in_sec)
 
     print("Debugging task initiated", flush=True)
-    time.sleep(time_in_sec)
+    countdown(time_in_sec)
 
 
 if __name__ == '__main__':
