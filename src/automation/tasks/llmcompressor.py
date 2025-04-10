@@ -3,12 +3,10 @@ from automation.configs import DEFAULT_DOCKER_IMAGE
 from typing import Union, List, Optional, Sequence, Any, Callable
 import os
 import yaml
-import dill
-import io
 import inspect
 
 class LLMCompressorTask(BaseTask):
-    llmcompressor_packages = ["git+https://github.com/vllm-project/llm-compressor.git"]
+    llmcompressor_packages = ["git+https://github.com/vllm-project/llm-compressor.git@traceable_mistral3"]
 
     def __init__(
         self,

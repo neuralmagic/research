@@ -32,8 +32,8 @@ def load_calibration_dataset(
 
     return multimodal_loader(
         dataset_name=DATASET_PATH, 
-        subset=[TEXT_SUBSET, VISION_SUBSET], 
+        subset=[VISION_SUBSET, TEXT_SUBSET], 
         split="train", 
-        num_samples=[text_samples, vision_samples],
+        num_samples=[vision_samples, text_samples],
         processor=processor,
     )
