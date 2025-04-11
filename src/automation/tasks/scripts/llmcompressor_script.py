@@ -16,8 +16,6 @@ from llmcompressor.transformers import tracing
 
 def llmcompressor_main(
     model_id,
-    clearml_model,
-    force_download,
     model_class,
     max_memory_per_gpu,
     tracing_class,
@@ -31,12 +29,7 @@ def llmcompressor_main(
     vision_samples,
     save_directory,
     data_collator,
-    tags,
-    task,
 ):
-    # Resolve model_id
-    model_id = resolve_model_id(model_id, clearml_model, force_download, model_class)
-
     # Set dtype
     dtype = "auto"
 
@@ -88,9 +81,6 @@ def llmcompressor_main(
             
         for key, value in recipe_args.items():
             recipe = recipe.replace(f"${key}", str(value))
-
-    if task is not None:
-        task.upload_artifact("recipe", recipe)
         
     # Load dataset
     processor = AutoProcessor.from_pretrained(
@@ -142,15 +132,7 @@ def llmcompressor_main(
     model.save_pretrained(save_directory, save_compressed=True)
     processor.save_pretrained(save_directory)
 
-    # Upload model to ClearML
-    if task is not None:
-        clearml_model = OutputModel(
-            task=task, 
-            name=task.name,
-            framework="PyTorch", 
-            tags=[tags] if isinstance(tags, str) else tags or []
-        )
-        clearml_model.update_weights(weights_filename=save_directory, auto_delete_file=False)
+    return recipe
 
 
 def main():
@@ -192,10 +174,11 @@ def main():
         exec(open(filepath, "r").read(), namespace)
         data_collator_fn = namespace.get(data_collator_fn_name)
 
-    llmcompressor_main(
+    # Resolve model_id
+    model_id = resolve_model_id(model_id, clearml_model, force_download, model_class)
+
+    recipe = llmcompressor_main(
         model_id,
-        clearml_model,
-        force_download,
         model_class,
         max_memory_per_gpu,
         tracing_class,
@@ -209,9 +192,19 @@ def main():
         vision_samples,
         save_directory,
         data_collator_fn,
-        tags,
-        task,
     )
+
+    if task is not None:
+        task.upload_artifact("recipe", recipe)
+
+    # Upload model to ClearML
+    clearml_model_object = OutputModel(
+        task=task, 
+        name=task.name,
+        framework="PyTorch", 
+        tags=[tags] if isinstance(tags, str) else tags or []
+    )
+    clearml_model_object.update_weights(weights_filename=save_directory, auto_delete_file=False)
 
 
 if __name__ == '__main__':

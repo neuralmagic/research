@@ -39,12 +39,18 @@ def dict_to_argparse(data: dict) -> argparse.Namespace:
     return namespace
 
 
-def resolve_model_id(model_id: str, clearml_model: bool, force_download: bool=False, model_class="AutoModelForCausalLM") -> str:
+def resolve_model_id(
+    model_id: str, 
+    clearml_model: bool, 
+    force_download: bool=False, 
+    model_class="AutoModelForCausalLM",
+) -> str:
+    
     if clearml_model:
         task = Task.current_task()
         input_model = InputModel(model_id=model_id)
         task.connect(input_model)
-        return input_model.get_local_copy()
+        return input_model.get_local_copy(force_download=force_download)
     else:
         if force_download:
             import transformers
