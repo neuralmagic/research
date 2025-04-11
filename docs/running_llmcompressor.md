@@ -20,6 +20,8 @@ The following arguments are used to load the model:
   - A **local file path**
 - clearml_model (optional, boolean): If `True`, indicates that `model_id` refers to a ClearML model rather than a Hugging Face or local model.
 - trust_remote_code (optional, boolean): Enables loading custom model architectures from Hugging Face repositories.
+- model_class (optional, string): Transformers class used to load model. Defaults to AutoModelForCausalLM.
+- tracing_class (optiona, string): Class used to override model definition to enable tracing. Needed when running sequential methods with some multi-modal models. See [tracing guide](https://github.com/vllm-project/llm-compressor/blob/main/src/llmcompressor/transformers/tracing/GUIDE.md) for more info.
 - max_memory_per_gpu*(optional): Defines how the model is sharded across multiple devices:
   - `None`: Uses `device_map="auto"` (automatic allocation).
   - `"hessian"`: Uses `calculate_offload_device_map` to optimize memory allocation, considering Hessian storage.
@@ -52,10 +54,12 @@ recipe_args={"damp": 0.1}
 
 ### Dataset arguments
 The following arguments are used to define the calibration dataset:
-- dataset_name (optional): name of dataset. It can be one of the shortcuts registered in this library or a HF dataset
-- text_samples (optional): number of text samples
-- vision_samples (optional): number of vision samples
-- max_seq_len (optional): maximum number of tokens per sample
+- dataset_name (optional, string): name of dataset. It can be one of the shortcuts registered in this library or a HF dataset
+- text_samples (optional, integer): number of text samples
+- vision_samples (optional, integer): number of vision samples
+- max_seq_len (optional, integer): maximum number of tokens per sample
+- dataset_loader (optional, callable): callable used to load the dataset. If not provided default data loader is used.
+- data_collator (optiona, callabale): callable used to override data collator.
 
 ### Output arguments
 - save_directory (optional): path to save output model. Model will be uploaded to ClearML regardless of the path specified here.
