@@ -4,7 +4,6 @@ from automation.utils import resolve_model_id, cast_args
 import lm_eval
 import numpy
 import json
-import os
 from pyhocon import ConfigFactory
 
 
@@ -51,12 +50,8 @@ def lmeval_main(
     model_id: str,
     lm_eval_args: dict,
     groups: dict = None,
+    eager_model: bool = False
 ):
-    import builtins
-
-    # After Task.init()
-    builtins.__import__ = builtins.__org_import__
-    
     # Determine number of gpus
     num_gpus = torch.cuda.device_count()
 
