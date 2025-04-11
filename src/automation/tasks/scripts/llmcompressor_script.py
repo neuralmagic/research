@@ -1,53 +1,46 @@
 import os
-from automation.datasets import SUPPORTED_DATASETS, load_dataset_messages
+from automation.datasets import SUPPORTED_DATASETS
 from automation.standards.compression.smoothquant_mappings import MAPPINGS_PER_MODEL_CONFIG
 from llmcompressor.transformers.compression.helpers import (
     calculate_offload_device_map,
     custom_offload_device_map,
 )
-from llmcompressor.transformers import oneshot
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from llmcompressor import oneshot
+import transformers
+from transformers import AutoProcessor
 from clearml import OutputModel, Task
 import torch
-from automation.utils import resolve_model_id
+from automation.utils import resolve_model_id, parse_argument
+from llmcompressor.transformers import tracing
 
-def main():
-    task = Task.current_task()
 
-    args = task.get_parameters_as_dict(cast=True)["Args"]
-    clearml_model = args["clearml_model"]
-    if isinstance(clearml_model, str):
-        clearml_model = clearml_model.lower() == "true"
-
-    force_download = args["force_download"]
-    if isinstance(force_download, str):
-        force_download = force_download.lower() == "true"
-
-    trust_remote_code = args["trust_remote_code"]
-    if isinstance(trust_remote_code, str):
-        trust_remote_code = trust_remote_code.lower() == "true"
-
-    dataset_name = args["dataset_name"]
-    if isinstance(dataset_name, str) and dataset_name.lower() == "none":
-        dataset_name = None
-
-    max_seq_len = int(args["max_seq_len"])
-    num_samples = int(args["num_samples"])
-
-    # Resolve model_id
-    model_id = resolve_model_id(args["model_id"], clearml_model, force_download)
-
+def llmcompressor_main(
+    model_id,
+    model_class,
+    max_memory_per_gpu,
+    tracing_class,
+    trust_remote_code,
+    recipe,
+    recipe_args,
+    dataset_loader,
+    dataset_name,
+    max_seq_len,
+    text_samples,
+    vision_samples,
+    save_directory,
+    data_collator,
+):
     # Set dtype
     dtype = "auto"
 
     # Set device map
-    if args["max_memory_per_gpu"] == "auto":
+    if max_memory_per_gpu == "auto":
         device_map = "auto"
     else:
         # Determine number of gpus
         num_gpus = torch.cuda.device_count()
         
-        if args["max_memory_per_gpu"] == "hessian":
+        if max_memory_per_gpu == "hessian":
             device_map = calculate_offload_device_map(
                 model_id, 
                 reserve_for_hessians=True, 
@@ -58,14 +51,19 @@ def main():
         else:
             device_map = custom_offload_device_map(
                 model_id, 
-                max_memory_per_gpu=args["max_memory_per_gpu"] + "GB",
+                max_memory_per_gpu=max_memory_per_gpu + "GB",
                 num_gpus=num_gpus, 
                 torch_dtype=dtype,
                 trust_remote_code=trust_remote_code,
             )
 
     # Load model
-    model = AutoModelForCausalLM.from_pretrained(
+    if tracing_class is None:
+        model_class = getattr(transformers, model_class)
+    else:
+        model_class = getattr(tracing, tracing_class)
+
+    model = model_class.from_pretrained(
         model_id, 
         torch_dtype=dtype, 
         device_map=device_map, 
@@ -73,41 +71,52 @@ def main():
     )
 
     # Load recipe
-    recipe = args["recipe"]
     if isinstance(recipe, str) and os.path.isfile(recipe):
         with open(recipe, "r", encoding="utf-8") as file:
             recipe = file.read()
 
-    recipe_args = args.get("recipe_args", None)
     if recipe_args is not None:
         if "smoothquant_mappings" in recipe_args and recipe_args["smoothquant_mappings"] in MAPPINGS_PER_MODEL_CONFIG:
             recipe_args["smoothquant_mappings"] = MAPPINGS_PER_MODEL_CONFIG[recipe_args["smoothquant_mappings"]]
             
-        for key, value in args["recipe_args"].items():
+        for key, value in recipe_args.items():
             recipe = recipe.replace(f"${key}", str(value))
-
-    task.upload_artifact("recipe", recipe)
         
     # Load dataset
-    tokenizer = AutoTokenizer.from_pretrained(
+    processor = AutoProcessor.from_pretrained(
         model_id, 
         trust_remote_code=trust_remote_code,
     )
-    if dataset_name is None:
-        dataset = None
-    elif args["dataset_name"] in SUPPORTED_DATASETS:
-        dataset = SUPPORTED_DATASETS[args["dataset_name"]](
-            num_samples=num_samples,
-            max_seq_len=max_seq_len,
-            tokenizer=tokenizer,
-        )
+
+    if dataset_loader is None:
+        if dataset_name is None:
+            dataset = None
+        elif dataset_name in SUPPORTED_DATASETS:
+            dataset = SUPPORTED_DATASETS[dataset_name](
+                text_samples=text_samples,
+                vision_samples=vision_samples,
+                max_seq_len=max_seq_len,
+                processor=processor,
+            )
     else:
-        dataset = load_dataset_messages(
-            args["dataset_name"], 
-            num_samples=num_samples, 
+        dataset = dataset_loader(
+            dataset_name,
+            text_samples=text_samples,
+            vision_samples=vision_samples,
             max_seq_len=max_seq_len,
-            tokenizer=tokenizer,
+            processor=processor,
         )
+    
+    num_calibration_samples = 0
+    if text_samples is not None:
+        num_calibration_samples += text_samples
+
+    if vision_samples is not None:
+        num_calibration_samples += vision_samples
+
+    kwargs = {}
+    if data_collator is not None:
+        kwargs["data_collator"] = data_collator
 
     # Apply recipe to the model
     oneshot(
@@ -115,21 +124,87 @@ def main():
         dataset=dataset,
         recipe=recipe,
         max_seq_length=max_seq_len,
-        num_calibration_samples=num_samples,
+        num_calibration_samples=num_calibration_samples,
+        **kwargs,
     )
 
     # Save model compressed
-    model.save_pretrained(args["save_directory"], save_compressed=True)
-    tokenizer.save_pretrained(args["save_directory"])
+    model.save_pretrained(save_directory, save_compressed=True)
+    processor.save_pretrained(save_directory)
+
+    return recipe
+
+
+def main():
+    task = Task.current_task()
+
+    # Parse arguments
+    args = task.get_parameters_as_dict(cast=True)["Args"]
+    clearml_model = parse_argument(args["clearml_model"], bool)
+    force_download = parse_argument(args["force_download"], bool)
+    trust_remote_code = parse_argument(args["trust_remote_code"], bool)
+    model_id = parse_argument(args["model_id"], str)
+    model_class = parse_argument(args["model_class"], str)
+    dataset_name = parse_argument(args["dataset_name"], str)
+    tracing_class = parse_argument(args["tracing_class"], str)
+    save_directory = parse_argument(args["save_directory"], str)
+    max_memory_per_gpu = parse_argument(args["max_memory_per_gpu"], str)
+    max_seq_len = parse_argument(args["max_seq_len"], int)
+    text_samples = parse_argument(args["text_samples"], int)
+    vision_samples = parse_argument(args["vision_samples"], int)
+    recipe = args.get("recipe", None)
+    recipe_args = args.get("recipe_args", None)
+    tags = args.get("tags", None)
+
+    dataset_loader_fn_name = parse_argument(args["dataset_loader"], str)
+    if dataset_loader_fn_name is None:
+        dataset_loader_fn = None
+    else:
+        filepath = task.artifacts["dataset loader"].get_local_copy()
+        namespace = {}
+        exec(open(filepath, "r").read(), namespace)
+        dataset_loader_fn = namespace.get(dataset_loader_fn_name)
+
+    data_collator_fn_name = parse_argument(args["data_collator"], str)
+    if data_collator_fn_name is None:
+        data_collator_fn = None
+    else:
+        filepath = task.artifacts["data collator"].get_local_copy()
+        namespace = {}
+        exec(open(filepath, "r").read(), namespace)
+        data_collator_fn = namespace.get(data_collator_fn_name)
+
+    # Resolve model_id
+    model_id = resolve_model_id(model_id, clearml_model, force_download, model_class)
+
+    recipe = llmcompressor_main(
+        model_id,
+        model_class,
+        max_memory_per_gpu,
+        tracing_class,
+        trust_remote_code,
+        recipe,
+        recipe_args,
+        dataset_loader_fn,
+        dataset_name,
+        max_seq_len,
+        text_samples,
+        vision_samples,
+        save_directory,
+        data_collator_fn,
+    )
+
+    if task is not None:
+        task.upload_artifact("recipe", recipe)
 
     # Upload model to ClearML
-    clearml_model = OutputModel(
+    clearml_model_object = OutputModel(
         task=task, 
         name=task.name,
         framework="PyTorch", 
-        tags=[args["tags"]] if isinstance(args["tags"], str) else args["tags"] or []
+        tags=[tags] if isinstance(tags, str) else tags or []
     )
-    clearml_model.update_weights(weights_filename=args["save_directory"], auto_delete_file=False)
+    clearml_model_object.update_weights(weights_filename=save_directory, auto_delete_file=False)
 
 
 if __name__ == '__main__':

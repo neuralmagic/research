@@ -53,7 +53,8 @@ recipe_args={"damp": 0.1}
 ### Dataset arguments
 The following arguments are used to define the calibration dataset:
 - dataset_name (optional): name of dataset. It can be one of the shortcuts registered in this library or a HF dataset
-- num_samples (optional): number of samples
+- text_samples (optional): number of text samples
+- vision_samples (optional): number of vision samples
 - max_seq_len (optional): maximum number of tokens per sample
 
 ### Output arguments

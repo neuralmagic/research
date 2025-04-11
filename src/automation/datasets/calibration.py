@@ -1,55 +1,39 @@
-from automation.datasets.utils import load_text_dataset, load_vision_dataset, mix_datasets
+from automation.datasets.utils import load_llm_messages, load_vlm_messages
 
 DATASET_PATH = "neuralmagic/calibration"
 TEXT_SUBSET = "LLM"
-VISION_SUBSET = "VLLM"
+VISION_SUBSET = "VLM"
 
 def load_calibration_dataset(
-        vision_samples=None,
-        text_samples=None,
-        num_samples=None,
-        max_seq_len=None, 
-        vision_loader=None,
-        tokenizer=None,
-        processor=None,
+    vision_samples=None,
+    text_samples=None,
+    max_seq_len=None, 
+    multimodal_loader=None,
+    processor=None,
 ):
-    if tokenizer is None:
-        tokenizer = processor
+    if text_samples is None:
+        text_samples = 0
+    
+    if vision_samples is None:
+        vision_samples = 0
         
-    if vision_samples is None and text_samples is None and num_samples is not None:
-        text_samples = num_samples
-
-    if text_samples is not None and text_samples > 0:
-        text_dataset = load_text_dataset(
+    if text_samples > 0 and vision_samples == 0:
+        return load_llm_messages(
             DATASET_PATH, 
             TEXT_SUBSET, 
             split="train", 
             num_samples=text_samples, 
             max_seq_len=max_seq_len, 
-            tokenizer=tokenizer,
+            tokenizer=processor,
         )
 
-    if vision_samples is not None and vision_samples > 0:
-        if vision_loader is None:
-            vision_dataset = load_text_dataset(
-                DATASET_PATH, 
-                TEXT_SUBSET, 
-                split="train", 
-                num_samples=text_samples, 
-                processor=processor,
-            )
-        else:
-            vision_dataset = vision_loader(
-                DATASET_PATH, 
-                VISION_SUBSET, 
-                split="train", 
-                num_samples=vision_samples,
-                processor=processor,
-            )
+    if multimodal_loader is None:
+        multimodal_loader = load_vlm_messages
 
-    if vision_samples > 0 and text_samples > 0:
-        return mix_datasets(vision_dataset, text_dataset)
-    elif vision_samples > 0:
-        return vision_dataset
-    else:
-        return text_dataset
+    return multimodal_loader(
+        dataset_name=DATASET_PATH, 
+        subset=[VISION_SUBSET, TEXT_SUBSET], 
+        split="train", 
+        num_samples=[vision_samples, text_samples],
+        processor=processor,
+    )

@@ -4,12 +4,10 @@ from automation.utils import resolve_model_id, cast_args
 import lm_eval
 import numpy
 import json
-from transformers import AutoModelForCausalLM
 from pyhocon import ConfigFactory
 
 
 def average_groups(results:dict, groups:dict):
-
     task = Task.current_task()
     if len(task.get_models()["input"]) == 1:
         clearml_model_handle = task.get_models()["input"][0]
@@ -48,24 +46,12 @@ def average_groups(results:dict, groups:dict):
     return results
 
 
-def main():
-    task = Task.current_task()
-
-    args = task.get_parameters_as_dict(cast=True)
-    lm_eval_args = ConfigFactory.parse_string(task.get_configuration_object("lm_eval"))
-    model_id = args["Args"]["model_id"]
-    clearml_model = args["Args"]["clearml_model"]
-    if isinstance(clearml_model, str):
-        clearml_model = clearml_model.lower() == "true"
-    force_download = args["Args"]["force_download"]
-    if isinstance(force_download, str):
-        force_download = force_download.lower() == "true"
-    groups = lm_eval_args.pop("groups", None)
-
-
-    # Resolve model_id
-    model_id = resolve_model_id(model_id, clearml_model, force_download)
-
+def lmeval_main(
+    model_id: str,
+    lm_eval_args: dict,
+    groups: dict = None,
+    eager_model: bool = False
+):
     # Determine number of gpus
     num_gpus = torch.cuda.device_count()
 
@@ -91,6 +77,42 @@ def main():
     if results is None:
         raise Exception("Evaluation failed.")
 
+    # Print results to console
+    print(lm_eval.utils.make_table(results))
+
+    if "groups" in results:
+        print(lm_eval.utils.make_table(results, "groups"))
+        
+    if groups is not None and len(groups) > 0:
+        results = average_groups(results, groups)
+
+    return results
+
+
+def main():
+    task = Task.current_task()
+
+    args = task.get_parameters_as_dict(cast=True)
+    lm_eval_args = ConfigFactory.parse_string(task.get_configuration_object("lm_eval"))
+    model_id = args["Args"]["model_id"]
+    clearml_model = args["Args"]["clearml_model"]
+    if isinstance(clearml_model, str):
+        clearml_model = clearml_model.lower() == "true"
+    force_download = args["Args"]["force_download"]
+    if isinstance(force_download, str):
+        force_download = force_download.lower() == "true"
+    groups = lm_eval_args.pop("groups", None)
+
+    # Resolve model_id
+    model_id = resolve_model_id(model_id, clearml_model, force_download)
+
+    results = lmeval_main(
+        model_id=model_id,
+        lm_eval_args=lm_eval_args,
+        groups=groups,
+    )
+
+    # Upload results to ClearML
     if len(task.get_models()["input"]) == 1:
         clearml_model_handle = task.get_models()["input"][0]
     else:
@@ -113,23 +135,13 @@ def main():
 
                 if clearml_model_handle is not None:
                     clearml_model_handle.report_single_value(name="openllm", value=openllm_score)
-
-    # Print results to console
-    print(lm_eval.utils.make_table(results))
-
-    if "groups" in results:
-        print(lm_eval.utils.make_table(results, "groups"))
-
-    # Upload results to ClearML
+                           
     dumped = json.dumps(
         results,
         indent=2,
         default=lm_eval.utils.handle_non_serializable,
         ensure_ascii=False,
     )
-
-    if groups is not None and len(groups) > 0:
-        results = average_groups(results, groups)
 
     task.upload_artifact(name="results", artifact_object=dumped)
 

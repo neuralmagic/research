@@ -73,7 +73,6 @@ class BaseTask():
         configurations = self.get_configurations()
         for name, config in configurations.items():
             self.task.connect_configuration(config, name=name)
-            self.task.connect_configuration(config, name=name)
 
 
     def script(self):
@@ -90,7 +89,7 @@ class BaseTask():
             add_task_init_call=True,
             script=self.script_path,
             repo="https://github.com/neuralmagic/research.git",
-            branch="alex-development",
+            branch="vision",
         )
         self.task.output_uri = DEFAULT_OUTPUT_URI
         self.set_arguments()

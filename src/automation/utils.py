@@ -5,6 +5,22 @@ import typing
 import psutil
 
 
+def parse_argument(argument, argument_type):
+    if argument is None:
+        return None
+    elif isinstance(argument, str) and argument.lower() == "none":
+        return None
+    elif isinstance(argument, argument_type):
+        return argument
+    elif isinstance(argument, str):
+        if argument_type is bool:
+            return argument.lower() == "true"
+        else:
+            return argument_type(argument)
+    else:
+        return argument_type(argument)
+
+
 def dict_recursive_update(d: dict, u: dict) -> dict:
     """Recursively updates a dictionary."""
     for k, v in u.items():
@@ -23,16 +39,23 @@ def dict_to_argparse(data: dict) -> argparse.Namespace:
     return namespace
 
 
-def resolve_model_id(model_id: str, clearml_model: bool, force_download: bool=False) -> str:
+def resolve_model_id(
+    model_id: str, 
+    clearml_model: bool, 
+    force_download: bool=False, 
+    model_class="AutoModelForCausalLM",
+) -> str:
+    
     if clearml_model:
         task = Task.current_task()
         input_model = InputModel(model_id=model_id)
         task.connect(input_model)
-        return input_model.get_local_copy()
+        return input_model.get_local_copy(force_download=force_download)
     else:
         if force_download:
-            from torch import AutoModelForCausalLM
-            AutoModelForCausalLM.from_pretrained(model_id, force_download=True,trust_remote_code=True)
+            import transformers
+            model_class = getattr(transformers, model_class)
+            model_class.from_pretrained(model_id, force_download=True,trust_remote_code=True)
         return model_id
 
 

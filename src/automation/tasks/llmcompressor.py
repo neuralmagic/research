@@ -1,11 +1,12 @@
 from automation.tasks.base_task import BaseTask
 from automation.configs import DEFAULT_DOCKER_IMAGE
-from typing import Union, List, Optional, Sequence, Any
+from typing import Union, List, Optional, Sequence, Any, Callable
 import os
 import yaml
+import inspect
 
 class LLMCompressorTask(BaseTask):
-    llmcompressor_packages = ["llmcompressor"]
+    llmcompressor_packages = ["git+https://github.com/vllm-project/llm-compressor.git@traceable_mistral3"]
 
     def __init__(
         self,
@@ -16,14 +17,19 @@ class LLMCompressorTask(BaseTask):
         recipe_args: Optional[dict]=None,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
+        model_class: str="AutoModelForCausalLM",
         dataset_name: Optional[str]="calibration",
+        dataset_loader: Optional[Callable]=None,
+        data_collator: Optional[Callable]=None,
         clearml_model: bool=False,
         force_download: bool=False,
         save_directory: str="output",
-        num_samples: int=512,
+        text_samples: Optional[int]=None,
+        vision_samples: Optional[int]=None,
         max_seq_len: int=8192,
         trust_remote_code: bool=False,
         max_memory_per_gpu: str="hessian",
+        tracing_class: Optional[str]=None,
         tags: Union[str, List[str]]=None,
         task_type: str="training",
         config: Optional[str]=None,
@@ -75,10 +81,15 @@ class LLMCompressorTask(BaseTask):
             self.recipe_args = config_recipe_args
 
         self.dataset_name = config_kwargs.pop("dataset_name", dataset_name)
-        self.num_samples = config_kwargs.pop("num_samples", num_samples)
+        self.text_samples = config_kwargs.pop("text_samples", text_samples)
+        self.vision_samples = config_kwargs.pop("vision_samples", vision_samples)
         self.max_seq_len = config_kwargs.pop("max_seq_len", max_seq_len)
         self.trust_remote_code = config_kwargs.pop("trust_remote_code", trust_remote_code)
         self.max_memory_per_gpu = config_kwargs.pop("max_memory_per_gpu", max_memory_per_gpu)
+        self.dataset_loader = dataset_loader
+        self.data_collator = data_collator
+        self.tracing_class = tracing_class
+        self.model_class = model_class
 
         if tags is not None:
             tags = list(set(config_kwargs.pop("tags", []).extend(tags)))
@@ -95,8 +106,22 @@ class LLMCompressorTask(BaseTask):
 
 
     def script(self):
+        self.upload_callables()
         from automation.tasks.scripts.llmcompressor_script import main
         main()
+
+
+    def upload_callables(self):
+        if self.dataset_loader is not None:
+            self.task.upload_artifact("dataset loader", inspect.getsource(self.dataset_loader))
+
+        if self.data_collator is not None:
+            self.task.upload_artifact("data collator", inspect.getsource(self.data_collator))
+
+
+    def create_task(self):
+        super().create_task()
+        self.upload_callables()
 
 
     def get_arguments(self):
@@ -105,14 +130,19 @@ class LLMCompressorTask(BaseTask):
                 "model_id": self.model_id,
                 "recipe": self.recipe,
                 "recipe_args": self.recipe_args,
+                "model_class": self.model_class,
                 "dataset_name": self.dataset_name,
+                "dataset_loader": self.dataset_loader.__name__ if self.dataset_loader else None,
+                "data_collator": self.data_collator.__name__ if self.data_collator else None,
                 "clearml_model": self.clearml_model,
                 "force_download": self.force_download,
                 "save_directory": self.save_directory,
-                "num_samples": self.num_samples,
+                "text_samples": self.text_samples,
+                "vision_samples": self.vision_samples,
                 "max_seq_len": self.max_seq_len,
                 "trust_remote_code": self.trust_remote_code,
                 "max_memory_per_gpu": self.max_memory_per_gpu,
+                "tracing_class": self.tracing_class,
                 "tags": self.tags,
             },
         }
