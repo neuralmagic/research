@@ -80,33 +80,46 @@ def main():
     output_path = Path(guidellm_args.get("output_path", "guidellm-output.json"))
     guidellm_args["output_path"] = str(output_path)
 
-    # Build sys.argv to mimic CLI usage
-    sys.argv = ["guidellm", "benchmark"]
-    for k, v in guidellm_args.items():
-        if v is None:
-            continue
-        flag = f"--{k.replace('_', '-')}"
-        if isinstance(v, bool):
-            if v: sys.argv.append(flag)
-        else:
-            sys.argv += [flag, str(v)]
+    import sys
+    import json
+    from pathlib import Path
 
-    print("[DEBUG] sys.argv constructed:")
-    print(sys.argv)
+    output_path = Path(guidellm_args.get("output_path", "guidellm-output.json"))
+    guidellm_args["output_path"] = str(output_path)
 
     try:
-        # Run CLI benchmark (will save output to output_path)
-        cli()
-    finally:
-        # Load the output benchmark report as JSON
-        with open(output_path, "r") as f:
-            report = json.load(f)
+        # Use CLI only when run directly (i.e., locally)
+        if __name__ == "__main__":
+            # Build sys.argv for click CLI
+            sys.argv = ["guidellm", "benchmark"]
+            for k, v in guidellm_args.items():
+                if v is None:
+                    continue
+                flag = f"--{k.replace('_', '-')}"
+                if isinstance(v, bool):
+                    if v:
+                        sys.argv.append(flag)
+                else:
+                    sys.argv += [flag, str(v)]
+            print("[DEBUG] sys.argv constructed:")
+            print(sys.argv)
 
+            from guidellm.__main__ import cli
+            cli()
+        else:
+            from guidellm.benchmark.entrypoints import benchmark_generative_text
+            import asyncio
+            asyncio.run(benchmark_generative_text(**guidellm_args))
+
+    finally:
+        
+        with open(output_path, "r") as f:
+                report = json.load(f)
+        
         task.upload_artifact(name="guidellm guidance report", artifact_object=output_path)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
-
+        
         kill_process_tree(server_process.pid)
-
 
 
 if __name__ == '__main__':
