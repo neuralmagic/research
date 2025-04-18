@@ -89,7 +89,9 @@ def main():
 
     try:
         # Use CLI only when run directly (i.e., locally)
-        if __name__ == "__main__":
+        is_running_remotely = bool(os.environ.get("CLEARML_WORKER_ID"))
+
+        if not is_running_remotely:
             # Build sys.argv for click CLI
             sys.argv = ["guidellm", "benchmark"]
             for k, v in guidellm_args.items():
@@ -109,6 +111,7 @@ def main():
         else:
             from guidellm.benchmark.entrypoints import benchmark_generative_text
             import asyncio
+            print("[DEBUG] Running benchmark_generative_text directly")
             asyncio.run(benchmark_generative_text(**guidellm_args))
 
     finally:
