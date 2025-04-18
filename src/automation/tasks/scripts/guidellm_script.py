@@ -11,22 +11,17 @@ def main():
 
     args = task.get_parameters_as_dict(cast=True)
     
-    # raw_config = task.get_configuration_object("GuideLLM")
-    # if raw_config is None:
-    #     print("[DEBUG] `GuideLLM` config not found in configuration — checking parameters as fallback")
-    #     raw_config = task.get_parameters_as_dict().get("GuideLLM")
-    #     if raw_config is None:
-    #         raise RuntimeError("GuideLLM config is None. This likely means `get_configurations()` is not returning it or it's not passed via parameters.")
-    #     guidellm_args = ConfigFactory.from_dict(raw_config)
-    # else:
-    #     guidellm_args = ConfigFactory.parse_string(raw_config)
-
-    # print("[DEBUG] Guidellm_Args:", guidellm_args)
     raw_config = task.get_configuration_object("GuideLLM")
-    if isinstance(raw_config, str):
-        guidellm_args = ConfigFactory.parse_string(raw_config).as_plain_ordered_dict()
+    if raw_config is None:
+        print("[DEBUG] `GuideLLM` config not found in configuration — checking parameters as fallback")
+        raw_config = task.get_parameters_as_dict().get("GuideLLM")
+        if raw_config is None:
+            raise RuntimeError("GuideLLM config is None. This likely means `get_configurations()` is not returning it or it's not passed via parameters.")
+        guidellm_args = ConfigFactory.from_dict(raw_config)
     else:
-        guidellm_args = raw_config
+        guidellm_args = ConfigFactory.parse_string(raw_config)
+
+    print("[DEBUG] Guidellm_Args:", guidellm_args)
 
     environment_args = task.get_configuration_object("environment")
     if environment_args is None:
@@ -80,49 +75,33 @@ def main():
     output_path = Path(guidellm_args.get("output_path", "guidellm-output.json"))
     guidellm_args["output_path"] = str(output_path)
 
-    import sys
-    import json
-    from pathlib import Path
+    # Build sys.argv to mimic CLI usage
+    sys.argv = ["guidellm", "benchmark"]
+    for k, v in guidellm_args.items():
+        if v is None:
+            continue
+        flag = f"--{k.replace('_', '-')}"
+        if isinstance(v, bool):
+            if v: sys.argv.append(flag)
+        else:
+            sys.argv += [flag, str(v)]
 
-    output_path = Path(guidellm_args.get("output_path", "guidellm-output.json"))
-    guidellm_args["output_path"] = str(output_path)
+    print("[DEBUG] sys.argv constructed:")
+    print(sys.argv)
 
     try:
-        # Use CLI only when run directly (i.e., locally)
-        is_running_remotely = bool(os.environ.get("CLEARML_WORKER_ID"))
-
-        if not is_running_remotely:
-            # Build sys.argv for click CLI
-            sys.argv = ["guidellm", "benchmark"]
-            for k, v in guidellm_args.items():
-                if v is None:
-                    continue
-                flag = f"--{k.replace('_', '-')}"
-                if isinstance(v, bool):
-                    if v:
-                        sys.argv.append(flag)
-                else:
-                    sys.argv += [flag, str(v)]
-            print("[DEBUG] sys.argv constructed:")
-            print(sys.argv)
-
-            from guidellm.__main__ import cli
-            cli()
-        else:
-            from guidellm.benchmark.entrypoints import benchmark_generative_text
-            import asyncio
-            print("[DEBUG] Running benchmark_generative_text directly")
-            asyncio.run(benchmark_generative_text(**guidellm_args))
-
+        # Run CLI benchmark (will save output to output_path)
+        cli()
     finally:
-        
+        # Load the output benchmark report as JSON
         with open(output_path, "r") as f:
-                report = json.load(f)
-        
+            report = json.load(f)
+
         task.upload_artifact(name="guidellm guidance report", artifact_object=output_path)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
-        
+
         kill_process_tree(server_process.pid)
+
 
 
 if __name__ == '__main__':
