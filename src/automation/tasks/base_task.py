@@ -89,7 +89,7 @@ class BaseTask():
             add_task_init_call=True,
             script=self.script_path,
             repo="https://github.com/neuralmagic/research.git",
-            branch="main",
+            branch="shubhra/guidellm_updates",
         )
         self.task.output_uri = DEFAULT_OUTPUT_URI
         self.set_arguments()
@@ -106,6 +106,9 @@ class BaseTask():
     def execute_remotely(self, queue_name):
         if self.task is None:
             self.create_task()
+        else:
+            # Ensure latest configuration is pushed even if task already exists
+            self.set_configurations()
         self.task.execute_remotely(queue_name=queue_name, clone=False, exit_process=True)
 
 

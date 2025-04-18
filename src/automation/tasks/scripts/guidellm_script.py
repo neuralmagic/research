@@ -21,6 +21,8 @@ def main():
     else:
         guidellm_args = ConfigFactory.parse_string(raw_config)
 
+    print("[DEBUG] Guidellm_Args:", guidellm_args)
+
     environment_args = task.get_configuration_object("environment")
     if environment_args is None:
         environment_args = {}

@@ -95,6 +95,10 @@ class GuideLLMTask(BaseTask):
 
         if len(self.environment_variables) > 0:
             configs["environment"] = self.environment_variables
+        
+        print("[DEBUG] Final guidellm_kwargs config passed to ClearML:")
+        print(json.dumps(self.guidellm_kwargs, indent=2))
+
             
         return configs
 

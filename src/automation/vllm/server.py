@@ -21,7 +21,7 @@ def start_vllm_server(
     executable_path = os.path.dirname(sys.executable)
     vllm_path = os.path.join(executable_path, "vllm")
 
-    num_gpus = 4 #torch.cuda.device_count()
+    num_gpus = torch.cuda.device_count()
 
     parsed_target = urlparse(target)
 
@@ -31,7 +31,6 @@ def start_vllm_server(
         "--host", parsed_target.hostname, 
         "--port", str(parsed_target.port),
         "--tensor-parallel-size", str(num_gpus),
-        "--max-model-len", "4096"
     ]
 
     subprocess_env = os.environ.copy()
