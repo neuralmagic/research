@@ -23,14 +23,8 @@ def main():
 
     # print("[DEBUG] Guidellm_Args:", guidellm_args)
     raw_config = task.get_configuration_object("GuideLLM")
-    if raw_config is None:
-        print("[DEBUG] `GuideLLM` config not found in configuration — checking parameters as fallback")
-        raw_config = task.get_parameters_as_dict().get("GuideLLM")
-        if raw_config is None:
-            raise RuntimeError("GuideLLM config is None. This likely means `get_configurations()` is not returning it or it's not passed via parameters.")
-
-    if hasattr(raw_config, "as_plain_ordered_dict"):
-        guidellm_args = raw_config.as_plain_ordered_dict()
+    if isinstance(raw_config, str):
+        guidellm_args = ConfigFactory.parse_string(raw_config).as_plain_ordered_dict()
     else:
         guidellm_args = raw_config
 
