@@ -11,8 +11,16 @@ def main():
 
     args = task.get_parameters_as_dict(cast=True)
     
-    guidellm_args = ConfigFactory.parse_string(task.get_configuration_object("GuideLLM"))
-    
+    raw_config = task.get_configuration_object("GuideLLM")
+    if raw_config is None:
+        print("[DEBUG] `GuideLLM` config not found in configuration — checking parameters as fallback")
+        raw_config = task.get_parameters_as_dict().get("GuideLLM")
+        if raw_config is None:
+            raise RuntimeError("GuideLLM config is None. This likely means `get_configurations()` is not returning it or it's not passed via parameters.")
+        guidellm_args = ConfigFactory.from_dict(raw_config)
+    else:
+        guidellm_args = ConfigFactory.parse_string(raw_config)
+
     environment_args = task.get_configuration_object("environment")
     if environment_args is None:
         environment_args = {}
@@ -49,20 +57,47 @@ def main():
         kill_process_tree(server_process.pid)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         raise AssertionError("Server failed to intialize")
-
+    
     # Parse through environment variables
     for k, v in environment_args.items():
         os.environ[k] = str(v)
 
     guidellm_args["model"] = model_id
 
-    from guidellm import generate_benchmark_report
-    guidellm_args = cast_args(guidellm_args, generate_benchmark_report)
-    report = generate_benchmark_report(**guidellm_args)
-    kill_process_tree(server_process.pid)
+    import sys
+    import json
+    from pathlib import Path
+    from guidellm.__main__ import cli
 
-    task.upload_artifact(name="guidellm guidance report", artifact_object=report.to_json())
-    task.upload_artifact(name="vLLM server log", artifact_object=server_log)
+    # Ensure output_path is set and consistent
+    output_path = Path(guidellm_args.get("output_path", "guidellm-output.json"))
+    guidellm_args["output_path"] = str(output_path)
+
+    # Build sys.argv to mimic CLI usage
+    sys.argv = ["guidellm", "benchmark"]
+    for k, v in guidellm_args.items():
+        if v is None:
+            continue
+        flag = f"--{k.replace('_', '-')}"
+        if isinstance(v, bool):
+            if v: sys.argv.append(flag)
+        else:
+            sys.argv += [flag, str(v)]
+
+    try:
+        # Run CLI benchmark (will save output to output_path)
+        cli()
+    finally:
+        # Load the output benchmark report as JSON
+        with open(output_path, "r") as f:
+            report = json.load(f)
+
+        task.upload_artifact(name="guidellm guidance report", artifact_object=output_path)
+        task.upload_artifact(name="vLLM server log", artifact_object=server_log)
+
+        kill_process_tree(server_process.pid)
+
+
 
 if __name__ == '__main__':
     main()

@@ -21,7 +21,7 @@ def start_vllm_server(
     executable_path = os.path.dirname(sys.executable)
     vllm_path = os.path.join(executable_path, "vllm")
 
-    num_gpus = torch.cuda.device_count()
+    num_gpus = 4 #torch.cuda.device_count()
 
     parsed_target = urlparse(target)
 
@@ -30,7 +30,8 @@ def start_vllm_server(
         model_id,
         "--host", parsed_target.hostname, 
         "--port", str(parsed_target.port),
-        "--tensor-parallel-size", str(num_gpus)
+        "--tensor-parallel-size", str(num_gpus),
+        "--max-model-len", "4096"
     ]
 
     subprocess_env = os.environ.copy()
@@ -52,6 +53,7 @@ def start_vllm_server(
     for _ in range(server_wait_time // delay):
         try:
             response = requests.get(target + "/models")
+            print(f"response: {response}")
             if response.status_code == 200:
                 print("Server initialized")
                 server_initialized = True

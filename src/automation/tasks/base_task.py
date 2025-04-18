@@ -121,6 +121,14 @@ class BaseTask():
         )
         self.set_arguments()
         self.set_configurations()
+
+        # Instead of connect_configuration, inject raw config directly
+        self.task.set_parameter("GuideLLM", self.guidellm_kwargs)
+        if self.vllm_kwargs:
+            self.task.set_parameter("vLLM", self.vllm_kwargs)
+        if self.environment_variables:
+            self.task.set_parameter("environment", self.environment_variables)
+
         self.script()
         self.task.close()
 

@@ -2,14 +2,14 @@ from automation.tasks import BaseTask
 from automation.configs import DEFAULT_DOCKER_IMAGE
 from typing import Optional, Sequence
 import os
+import json
 
 DEFAULT_SERVER_WAIT_TIME = 600 # 600 seconds = 10 minutes
-GUIDELLM_PACKAGE = "git+https://github.com/neuralmagic/guidellm.git@http_backend"
+GUIDELLM_PACKAGE = "git+https://github.com/neuralmagic/guidellm.git"
 
 class GuideLLMTask(BaseTask):
 
     guidellm_packages = [
-        "vllm",
         GUIDELLM_PACKAGE,
     ]
 
@@ -25,7 +25,6 @@ class GuideLLMTask(BaseTask):
         task_type: str="training",
         vllm_kwargs: dict={},
         target: str="http://localhost:8000/v1",
-        backend: str="aiohttp_server",
         force_download: bool=False,
         config: Optional[str]=None,
         **kwargs,
@@ -63,7 +62,6 @@ class GuideLLMTask(BaseTask):
         # Sort guidellm kwargs from environment variables
         guidellm_kwargs = {
             "target": target,
-            "backend": backend,
         }
         environment_variables = {}
         for k, v in kwargs.items():
@@ -97,7 +95,7 @@ class GuideLLMTask(BaseTask):
 
         if len(self.environment_variables) > 0:
             configs["environment"] = self.environment_variables
-
+            
         return configs
 
 
