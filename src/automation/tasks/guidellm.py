@@ -61,7 +61,7 @@ class GuideLLMTask(BaseTask):
 
         # Sort guidellm kwargs from environment variables
         guidellm_kwargs = {
-            "target": target,
+            "target": f'"{target}"',
         }
         environment_variables = {}
         for k, v in kwargs.items():

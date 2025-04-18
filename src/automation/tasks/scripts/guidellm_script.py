@@ -75,6 +75,9 @@ def main():
     output_path = Path(guidellm_args.get("output_path", "guidellm-output.json"))
     guidellm_args["output_path"] = str(output_path)
 
+    print("[DEBUG] target value type:", type(guidellm_args["target"]))
+    print("[DEBUG] target value:", guidellm_args["target"])
+
     # Build sys.argv to mimic CLI usage
     sys.argv = ["guidellm", "benchmark"]
     for k, v in guidellm_args.items():
@@ -82,12 +85,16 @@ def main():
             continue
         flag = f"--{k.replace('_', '-')}"
         if isinstance(v, bool):
-            if v: sys.argv.append(flag)
-        else:
+            if v:
+                sys.argv.append(flag)
+        elif isinstance(v, (str, int, float)):
             sys.argv += [flag, str(v)]
+        else:
+            print(f"[WARN] Skipping CLI arg {k} due to unsupported type: {type(v)} = {v}")
 
     print("[DEBUG] sys.argv constructed:")
     print(sys.argv)
+
 
     try:
         # Run CLI benchmark (will save output to output_path)
