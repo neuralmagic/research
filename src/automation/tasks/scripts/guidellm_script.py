@@ -21,6 +21,13 @@ def main():
     else:
         guidellm_args = ConfigFactory.parse_string(raw_config)
 
+    def clean_hocon_value(v):
+        if isinstance(v, str) and v.startswith('"') and v.endswith('"'):
+            return v[1:-1]
+        return v
+
+    guidellm_args = {k: clean_hocon_value(v) for k, v in guidellm_args.items()}
+
     print("[DEBUG] Guidellm_Args:", guidellm_args)
 
     environment_args = task.get_configuration_object("environment")
