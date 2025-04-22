@@ -1,9 +1,5 @@
 
 import os
-import sys
-
-# Forcefully bypass ClearML's click patch monkey
-sys.modules["clearml.binding.click_bind"] = None
 os.environ["CLEARML_NO_FRAMEWORKS"] = "1"
 os.environ["CLEARML_AGENT_SKIP_PYTHON_ENV_CACHE"] = "1"
 os.environ["CLEARML_DISABLE_CLICK_PATCH"] = "1"
