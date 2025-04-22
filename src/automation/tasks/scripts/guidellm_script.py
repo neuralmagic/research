@@ -1,6 +1,13 @@
 
 import os
+import sys
+
+# Forcefully bypass ClearML's click patch monkey
+sys.modules["clearml.binding.click_bind"] = None
 os.environ["CLEARML_NO_FRAMEWORKS"] = "1"
+os.environ["CLEARML_AGENT_SKIP_PYTHON_ENV_CACHE"] = "1"
+os.environ["CLEARML_DISABLE_CLICK_PATCH"] = "1"
+os.environ["VLLM_DISABLE_COMPILE_CACHE"] = "1"
 from clearml import Task
 from automation.utils import resolve_model_id, cast_args, kill_process_tree
 from automation.vllm import start_vllm_server
