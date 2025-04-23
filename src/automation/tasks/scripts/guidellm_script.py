@@ -1,14 +1,12 @@
-
 import os
 os.environ["CLEARML_NO_FRAMEWORKS"] = "1"
 os.environ["CLEARML_AGENT_SKIP_PYTHON_ENV_CACHE"] = "1"
-os.environ["CLEARML_DISABLE_CLICK_PATCH"] = "1"
 os.environ["VLLM_DISABLE_COMPILE_CACHE"] = "1"
+
 from clearml import Task
 from automation.utils import resolve_model_id, cast_args, kill_process_tree
 from automation.vllm import start_vllm_server
 from pyhocon import ConfigFactory
-
 
 def main():
     task = Task.current_task()
@@ -54,7 +52,6 @@ def main():
     if isinstance(force_download, str):
         force_download = force_download.lower() == "true"
 
-
     # Resolve model_id
     model_id = resolve_model_id(args["Args"]["model"], clearml_model, force_download)
 
@@ -69,58 +66,58 @@ def main():
     if not server_initialized:
         kill_process_tree(server_process.pid)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
-        raise AssertionError("Server failed to intialize")
-    
+        raise AssertionError("Server failed to initialize")
+
     # Parse through environment variables
     for k, v in environment_args.items():
         os.environ[k] = str(v)
 
     guidellm_args["model"] = model_id
 
-    import sys
     import json
+    import asyncio
     from pathlib import Path
-    from guidellm.__main__ import cli
+    from guidellm.benchmark import benchmark_generative_text
 
     # Ensure output_path is set and consistent
     output_path = Path(guidellm_args.get("output_path", "guidellm-output.json"))
     guidellm_args["output_path"] = str(output_path)
 
-    print("[DEBUG] target value type:", type(guidellm_args["target"]))
-    print("[DEBUG] target value:", guidellm_args["target"])
-
-    # Build sys.argv to mimic CLI usage
-    sys.argv = ["guidellm", "benchmark"]
-    for k, v in guidellm_args.items():
-        if v is None:
-            continue
-        flag = f"--{k.replace('_', '-')}"
-        if isinstance(v, bool):
-            if v:
-                sys.argv.append(flag)
-        elif isinstance(v, (str, int, float)):
-            sys.argv += [flag, str(v)]
-        else:
-            print(f"[WARN] Skipping CLI arg {k} due to unsupported type: {type(v)} = {v}")
-
-    print("[DEBUG] sys.argv constructed:")
-    print(sys.argv)
-
+    print("[DEBUG] Calling benchmark_generative_text with:")
+    print(json.dumps(guidellm_args, indent=2))
 
     try:
-        # Run CLI benchmark (will save output to output_path)
-        cli()
-    finally:
-        # Load the output benchmark report as JSON
-        with open(output_path, "r") as f:
-            report = json.load(f)
+        asyncio.run(
+            benchmark_generative_text(
+                target=guidellm_args["target"],
+                backend_type=guidellm_args.get("backend_type", "openai_http"),
+                backend_args=guidellm_args.get("backend_args", None),
+                model=guidellm_args.get("model"),
+                processor=guidellm_args.get("processor", None),
+                processor_args=guidellm_args.get("processor_args", None),
+                data=guidellm_args["data"],
+                data_args=guidellm_args.get("data_args", None),
+                data_sampler=guidellm_args.get("data_sampler", None),
+                rate_type=guidellm_args["rate_type"],
+                rate=guidellm_args.get("rate", None),
+                max_seconds=guidellm_args.get("max_seconds", None),
+                max_requests=guidellm_args.get("max_requests", None),
+                warmup_percent=guidellm_args.get("warmup_percent", None),
+                cooldown_percent=guidellm_args.get("cooldown_percent", None),
+                show_progress=not guidellm_args.get("disable_progress", False),
+                show_progress_scheduler_stats=guidellm_args.get("display_scheduler_stats", False),
+                output_console=not guidellm_args.get("disable_console_outputs", False),
+                output_path=output_path,
+                output_extras=guidellm_args.get("output_extras", None),
+                output_sampling=guidellm_args.get("output_sampling", None),
+                random_seed=guidellm_args.get("random_seed", 42),
+            )
+        )
 
+    finally:
         task.upload_artifact(name="guidellm guidance report", artifact_object=output_path)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
-
         kill_process_tree(server_process.pid)
-
-
 
 if __name__ == '__main__':
     main()
