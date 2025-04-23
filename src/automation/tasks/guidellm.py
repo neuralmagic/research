@@ -113,7 +113,4 @@ class GuideLLMTask(BaseTask):
             },
         }
 
-    def detach(self):
-        if self.task:
-            self.task.detach()
 
