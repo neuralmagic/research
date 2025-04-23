@@ -112,3 +112,8 @@ class GuideLLMTask(BaseTask):
                 "force_download": self.force_download,
             },
         }
+
+    def detach(self):
+        if self.task:
+            self.task.detach()
+
