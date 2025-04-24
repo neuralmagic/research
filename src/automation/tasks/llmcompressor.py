@@ -86,10 +86,12 @@ class LLMCompressorTask(BaseTask):
         self.max_seq_len = config_kwargs.pop("max_seq_len", max_seq_len)
         self.trust_remote_code = config_kwargs.pop("trust_remote_code", trust_remote_code)
         self.max_memory_per_gpu = config_kwargs.pop("max_memory_per_gpu", max_memory_per_gpu)
-        self.dataset_loader = dataset_loader
-        self.data_collator = data_collator
         self.tracing_class = tracing_class
         self.model_class = model_class
+        self.callable_artifacts = {
+            "dataset loader": dataset_loader,
+            "data collator": data_collator,
+        }
 
         if tags is not None:
             tags = list(set(config_kwargs.pop("tags", []).extend(tags)))
@@ -106,23 +108,9 @@ class LLMCompressorTask(BaseTask):
 
 
     def script(self):
-        self.upload_callables()
         from automation.tasks.scripts.llmcompressor_script import main
         main()
-
-
-    def upload_callables(self):
-        if self.dataset_loader is not None:
-            self.task.upload_artifact("dataset loader", inspect.getsource(self.dataset_loader))
-
-        if self.data_collator is not None:
-            self.task.upload_artifact("data collator", inspect.getsource(self.data_collator))
-
-
-    def create_task(self):
-        super().create_task()
-        self.upload_callables()
-
+        
 
     def get_arguments(self):
         return {

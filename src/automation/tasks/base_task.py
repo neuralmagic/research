@@ -4,6 +4,7 @@ from automation.configs import DEFAULT_OUTPUT_URI
 from automation.standards import STANDARD_CONFIGS
 import yaml
 import os
+import inspect
 
 class BaseTask():
 
@@ -30,6 +31,7 @@ class BaseTask():
         self.task_type = task_type
         self.task = None
         self.script_path = None
+        self.callable_artifacts = None
   
 
     @property
@@ -41,6 +43,13 @@ class BaseTask():
         return self.task_name
 
     
+    def upload_callables(self):
+        if self.callable_artifacts is not None:
+            for name, callable in self.callable_artifacts:
+                if callable is not None:
+                    self.task.upload_artifact(name, inspect.getsource(callable))
+
+
     def process_config(self, config):
         if config is None:
             return {}
@@ -94,6 +103,7 @@ class BaseTask():
         self.task.output_uri = DEFAULT_OUTPUT_URI
         self.set_arguments()
         self.set_configurations()
+        self.upload_callables()
 
 
     def get_task_id(self):
@@ -121,6 +131,7 @@ class BaseTask():
         )
         self.set_arguments()
         self.set_configurations()
+        self.upload_callables()
         self.script()
         self.task.close()
 
