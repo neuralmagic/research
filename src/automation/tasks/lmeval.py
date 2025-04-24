@@ -79,6 +79,9 @@ class LMEvalTask(BaseTask):
         if "enable_chunked_prefill" not in model_args:
             model_args["enable_chunked_prefill"] = True
 
+        if "enforce_eager" not in model_args:
+            model_args["enforce_eager"] = True
+
         kwargs["model_args"] = ",".join(f"{k}={v}" for k, v in model_args.items())
         
         kwargs.update(config_kwargs)
