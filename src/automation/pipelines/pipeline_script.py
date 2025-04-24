@@ -1,4 +1,5 @@
 from clearml import PipelineController, Task
+from automation.utils import parse_argument
 import ast
 
 def main():
@@ -27,6 +28,14 @@ def main():
         pipeline.add_step(*step_args, **step_kwargs)
 
     pipeline.start_locally()
+
+    job_end_callable_name = parse_argument(args["Args"]["pipeline"], str)
+    if job_end_callable_name is not None:
+        filepath = task.artifacts["job end callback"].get_local_copy()
+        namespace = {}
+        exec(open(filepath, "r").read(), namespace)
+        job_end_callable_fn = namespace.get(job_end_callable_name)    
+        job_end_callable_fn(task)
 
 
 if __name__ == "__main__":

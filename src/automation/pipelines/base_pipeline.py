@@ -25,6 +25,7 @@ class BasePipeline(BaseTask):
         self.script_path = os.path.join(".", "src", "automation", "pipelines", "pipeline_script.py")
         self.steps = []
         self.parameters = []
+        self.callable_artifacts = {"job end callback": job_end_callback}
 
 
     def script(self):
@@ -51,7 +52,12 @@ class BasePipeline(BaseTask):
 
 
     def get_arguments(self):
-        args = {"pipeline": {"version": self.version}}
+        args = {
+            "pipeline": {
+                "version": self.version,
+                "job end callback": self.callable_artifacts["job end callback"].__name__ if self.callable_artifacts["job end callback"] else None,
+            },
+        }
         if len(self.parameters) > 0:
             parameters_dict = {}
             for parameter_args, parameter_kwargs in self.parameters:
