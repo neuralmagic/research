@@ -6,7 +6,7 @@ import yaml
 import inspect
 
 class LLMCompressorTask(BaseTask):
-    llmcompressor_packages = ["git+https://github.com/vllm-project/llm-compressor.git@traceable_mistral3"]
+    llmcompressor_packages = ["git+https://github.com/vllm-project/llm-compressor.git"]
 
     def __init__(
         self,
