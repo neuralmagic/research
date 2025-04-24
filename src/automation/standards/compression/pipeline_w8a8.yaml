@@ -13,11 +13,11 @@ parameters:
     recipe_arg: true
   text_samples:
     default: 1024
-    param_type:  int
+    param_type: int
     recipe_arg: false
   vision_samples:
     default: None
-    param_type:  int
+    param_type: int
     recipe_arg: false
 llmcompressor_kwargs:
   name: quantization
