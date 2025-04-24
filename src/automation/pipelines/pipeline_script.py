@@ -1,8 +1,7 @@
-from clearml import PipelineController
+from clearml import PipelineController, Task
 import ast
 
 def main():
-
     task = Task.current_task()
 
     args = task.get_parameters_as_dict(cast=True)

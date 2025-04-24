@@ -57,6 +57,9 @@ class LLMCompressorLMEvalPipeline(Pipeline):
 
             if recipe_arg:
                 parameter_override[f"Args/recipe_args/{parameter_name}"] = f"${{pipeline.{parameter_name}}}"
+            else:
+                parameter_override[f"Args/{parameter_name}"] = f"${{pipeline.{parameter_name}}}"
+
 
         self.step1_name = self.pipeline_name + "_" + self.llmcompressor_kwargs.pop("name", "llmcompressor")
         step1 = LLMCompressorTask(

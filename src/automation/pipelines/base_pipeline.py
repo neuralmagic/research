@@ -1,7 +1,6 @@
 from clearml import Task
 from automation.configs import DEFAULT_DOCKER_IMAGE
 from automation.tasks import BaseTask
-from typing import Optional
 import os
 
 class BasePipeline(BaseTask):
