@@ -45,7 +45,7 @@ class BaseTask():
     
     def upload_callables(self):
         if self.callable_artifacts is not None:
-            for name, callable in self.callable_artifacts:
+            for name, callable in self.callable_artifacts.items():
                 if callable is not None:
                     self.task.upload_artifact(name, inspect.getsource(callable))
 
