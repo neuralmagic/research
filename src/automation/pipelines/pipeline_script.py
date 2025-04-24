@@ -29,7 +29,7 @@ def main():
 
     pipeline.start_locally()
 
-    job_end_callable_name = parse_argument(args["Args"]["pipeline"], str)
+    job_end_callable_name = parse_argument(args["pipeline"]["job end callback"], str)
     if job_end_callable_name is not None:
         filepath = task.artifacts["job end callback"].get_local_copy()
         namespace = {}
