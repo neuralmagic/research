@@ -11,7 +11,7 @@ class BasePipeline(BaseTask):
         pipeline_name: str,
         version: str="1.0.0", 
         docker_image: str=DEFAULT_DOCKER_IMAGE,
-        job_end_callback=Optional[Callable],
+        job_end_callback: Optional[Callable]=None,
     ):
         super().__init__(
             project_name=project_name,
