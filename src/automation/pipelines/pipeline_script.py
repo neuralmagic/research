@@ -35,9 +35,12 @@ def main():
         namespace = {}
         exec(open(filepath, "r").read(), namespace)
         job_end_callable_fn = namespace.get(job_end_callable_name)
+        print("Starting job end callback")
         task.mark_started()
         job_end_callable_fn(task)
+        task.get_logger().flush()
         task.mark_completed()
+        print("Job end callback completed")
 
 
 if __name__ == "__main__":
