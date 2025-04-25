@@ -36,10 +36,19 @@ def main():
         exec(open(filepath, "r").read(), namespace)
         job_end_callable_fn = namespace.get(job_end_callable_name)
         print("Starting job end callback")
+
+        # Re-open task to make it available for writing, if the callback needs to do so
+        # E.g., logging a new scalar
+        task = Task.get_task(task_id=task.id)
         task.mark_started()
+
+        # Runs the callback
         job_end_callable_fn(task)
+
+        # Flushes the logger and ends the task
         task.get_logger().flush()
         task.mark_completed()
+        
         print("Job end callback completed")
 
 
