@@ -34,8 +34,10 @@ def main():
         filepath = task.artifacts["job end callback"].get_local_copy()
         namespace = {}
         exec(open(filepath, "r").read(), namespace)
-        job_end_callable_fn = namespace.get(job_end_callable_name)    
+        job_end_callable_fn = namespace.get(job_end_callable_name)
+        task.mark_started()
         job_end_callable_fn(task)
+        task.mark_completed()
 
 
 if __name__ == "__main__":
