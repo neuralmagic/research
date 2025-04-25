@@ -35,7 +35,7 @@ def main():
         namespace = {}
         exec(open(filepath, "r").read(), namespace)
         job_end_callable_fn = namespace.get(job_end_callable_name)    
-        job_end_callable_fn(task, pipeline)
+        job_end_callable_fn()
 
 
 if __name__ == "__main__":
