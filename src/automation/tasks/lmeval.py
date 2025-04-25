@@ -8,6 +8,7 @@ class LMEvalTask(BaseTask):
     lmeval_packages = [
         "vllm==0.8.3",
         "git+https://github.com/EleutherAI/lm-evaluation-harness.git",
+        "numpy==2.1"
     ]
 
     def __init__(
