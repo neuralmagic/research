@@ -11,6 +11,7 @@ def main():
     else:
         parameters = {}
     steps = ast.literal_eval(task.get_configuration_object("Steps"))
+    job_end_callback_fn = load_callable_configuration("job end callback")
 
     version = args["pipeline"]["version"]
 
@@ -29,7 +30,6 @@ def main():
 
     pipeline.start_locally()
 
-    job_end_callback_fn = load_callable_configuration("job end callback")
     if job_end_callback_fn is not None:
         print("Starting job end callback")
 
