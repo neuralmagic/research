@@ -4,7 +4,6 @@ from automation.configs import DEFAULT_OUTPUT_URI
 from automation.standards import STANDARD_CONFIGS
 import yaml
 import os
-import inspect
 
 class BaseTask():
 

@@ -6,7 +6,7 @@ import yaml
 import inspect
 
 class LLMCompressorTask(BaseTask):
-    llmcompressor_packages = ["git+https://github.com/vllm-project/llm-compressor.git"]
+    llmcompressor_packages = ["git+https://github.com/vllm-project/llm-compressor.git@traceable_mistral3"]
 
     def __init__(
         self,
@@ -88,10 +88,8 @@ class LLMCompressorTask(BaseTask):
         self.max_memory_per_gpu = config_kwargs.pop("max_memory_per_gpu", max_memory_per_gpu)
         self.tracing_class = tracing_class
         self.model_class = model_class
-        self.callable_artifacts = {
-            "dataset loader": dataset_loader,
-            "data collator": data_collator,
-        }
+        self.dataset_loader = dataset_loader
+        self.data_collator = data_collator
 
         if tags is not None:
             tags = list(set(config_kwargs.pop("tags", []).extend(tags)))
@@ -112,6 +110,22 @@ class LLMCompressorTask(BaseTask):
         main()
         
 
+    def get_configurations(self):
+        configs = {}
+        if self.dataset_loader is not None:
+            configs["dataset loader"] = {
+                "name": self.dataset_loader.__name__,
+                "code": inspect.getsource(self.dataset_loader),
+            }
+        if self.data_collator is not None:
+            configs["dataset collator"] = {
+                "name": self.data_collator.__name__,
+                "code": inspect.getsource(self.data_collator),
+            }
+
+        return configs
+
+
     def get_arguments(self):
         return {
             "Args": {
@@ -120,8 +134,6 @@ class LLMCompressorTask(BaseTask):
                 "recipe_args": self.recipe_args,
                 "model_class": self.model_class,
                 "dataset_name": self.dataset_name,
-                "dataset_loader": self.callable_artifacts["dataset loader"].__name__ if self.callable_artifacts["dataset loader"] else None,
-                "data_collator": self.callable_artifacts["data collator"].__name__ if self.callable_artifacts["data collator"] else None,
                 "clearml_model": self.clearml_model,
                 "force_download": self.force_download,
                 "save_directory": self.save_directory,
