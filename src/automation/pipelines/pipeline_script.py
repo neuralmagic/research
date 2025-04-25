@@ -1,5 +1,5 @@
 from clearml import PipelineController, Task
-from automation.utils import parse_argument, load_callable_configuration
+from automation.utils import load_callable_configuration
 import ast
 
 def main():
