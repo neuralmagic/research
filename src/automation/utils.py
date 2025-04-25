@@ -3,6 +3,7 @@ from clearml import InputModel, Task
 import inspect
 import typing
 import psutil
+from pyhocon import ConfigFactory
 
 
 def parse_argument(argument, argument_type):
@@ -118,3 +119,21 @@ def kill_process_tree(pid):
     except psutil.NoSuchProcess:
         pass
 
+
+def load_callable_configuration(config_name):
+    task = Task.current_task()
+    config_object = task.get_configuration_object(config_name)
+    if config_object is not None:
+        config_object = ConfigFactory.parse_string(config_object)
+        namespace = {}
+        exec(config_object["code"], namespace)
+        return namespace.get(config_object["name"])
+    else:
+        return None
+    
+
+def serialize_callable(callable):
+    return {
+        "name": callable.__name__,
+        "code": inspect.getsource(callable),
+    }

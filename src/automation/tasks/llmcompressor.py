@@ -1,9 +1,9 @@
 from automation.tasks.base_task import BaseTask
 from automation.configs import DEFAULT_DOCKER_IMAGE
+from automation.utils import serialize_callable
 from typing import Union, List, Optional, Sequence, Any, Callable
 import os
 import yaml
-import inspect
 
 class LLMCompressorTask(BaseTask):
     llmcompressor_packages = ["git+https://github.com/vllm-project/llm-compressor.git@traceable_mistral3"]
@@ -113,16 +113,9 @@ class LLMCompressorTask(BaseTask):
     def get_configurations(self):
         configs = {}
         if self.dataset_loader is not None:
-            configs["dataset loader"] = {
-                "name": self.dataset_loader.__name__,
-                "code": inspect.getsource(self.dataset_loader),
-            }
+            configs["dataset loader"] = serialize_callable(self.dataset_loader)
         if self.data_collator is not None:
-            configs["dataset collator"] = {
-                "name": self.data_collator.__name__,
-                "code": inspect.getsource(self.data_collator),
-            }
-
+            configs["dataset collator"] = serialize_callable(self.data_collator)
         return configs
 
 
