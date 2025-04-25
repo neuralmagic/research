@@ -1,5 +1,5 @@
 from clearml import PipelineController, Task
-from automation.utils import parse_argument
+from automation.utils import parse_argument, load_callable_configuration
 import ast
 
 def main():
@@ -29,12 +29,8 @@ def main():
 
     pipeline.start_locally()
 
-    job_end_callable_name = parse_argument(args["pipeline"]["job end callback"], str)
-    if job_end_callable_name is not None:
-        filepath = task.artifacts["job end callback"].get_local_copy()
-        namespace = {}
-        exec(open(filepath, "r").read(), namespace)
-        job_end_callable_fn = namespace.get(job_end_callable_name)
+    job_end_callback_fn = load_callable_configuration("job end callback")
+    if job_end_callback_fn is not None:
         print("Starting job end callback")
 
         # Re-open task to make it available for writing, if the callback needs to do so
@@ -43,7 +39,7 @@ def main():
         task.mark_started()
 
         # Runs the callback
-        job_end_callable_fn(task)
+        job_end_callback_fn(task)
 
         # Flushes the logger and ends the task
         task.get_logger().flush()

@@ -1,6 +1,7 @@
 from clearml import Task
 from automation.configs import DEFAULT_DOCKER_IMAGE
 from automation.tasks import BaseTask
+from automation.utils import serialize_callable
 import os
 from typing import Optional, Callable
 
@@ -25,7 +26,7 @@ class BasePipeline(BaseTask):
         self.script_path = os.path.join(".", "src", "automation", "pipelines", "pipeline_script.py")
         self.steps = []
         self.parameters = []
-        self.callable_artifacts = {"job end callback": job_end_callback}
+        self.job_end_callback = job_end_callback
 
 
     def script(self):
@@ -48,16 +49,13 @@ class BasePipeline(BaseTask):
 
 
     def get_configurations(self) -> None:
-        return {"Steps": self.steps}
+        configs = {"Steps": self.steps}
+        if self.job_end_callback is not None:
+            configs["job end callback"] = serialize_callable(self.job_end_callback)
 
 
     def get_arguments(self):
-        args = {
-            "pipeline": {
-                "version": self.version,
-                "job end callback": self.callable_artifacts["job end callback"].__name__ if self.callable_artifacts["job end callback"] else None,
-            },
-        }
+        args = {"pipeline": {"version": self.version}}
         if len(self.parameters) > 0:
             parameters_dict = {}
             for parameter_args, parameter_kwargs in self.parameters:
