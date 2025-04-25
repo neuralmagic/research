@@ -7,7 +7,7 @@ import os
 
 class BaseTask():
 
-    base_packages = ["git+https://github.com/neuralmagic/research.git"]
+    base_packages = ["git+https://github.com/neuralmagic/research.git@end_pipeline_callback"]
 
     def __init__(
         self,
