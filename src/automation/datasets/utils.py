@@ -117,10 +117,7 @@ def load_vlm_messages(
 
         datasets.append(ds)
 
-    if len(datasets) == 1:
-        dataset = datasets[0]
-    else:
-        dataset = concatenate_datasets(datasets)
+    dataset = concatenate_datasets(datasets)
 
     def preprocess_sample(example):
         messages = []
@@ -138,7 +135,6 @@ def load_vlm_messages(
                 add_generation_prompt=False, 
                 tokenize=True,
                 return_dict=True, 
-                return_tensors="pt"
             )
         else:
             return message_processor(messages, processor)
