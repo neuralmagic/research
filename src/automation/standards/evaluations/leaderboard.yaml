@@ -2,6 +2,8 @@ packages:
   - "langdetect"
   - "immutabledict"
   - "antlr4-python3-runtime==4.11"
+  - "math-verify"
+  - "sympy"
 tasks: leaderboard
 groups:
   leaderboard:
