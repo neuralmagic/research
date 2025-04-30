@@ -69,7 +69,6 @@ def lmeval_main(
     task_manager = lm_eval.tasks.TaskManager()
     lm_eval_args = cast_args(lm_eval_args, lm_eval.simple_evaluate)
     results = lm_eval.simple_evaluate( # call simple_evaluate
-        model="vllm",
         task_manager=task_manager,
         **lm_eval_args,
     )
@@ -131,7 +130,7 @@ def main():
                 else:
                     name = lm_eval_task + "/" + f"{num_fewshot:d}" + "shot/" + metric
                 task.get_logger().report_single_value(name=name, value=value)
-                task.get_logger().report_scalar(title=lm_eval_task, series=metric, iteration=num_fewshot, value=value)
+                task.get_logger().report_scalar(title=lm_eval_task, series=metric, iteration=0, value=value)
 
                 if clearml_model_handle is not None:
                     clearml_model_handle.report_single_value(name="openllm", value=openllm_score)

@@ -2,7 +2,7 @@ from automation.pipelines import Pipeline
 from automation.tasks import LLMCompressorTask, LMEvalTask
 from automation.configs import DEFAULT_DOCKER_IMAGE
 from automation.utils import dict_recursive_update
-from typing import List, Optional
+from typing import List, Optional, Callable
 
 class LLMCompressorLMEvalPipeline(Pipeline):
     def __init__(
@@ -16,15 +16,9 @@ class LLMCompressorLMEvalPipeline(Pipeline):
         parameters: Optional[dict]={},
         llmcompressor_kwargs: dict={},
         lmeval_kwargs: dict={},
+        job_end_callback: Optional[Callable]=None,
         config: Optional[str]=None,
     ):
-        super().__init__(
-            project_name, 
-            pipeline_name, 
-            version, 
-            docker_image,
-        )
-        
         # Process config
         config_kwargs = self.process_config(config)
         if "parameters" in config_kwargs:
@@ -38,6 +32,20 @@ class LLMCompressorLMEvalPipeline(Pipeline):
 
         lmeval_kwargs_ = config_kwargs.pop("lmeval_kwargs", {})
         lmeval_kwargs_ = dict_recursive_update(lmeval_kwargs_, lmeval_kwargs)
+
+        if "job_end_callback" in config_kwargs:
+            if job_end_callback is not None:
+                raise ValueError("job_end_callback specified in config. Can't specify again in pipeline instantiation.")
+            else:
+                job_end_callback = config_kwargs.pop("job_end_callback")
+
+        super().__init__(
+            project_name, 
+            pipeline_name, 
+            version, 
+            docker_image,
+            job_end_callback=job_end_callback,
+        )
 
         self.model_id = model_id
         self.execution_queues = execution_queues

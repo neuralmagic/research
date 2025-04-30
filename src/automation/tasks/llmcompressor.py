@@ -1,12 +1,15 @@
 from automation.tasks.base_task import BaseTask
 from automation.configs import DEFAULT_DOCKER_IMAGE
+from automation.utils import serialize_callable
 from typing import Union, List, Optional, Sequence, Any, Callable
 import os
 import yaml
-import inspect
 
 class LLMCompressorTask(BaseTask):
-    llmcompressor_packages = ["git+https://github.com/vllm-project/llm-compressor.git@traceable_mistral3"]
+    llmcompressor_packages = [
+        "git+https://github.com/vllm-project/llm-compressor.git@traceable_mistral3",
+        "torchvision"
+    ]
 
     def __init__(
         self,
@@ -86,10 +89,10 @@ class LLMCompressorTask(BaseTask):
         self.max_seq_len = config_kwargs.pop("max_seq_len", max_seq_len)
         self.trust_remote_code = config_kwargs.pop("trust_remote_code", trust_remote_code)
         self.max_memory_per_gpu = config_kwargs.pop("max_memory_per_gpu", max_memory_per_gpu)
-        self.dataset_loader = dataset_loader
-        self.data_collator = data_collator
         self.tracing_class = tracing_class
         self.model_class = model_class
+        self.dataset_loader = dataset_loader
+        self.data_collator = data_collator
 
         if tags is not None:
             tags = list(set(config_kwargs.pop("tags", []).extend(tags)))
@@ -106,22 +109,17 @@ class LLMCompressorTask(BaseTask):
 
 
     def script(self):
-        self.upload_callables()
         from automation.tasks.scripts.llmcompressor_script import main
         main()
+        
 
-
-    def upload_callables(self):
+    def get_configurations(self):
+        configs = {}
         if self.dataset_loader is not None:
-            self.task.upload_artifact("dataset loader", inspect.getsource(self.dataset_loader))
-
+            configs["dataset loader"] = serialize_callable(self.dataset_loader)
         if self.data_collator is not None:
-            self.task.upload_artifact("data collator", inspect.getsource(self.data_collator))
-
-
-    def create_task(self):
-        super().create_task()
-        self.upload_callables()
+            configs["data collator"] = serialize_callable(self.data_collator)
+        return configs
 
 
     def get_arguments(self):
@@ -132,8 +130,6 @@ class LLMCompressorTask(BaseTask):
                 "recipe_args": self.recipe_args,
                 "model_class": self.model_class,
                 "dataset_name": self.dataset_name,
-                "dataset_loader": self.dataset_loader.__name__ if self.dataset_loader else None,
-                "data_collator": self.data_collator.__name__ if self.data_collator else None,
                 "clearml_model": self.clearml_model,
                 "force_download": self.force_download,
                 "save_directory": self.save_directory,

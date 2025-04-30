@@ -1,4 +1,4 @@
-from datasets import load_dataset, interleave_datasets
+from datasets import load_dataset, concatenate_datasets
 
 def load_llm_messages(
     dataset_name, 
@@ -117,8 +117,7 @@ def load_vlm_messages(
 
         datasets.append(ds)
 
-
-    dataset = interleave_datasets(datasets)
+    dataset = concatenate_datasets(datasets)
 
     def preprocess_sample(example):
         messages = []
@@ -136,7 +135,6 @@ def load_vlm_messages(
                 add_generation_prompt=False, 
                 tokenize=True,
                 return_dict=True, 
-                return_tensors="pt"
             )
         else:
             return message_processor(messages, processor)

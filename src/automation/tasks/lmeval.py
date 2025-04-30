@@ -6,8 +6,9 @@ import os
 class LMEvalTask(BaseTask):
 
     lmeval_packages = [
-        "vllm",
-        "git+https://github.com/neuralmagic/lm-evaluation-harness.git@fix_processor",
+        "vllm==0.8.3",
+        "git+https://github.com/EleutherAI/lm-evaluation-harness.git",
+        "numpy==2.1"
     ]
 
     def __init__(
@@ -21,6 +22,7 @@ class LMEvalTask(BaseTask):
         task_type: str="training",
         force_download: bool=False,
         config: Optional[str]=None,
+        model: str="vllm",
         **kwargs,
     ):
 
@@ -54,6 +56,8 @@ class LMEvalTask(BaseTask):
 
             if key in kwargs:
                 raise ValueError(f"{key} already defined in config's model_args. It can't be defined again in task instantiation.")
+            elif key == "model":
+                model = config_kwargs.pop(key)
 
         # model_args is the only argument that can be provided
         # in both the config and in the constructor, assuming
@@ -79,9 +83,13 @@ class LMEvalTask(BaseTask):
         if "enable_chunked_prefill" not in model_args:
             model_args["enable_chunked_prefill"] = True
 
+        if "enforce_eager" not in model_args:
+            model_args["enforce_eager"] = True
+
         kwargs["model_args"] = ",".join(f"{k}={v}" for k, v in model_args.items())
         
         kwargs.update(config_kwargs)
+        kwargs["model"] = model
 
         # Store class attributes
         self.model_id = model_id

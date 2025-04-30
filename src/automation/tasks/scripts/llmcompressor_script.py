@@ -10,7 +10,7 @@ import transformers
 from transformers import AutoProcessor
 from clearml import OutputModel, Task
 import torch
-from automation.utils import resolve_model_id, parse_argument
+from automation.utils import resolve_model_id, parse_argument, load_callable_configuration
 from llmcompressor.transformers import tracing
 
 
@@ -156,23 +156,8 @@ def main():
     recipe_args = args.get("recipe_args", None)
     tags = args.get("tags", None)
 
-    dataset_loader_fn_name = parse_argument(args["dataset_loader"], str)
-    if dataset_loader_fn_name is None:
-        dataset_loader_fn = None
-    else:
-        filepath = task.artifacts["dataset loader"].get_local_copy()
-        namespace = {}
-        exec(open(filepath, "r").read(), namespace)
-        dataset_loader_fn = namespace.get(dataset_loader_fn_name)
-
-    data_collator_fn_name = parse_argument(args["data_collator"], str)
-    if data_collator_fn_name is None:
-        data_collator_fn = None
-    else:
-        filepath = task.artifacts["data collator"].get_local_copy()
-        namespace = {}
-        exec(open(filepath, "r").read(), namespace)
-        data_collator_fn = namespace.get(data_collator_fn_name)
+    dataset_loader_fn = load_callable_configuration("dataset loader")
+    data_collator_fn = load_callable_configuration("data collator")
 
     # Resolve model_id
     model_id = resolve_model_id(model_id, clearml_model, force_download, model_class)

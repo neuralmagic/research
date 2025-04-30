@@ -15,6 +15,7 @@ task = LLMCompressorTask(
     task_name="test_llmcompressor_task",
     model_id="meta-llama/Llama-3.2-1B-Instruct",
     recipe=recipe,
+    text_samples=512,
     recipe_args={"observer": "mse"},
 )
 
