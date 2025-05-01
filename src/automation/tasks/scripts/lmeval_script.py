@@ -50,7 +50,6 @@ def lmeval_main(
     model_id: str,
     lm_eval_args: dict,
     groups: dict = None,
-    eager_model: bool = False
 ):
     # Determine number of gpus
     num_gpus = torch.cuda.device_count()
