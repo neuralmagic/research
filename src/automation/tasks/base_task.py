@@ -122,6 +122,7 @@ class BaseTask():
         )
         self.set_arguments()
         self.set_configurations()
+        self.task.flush(wait_for_uploads=True)
         self.script()
         self.task.close()
 
