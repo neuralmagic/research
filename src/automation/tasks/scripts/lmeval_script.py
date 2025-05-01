@@ -133,7 +133,7 @@ def main():
                 task.get_logger().report_scalar(title=lm_eval_task, series=metric, iteration=0, value=value)
 
                 if clearml_model_handle is not None:
-                    clearml_model_handle.report_single_value(name="openllm", value=openllm_score)
+                    clearml_model_handle.report_single_value(name=name, value=value)
                            
     dumped = json.dumps(
         results,
