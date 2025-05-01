@@ -135,7 +135,7 @@ def llmcompressor_main(
     return recipe
 
 
-def main():
+def main(configurations=None):
     task = Task.current_task()
 
     # Parse arguments
@@ -156,8 +156,8 @@ def main():
     recipe_args = args.get("recipe_args", None)
     tags = args.get("tags", None)
 
-    dataset_loader_fn = load_callable_configuration("dataset loader")
-    data_collator_fn = load_callable_configuration("data collator")
+    dataset_loader_fn = load_callable_configuration("dataset loader", configurations)
+    data_collator_fn = load_callable_configuration("data collator", configurations)
 
     # Resolve model_id
     model_id = resolve_model_id(model_id, clearml_model, force_download, model_class)

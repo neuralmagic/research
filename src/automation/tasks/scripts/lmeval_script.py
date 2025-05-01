@@ -87,11 +87,14 @@ def lmeval_main(
     return results
 
 
-def main():
+def main(configurations=None):
     task = Task.current_task()
 
     args = task.get_parameters_as_dict(cast=True)
-    lm_eval_args = ConfigFactory.parse_string(task.get_configuration_object("lm_eval"))
+    if configurations is None:
+        lm_eval_args = ConfigFactory.parse_string(task.get_configuration_object("lm_eval"))
+    else:
+        lm_eval_args = configurations.get("lm_eval", {})
     model_id = args["Args"]["model_id"]
     clearml_model = args["Args"]["clearml_model"]
     if isinstance(clearml_model, str):

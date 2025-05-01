@@ -74,6 +74,7 @@ class BaseTask():
         configurations = self.get_configurations()
         for name, config in configurations.items():
             self.task.connect_configuration(config, name=name)
+        return configurations
 
 
     def script(self):
@@ -121,8 +122,7 @@ class BaseTask():
             auto_connect_arg_parser=False,
         )
         self.set_arguments()
-        self.set_configurations()
-        self.task.flush(wait_for_uploads=True)
-        self.script()
+        configurations = self.set_configurations()
+        self.script(configurations)
         self.task.close()
 

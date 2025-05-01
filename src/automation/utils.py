@@ -120,11 +120,16 @@ def kill_process_tree(pid):
         pass
 
 
-def load_callable_configuration(config_name):
-    task = Task.current_task()
-    config_object = task.get_configuration_object(config_name)
+def load_callable_configuration(config_name, configurations):
+    if configurations is None:
+        task = Task.current_task()
+        config_object = task.get_configuration_object(config_name)
+        if config_object is not None:
+            config_object = ConfigFactory.parse_string(config_object)
+    else:
+         config_object = configurations.get(config_name, None)
+
     if config_object is not None:
-        config_object = ConfigFactory.parse_string(config_object)
         namespace = {}
         exec(config_object["code"], namespace)
         return namespace.get(config_object["name"])

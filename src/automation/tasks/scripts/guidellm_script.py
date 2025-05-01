@@ -6,24 +6,30 @@ from automation.vllm import start_vllm_server
 from pyhocon import ConfigFactory
 
 
-def main():
+def main(configurations=None):
     task = Task.current_task()
 
     args = task.get_parameters_as_dict(cast=True)
     
-    guidellm_args = ConfigFactory.parse_string(task.get_configuration_object("GuideLLM"))
+    if configurations is None:
+        guidellm_args = ConfigFactory.parse_string(task.get_configuration_object("GuideLLM"))
     
-    environment_args = task.get_configuration_object("environment")
-    if environment_args is None:
-        environment_args = {}
-    else:
-        environment_args = ConfigFactory.parse_string(environment_args)
+        environment_args = task.get_configuration_object("environment")
+        if environment_args is None:
+            environment_args = {}
+        else:
+            environment_args = ConfigFactory.parse_string(environment_args)
     
-    vllm_args = task.get_configuration_object("vLLM")
-    if vllm_args is None:
-        vllm_args = {}
+        vllm_args = task.get_configuration_object("vLLM")
+        if vllm_args is None:
+            vllm_args = {}
+        else:
+            vllm_args = ConfigFactory.parse_string(vllm_args)
     else:
-        vllm_args = ConfigFactory.parse_string(vllm_args)
+        guidellm_args = configurations.get("GuideLLM", {})
+        environment_args = configurations.get("environment", {})
+        vllm_args = configurations.get("vLLM", {})
+        
 
     clearml_model = args["Args"]["clearml_model"]
     if isinstance(clearml_model, str):

@@ -99,9 +99,9 @@ class LMEvalTask(BaseTask):
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "lmeval_script.py")
 
 
-    def script(self):
+    def script(self, configurations):
         from automation.tasks.scripts.lmeval_script import main
-        main()
+        main(configurations)
 
 
     def get_configurations(self):

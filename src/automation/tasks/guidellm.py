@@ -83,9 +83,9 @@ class GuideLLMTask(BaseTask):
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "guidellm_script.py")
 
 
-    def script(self):
+    def script(self, configurations):
         from automation.tasks.scripts.guidellm_script import main
-        main()
+        main(configurations)
 
 
     def get_configurations(self):

@@ -16,9 +16,9 @@ class DebugTask(BaseTask):
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "debug_script.py")
 
 
-    def script(self):
+    def script(self, configurations):
         from automation.tasks.scripts.debug_script import main
-        main()
+        main(configurations)
 
 
     def get_arguments(self):
