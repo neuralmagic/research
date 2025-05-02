@@ -29,9 +29,9 @@ class BasePipeline(BaseTask):
         self.job_end_callback = job_end_callback
 
 
-    def script(self):
+    def script(self, configurations):
         from automation.pipelines.pipeline_script import main
-        main()
+        main(configurations)
 
 
     def add_step(self, *args, **kwargs,) -> None:

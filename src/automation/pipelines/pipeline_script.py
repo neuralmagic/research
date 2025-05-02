@@ -2,7 +2,7 @@ from clearml import PipelineController, Task
 from automation.utils import load_callable_configuration
 import ast
 
-def main():
+def main(configurations=None):
     task = Task.current_task()
 
     args = task.get_parameters_as_dict(cast=True)
