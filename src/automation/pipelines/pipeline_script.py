@@ -11,7 +11,7 @@ def main(configurations=None):
     else:
         parameters = {}
     steps = ast.literal_eval(task.get_configuration_object("Steps"))
-    job_end_callback_fn = load_callable_configuration("job end callback")
+    job_end_callback_fn = load_callable_configuration("job end callback", configurations)
 
     version = args["pipeline"]["version"]
 
