@@ -14,14 +14,19 @@ def start_vllm_server(
     vllm_args, 
     model_id, 
     target, 
-    server_wait_time, 
+    server_wait_time,
 ):
     task = Task.current_task()
 
     executable_path = os.path.dirname(sys.executable)
     vllm_path = os.path.join(executable_path, "vllm")
 
-    num_gpus = torch.cuda.device_count()
+    gpu_count = int(vllm_args.pop("gpu_count", torch.cuda.device_count()))
+    available_gpus = list(range(torch.cuda.device_count()))
+    selected_gpus = available_gpus[:gpu_count]
+
+    subprocess_env = os.environ.copy()
+    subprocess_env["CUDA_VISIBLE_DEVICES"] = ",".join(str(i) for i in selected_gpus)
 
     parsed_target = urlparse(target)
 
@@ -30,7 +35,7 @@ def start_vllm_server(
         model_id,
         "--host", parsed_target.hostname, 
         "--port", str(parsed_target.port),
-        "--tensor-parallel-size", str(num_gpus),
+        "--tensor-parallel-size", str(gpu_count),
     ]
 
     subprocess_env = os.environ.copy()
