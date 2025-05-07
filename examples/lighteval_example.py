@@ -34,11 +34,11 @@ model_parameters:
 
 task = LightEvalTask(
     project_name="alexandre_debug",
-    task_name="test_lmeval_task_local",
+    task_name="test_lmeval_task",
     model_id="meta-llama/Llama-3.2-1B-Instruct",
     tasks="leaderboard|gsm8k|5|0",
     model_args=model_args,
 )
 
-#task.execute_remotely("oneshot-a100x1")
-task.execute_locally()
+task.execute_remotely("oneshot-a100x1")
+#task.execute_locally()

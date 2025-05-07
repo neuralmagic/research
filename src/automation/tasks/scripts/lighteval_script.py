@@ -22,12 +22,12 @@ def lighteval_main(
     if "metric_options" in lighteval_args:
         config["metric_options"] = lighteval_args.pop("metric_options")
     
-    yaml.dump(config, open("config.yaml", "w"))
+    yaml.dump(config, open("lighteval_config.yaml", "w"))
 
     lighteval_args["save_details"] = True
     # Run lighteval
     lighteval_args = cast_args(lighteval_args, lighteval_vllm)
-    results = lighteval_vllm(model_args="config.yaml", **lighteval_args)
+    results = lighteval_vllm(model_args="lighteval_config.yaml", **lighteval_args)
 
     if results is None:
         raise Exception("Evaluation failed.")
