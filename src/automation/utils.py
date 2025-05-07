@@ -4,6 +4,7 @@ import inspect
 import typing
 import psutil
 from pyhocon import ConfigFactory
+import yaml
 
 
 def parse_argument(argument, argument_type):
@@ -142,3 +143,12 @@ def serialize_callable(callable):
         "name": callable.__name__,
         "code": inspect.getsource(callable),
     }
+
+
+def is_yaml_content(s):
+    try:
+        parsed = yaml.safe_load(s)
+        # Check if parsing returned a meaningful structure
+        return isinstance(parsed, (dict, list))
+    except yaml.YAMLError:
+        return False
