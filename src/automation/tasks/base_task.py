@@ -91,7 +91,7 @@ class BaseTask():
             add_task_init_call=True,
             script=self.script_path,
             repo="https://github.com/neuralmagic/research.git",
-            branch="main",
+            branch="lighteval",
         )
         self.task.output_uri = DEFAULT_OUTPUT_URI
         self.set_arguments()
