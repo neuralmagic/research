@@ -1,6 +1,6 @@
 from clearml import Task
 import torch
-from automation.utils import resolve_model_id, cast_args
+from automation.utils import resolve_model_id, cast_args, to_plain_dict
 from lighteval.main_vllm import vllm as lighteval_vllm
 import yaml
 from pyhocon import ConfigFactory
@@ -22,8 +22,7 @@ def lighteval_main(
     if "metric_options" in lighteval_args:
         config["metric_options"] = lighteval_args.pop("metric_options")
 
-    if not isinstance(config, dict):
-        config = config.as_plain_ordered_dict()
+    config = to_plain_dict(config)
     
     yaml.dump(config, open("lighteval_config.yaml", "w"))
 

@@ -152,3 +152,13 @@ def is_yaml_content(s):
         return isinstance(parsed, (dict, list))
     except yaml.YAMLError:
         return False
+    
+
+def to_plain_dict(obj):
+    if isinstance(obj, dict):
+        return {k: to_plain_dict(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [to_plain_dict(v) for v in obj]
+    elif hasattr(obj, "as_plain_ordered_dict"):
+        return to_plain_dict(obj.as_plain_ordered_dict())
+    return obj
