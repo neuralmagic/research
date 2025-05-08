@@ -21,6 +21,9 @@ def lighteval_main(
     config = {"model_parameters": model_args}
     if "metric_options" in lighteval_args:
         config["metric_options"] = lighteval_args.pop("metric_options")
+
+    if not isinstance(config, dict):
+        config = config.as_plain_ordered_dict()
     
     yaml.dump(config, open("lighteval_config.yaml", "w"))
 
