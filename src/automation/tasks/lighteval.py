@@ -13,6 +13,8 @@ class LightEvalTask(BaseTask):
         "math-verify==0.5.2",
         "more_itertools",
         "latex2sympy2_extended",
+        "langdetect",
+        "openai",
     ]
 
     def __init__(
