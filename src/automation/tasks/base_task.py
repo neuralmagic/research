@@ -7,7 +7,7 @@ import os
 
 class BaseTask():
 
-    base_packages = ["git+https://github.com/neuralmagic/research.git@lighteval"]
+    base_packages = ["git+https://github.com/neuralmagic/research.git"]
 
     def __init__(
         self,
@@ -91,7 +91,7 @@ class BaseTask():
             add_task_init_call=True,
             script=self.script_path,
             repo="https://github.com/neuralmagic/research.git",
-            branch="lighteval",
+            branch="main",
         )
         self.task.output_uri = DEFAULT_OUTPUT_URI
         self.set_arguments()
