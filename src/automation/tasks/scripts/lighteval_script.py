@@ -63,6 +63,10 @@ def main(configurations=None):
         lighteval_args=lighteval_args,
     )
 
+    config_general = results.pop("config_general")
+    config_general.pop("config")
+    results["config"] = config_general
+
     dumped = json.dumps(results, cls=EnhancedJSONEncoder, indent=2, ensure_ascii=False)
 
     task.upload_artifact(name="results", artifact_object=dumped)
