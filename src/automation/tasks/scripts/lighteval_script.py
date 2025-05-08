@@ -2,8 +2,10 @@ from clearml import Task
 import torch
 from automation.utils import resolve_model_id, cast_args, to_plain_dict
 from lighteval.main_vllm import vllm as lighteval_vllm
+from lighteval.logging.evaluation_tracker import EnhancedJSONEncoder
 import yaml
 from pyhocon import ConfigFactory
+import json
 
 
 def lighteval_main(
@@ -61,7 +63,9 @@ def main(configurations=None):
         lighteval_args=lighteval_args,
     )
 
-    task.upload_artifact(name="results", artifact_object=results)
+    dumped = json.dumps(results, cls=EnhancedJSONEncoder, indent=2, ensure_ascii=False)
+
+    task.upload_artifact(name="results", artifact_object=dumped)
 
     return results
 
