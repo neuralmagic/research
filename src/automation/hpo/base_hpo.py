@@ -56,7 +56,7 @@ class BaseHPO(BaseTask):
 
     def script(self, configurations):
         from automation.hpo.hpo_script import main
-        main()
+        main(configurations)
 
 
     def get_configurations(self):
