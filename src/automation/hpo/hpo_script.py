@@ -17,7 +17,7 @@ OPTIMIZERS = {
     "hpbandster": OptimizerBOHB,
 }
 
-def main(configurations):
+def main(configurations=None):
 
     task = Task.current_task()
 
