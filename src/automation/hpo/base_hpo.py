@@ -54,7 +54,7 @@ class BaseHPO(BaseTask):
         self.parameters.append(parameter.to_dict())
 
 
-    def script(self):
+    def script(self, configurations):
         from automation.hpo.hpo_script import main
         main()
 

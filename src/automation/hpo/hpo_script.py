@@ -17,17 +17,21 @@ OPTIMIZERS = {
     "hpbandster": OptimizerBOHB,
 }
 
-def main():
+def main(configurations):
 
     task = Task.current_task()
 
-    parameter_dicts = ConfigFactory.parse_string(task.get_configuration_object("Parameters"))
+    if configurations is None:
+        parameter_dicts = ConfigFactory.parse_string(task.get_configuration_object("Parameters"))
+        optimizer_args = ConfigFactory.parse_string(task.get_configuration_object("Optimization"))
+    else:
+        parameter_dicts = configurations.get("Parameters", [])
+        optimizer_args = configurations.get("Optimization", {})
+
     
     parameters = []
     for parameter_dict in parameter_dicts:
         parameters.append(Parameter.from_dict(parameter_dict))
-
-    optimizer_args = ConfigFactory.parse_string(task.get_configuration_object("Optimization"))
 
     assert "optimizer" in  optimizer_args.keys()
 
