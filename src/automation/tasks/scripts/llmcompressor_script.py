@@ -1,4 +1,5 @@
 import os
+import automation.datasets.utils
 from automation.datasets import SUPPORTED_DATASETS
 from automation.standards.compression.smoothquant_mappings import MAPPINGS_PER_MODEL_CONFIG
 from llmcompressor.transformers.compression.helpers import (
@@ -12,6 +13,9 @@ from clearml import OutputModel, Task
 import torch
 from automation.utils import resolve_model_id, parse_argument, load_callable_configuration
 from llmcompressor.transformers import tracing
+from llmcompressor.transformers.tracing import TraceableGemma3ForConditionalGeneration
+from automation.datasets.utils import gemma_data_collator
+
 
 
 def llmcompressor_main(
@@ -58,10 +62,18 @@ def llmcompressor_main(
             )
 
     # Load model
-    if tracing_class is None:
-        model_class = getattr(transformers, model_class)
-    else:
-        model_class = getattr(tracing, tracing_class)
+    if isinstance(model_class, str):
+        try:
+            model_class = getattr(transformers, model_class)
+        except AttributeError:
+            try:
+                from llmcompressor.transformers import tracing
+                model_class = getattr(tracing, model_class)
+            except AttributeError:
+                raise ImportError(
+                    f"Model class '{model_class}' not found in either `transformers` or `llmcompressor.transformers.tracing`"
+                )
+
 
     model = model_class.from_pretrained(
         model_id, 
@@ -100,7 +112,6 @@ def llmcompressor_main(
             )
     else:
         dataset = dataset_loader(
-            dataset_name,
             text_samples=text_samples,
             vision_samples=vision_samples,
             max_seq_len=max_seq_len,
@@ -114,9 +125,9 @@ def llmcompressor_main(
     if vision_samples is not None:
         num_calibration_samples += vision_samples
 
-    kwargs = {}
-    if data_collator is not None:
-        kwargs["data_collator"] = data_collator
+    # kwargs = {}
+    # if data_collator is not None:
+    #     kwargs["data_collator"] = data_collator
 
     # Apply recipe to the model
     oneshot(
@@ -125,7 +136,7 @@ def llmcompressor_main(
         recipe=recipe,
         max_seq_length=max_seq_len,
         num_calibration_samples=num_calibration_samples,
-        **kwargs,
+        data_collator=data_collator,
     )
 
     # Save model compressed
@@ -156,8 +167,10 @@ def main(configurations=None):
     recipe_args = args.get("recipe_args", None)
     tags = args.get("tags", None)
 
-    dataset_loader_fn = load_callable_configuration("dataset loader", configurations)
-    data_collator_fn = load_callable_configuration("data collator", configurations)
+    # dataset_loader_fn = load_callable_configuration("dataset loader", configurations)
+    # data_collator_fn = load_callable_configuration("data collator", configurations)
+    dataset_loader_fn = automation.datasets.calibration.load_calibration_dataset
+    data_collator_fn = automation.datasets.utils.gemma_data_collator
 
     # Resolve model_id
     model_id = resolve_model_id(model_id, clearml_model, force_download, model_class)

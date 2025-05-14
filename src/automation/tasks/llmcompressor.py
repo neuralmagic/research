@@ -7,7 +7,7 @@ import yaml
 
 class LLMCompressorTask(BaseTask):
     llmcompressor_packages = [
-        "git+https://github.com/vllm-project/llm-compressor.git@traceable_mistral3",
+        "git+https://github.com/vllm-project/llm-compressor.git@main",
         "torchvision"
     ]
 
@@ -93,6 +93,7 @@ class LLMCompressorTask(BaseTask):
         self.model_class = model_class
         self.dataset_loader = dataset_loader
         self.data_collator = data_collator
+        print(f"data_collator: {data_collator}")
 
         if tags is not None:
             tags = list(set(config_kwargs.pop("tags", []).extend(tags)))

@@ -5,7 +5,7 @@ from automation.datasets.openthoughts import DATASET_PATH as OPENTHOUGHTSDATASET
 from automation.datasets.utils import load_llm_messages, load_vlm_messages
 
 SUPPORTED_DATASETS = {
-    "calibration": load_calibration_dataset,
+    "neuralmagic/calibration": load_calibration_dataset,
     CALIBRATION_DATASET: load_calibration_dataset,
     "openthoughts": load_openthoughts_dataset,
     OPENTHOUGHTSDATASET: load_openthoughts_dataset, 

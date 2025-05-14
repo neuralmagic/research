@@ -1,5 +1,13 @@
 from datasets import load_dataset, concatenate_datasets
+import torch
 
+
+DATASET_PATH = "neuralmagic/calibration"
+TEXT_SUBSET = "LLM"
+VISION_SUBSET = "VLM"
+ 
+from datasets import load_dataset
+import torch
 def load_llm_messages(
     dataset_name, 
     subset=None,
@@ -80,6 +88,9 @@ def load_vlm_messages(
     processor=None,
     message_processor=None,
 ):
+    print("[DEBUG] Entered load_vlm_messages()")
+    from datasets import load_dataset, concatenate_datasets
+
     dataset_name = dataset_name if isinstance(dataset_name, list) else [dataset_name]
     subset = subset if isinstance(subset, list) else [subset]
     split = split if isinstance(split, list) else [split]
@@ -98,6 +109,8 @@ def load_vlm_messages(
 
     datasets = []
     for dataset_name_, subset_, split_, num_samples_ in zip(dataset_name, subset, split, num_samples):
+        print(f"[DEBUG] Loading VLM dataset: {dataset_name_}, subset={subset_}, split={split_}, samples={num_samples_}")
+
         if num_samples_ is None or num_samples_ == 0:
             continue
 
@@ -110,14 +123,14 @@ def load_vlm_messages(
             for message in example["messages"]:
                 message["content"] = normalize_content(message["content"])
                 messages.append(message)
-            
             return {"messages": messages}
 
         ds = ds.map(align_content, remove_columns=ds.column_names)
-
         datasets.append(ds)
 
     dataset = concatenate_datasets(datasets)
+
+    print(f"[DEBUG] Concatenated dataset length: {len(dataset)}")
 
     def preprocess_sample(example):
         messages = []
@@ -140,3 +153,15 @@ def load_vlm_messages(
             return message_processor(messages, processor)
 
     return dataset.map(preprocess_sample, remove_columns=ds.column_names)
+
+
+def gemma_data_collator(batch):
+    print(f"[DEBUG] Entered: gemma_data_collator")
+    assert len(batch) == 1, "Only batch size of 1 is supported for calibration"
+    item = batch[0]
+    collated = {}
+    for key in ["input_ids", "attention_mask"]:
+        value = item.get(key)
+        if value is not None:
+            collated[key] = torch.tensor(value)
+    return collated
