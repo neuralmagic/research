@@ -152,5 +152,28 @@ def load_vlm_messages(
 
 
 def gemma_data_collator(batch):
-    assert len(batch) == 1
-    return {key: torch.tensor(value) for key, value in batch[0].items()}
+    assert len(batch) == 1, "Only batch size of 1 is supported for calibration"
+    item = batch[0]
+    collated = {}
+
+    for key, value in item.items():
+        if isinstance(value, torch.Tensor):
+            collated[key] = value.unsqueeze(0)
+        elif isinstance(value, list) and isinstance(value[0], int):
+            # Handle tokenized inputs like input_ids, attention_mask
+            collated[key] = torch.tensor(value).unsqueeze(0)
+        elif isinstance(value, list) and isinstance(value[0], float):
+            # Handle possible float sequences
+            collated[key] = torch.tensor(value).unsqueeze(0)
+        elif isinstance(value, list) and isinstance(value[0], torch.Tensor):
+            # Handle batched image data (e.g., pixel_values as [C, H, W])
+            collated[key] = torch.stack(value).unsqueeze(0)  # -> [1, C, H, W]
+        elif isinstance(value, torch.Tensor):
+            collated[key] = value.unsqueeze(0)
+        else:
+            print(f"[WARN] Unrecognized type in collator for key={key}, type={type(value)}")
+    
+    return collated
+
+
+

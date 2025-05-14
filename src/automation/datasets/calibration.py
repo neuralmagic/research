@@ -10,6 +10,7 @@ def load_calibration_dataset(
     max_seq_len=None, 
     multimodal_loader=None,
     processor=None,
+    tokenizer=None, 
 ):
     if text_samples is None:
         text_samples = 0
@@ -24,7 +25,8 @@ def load_calibration_dataset(
             split="train", 
             num_samples=text_samples, 
             max_seq_len=max_seq_len, 
-            tokenizer=processor,
+            processor=processor,
+            tokenizer=tokenizer
         )
 
     if multimodal_loader is None:

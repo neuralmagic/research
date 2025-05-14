@@ -99,6 +99,7 @@ def llmcompressor_main(
         model_id, 
         trust_remote_code=trust_remote_code,
     )
+    tokenizer = getattr(processor, "tokenizer", None) or processor
 
     if dataset_loader is None:
         if dataset_name is None:
@@ -109,6 +110,7 @@ def llmcompressor_main(
                 vision_samples=vision_samples,
                 max_seq_len=max_seq_len,
                 processor=processor,
+                tokenizer=tokenizer,
             )
     else:
         dataset = dataset_loader(
@@ -116,6 +118,7 @@ def llmcompressor_main(
             vision_samples=vision_samples,
             max_seq_len=max_seq_len,
             processor=processor,
+            tokenizer=tokenizer,
         )
     
     num_calibration_samples = 0
@@ -128,6 +131,20 @@ def llmcompressor_main(
     # kwargs = {}
     # if data_collator is not None:
     #     kwargs["data_collator"] = data_collator
+
+    print("[DEBUG] Sample from dataset before calibration:")
+    try:
+        sample = dataset[0]
+        for k, v in sample.items():
+            if isinstance(v, torch.Tensor):
+                print(f"  [DEBUG] {k}: shape={v.shape}, dtype={v.dtype}")
+            elif isinstance(v, list):
+                print(f"  [DEBUG] {k}: list with len={len(v)} and type={type(v[0]) if v else 'unknown'}")
+            else:
+                print(f"  [DEBUG] {k}: type={type(v)}")
+    except Exception as e:
+        print(f"[DEBUG] Could not inspect dataset sample: {e}")
+
 
     # Apply recipe to the model
     oneshot(
