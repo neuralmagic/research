@@ -152,11 +152,5 @@ def load_vlm_messages(
 
 
 def gemma_data_collator(batch):
-    assert len(batch) == 1, "Only batch size of 1 is supported for calibration"
-    item = batch[0]
-    collated = {}
-    for key in ["input_ids", "attention_mask"]:
-        value = item.get(key)
-        if value is not None:
-            collated[key] = torch.tensor(value)
-    return collated
+    assert len(batch) == 1
+    return {key: torch.tensor(value) for key, value in batch[0].items()}
