@@ -88,7 +88,6 @@ def load_vlm_messages(
     processor=None,
     message_processor=None,
 ):
-    print("[DEBUG] Entered load_vlm_messages()")
     from datasets import load_dataset, concatenate_datasets
 
     dataset_name = dataset_name if isinstance(dataset_name, list) else [dataset_name]
@@ -109,7 +108,6 @@ def load_vlm_messages(
 
     datasets = []
     for dataset_name_, subset_, split_, num_samples_ in zip(dataset_name, subset, split, num_samples):
-        print(f"[DEBUG] Loading VLM dataset: {dataset_name_}, subset={subset_}, split={split_}, samples={num_samples_}")
 
         if num_samples_ is None or num_samples_ == 0:
             continue
@@ -129,8 +127,6 @@ def load_vlm_messages(
         datasets.append(ds)
 
     dataset = concatenate_datasets(datasets)
-
-    print(f"[DEBUG] Concatenated dataset length: {len(dataset)}")
 
     def preprocess_sample(example):
         messages = []
@@ -156,7 +152,6 @@ def load_vlm_messages(
 
 
 def gemma_data_collator(batch):
-    print(f"[DEBUG] Entered: gemma_data_collator")
     assert len(batch) == 1, "Only batch size of 1 is supported for calibration"
     item = batch[0]
     collated = {}
