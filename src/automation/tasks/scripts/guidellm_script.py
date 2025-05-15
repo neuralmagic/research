@@ -1,6 +1,4 @@
 import os
-os.environ["CLEARML_NO_FRAMEWORKS"] = "1"
-os.environ["CLEARML_AGENT_SKIP_PYTHON_ENV_CACHE"] = "1"
 from clearml import Task
 from automation.utils import resolve_model_id, cast_args, kill_process_tree
 from automation.vllm import start_vllm_server
@@ -53,12 +51,15 @@ def main():
     # Resolve model_id
     model_id = resolve_model_id(args["Args"]["model"], clearml_model, force_download)
 
+    gpu_count = int(guidellm_args.get("gpu_count", 1)) 
+
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(
         vllm_args,
         model_id,
         guidellm_args["target"],
         args["Args"]["server_wait_time"],
+        gpu_count,
     )
 
     if not server_initialized:
