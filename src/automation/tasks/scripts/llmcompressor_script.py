@@ -14,6 +14,8 @@ import torch
 from automation.utils import resolve_model_id, parse_argument, load_callable_configuration
 from llmcompressor.transformers import tracing
 from llmcompressor.transformers.tracing import TraceableGemma3ForConditionalGeneration
+from automation.datasets.utils import gemma_data_collator
+
 
 
 def llmcompressor_main(
