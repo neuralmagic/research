@@ -1,4 +1,5 @@
 import os
+import sys
 
 # Ensure the repo's src/ is first in sys.path
 repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
