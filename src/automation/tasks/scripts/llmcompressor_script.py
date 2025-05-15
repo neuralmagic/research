@@ -1,5 +1,12 @@
 import os
+
+# Ensure the repo's src/ is first in sys.path
+repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
+sys.path.insert(0, os.path.join(repo_root, "src"))
+
+
 import automation.datasets.utils
+print("[DEBUG] utils.py loaded from:", automation.datasets.utils.__file__)
 from automation.datasets import SUPPORTED_DATASETS
 from automation.standards.compression.smoothquant_mappings import MAPPINGS_PER_MODEL_CONFIG
 from llmcompressor.transformers.compression.helpers import (
