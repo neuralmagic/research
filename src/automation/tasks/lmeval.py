@@ -6,8 +6,7 @@ import os
 class LMEvalTask(BaseTask):
 
     lmeval_packages = [
-        "vllm",
-        "git+https://github.com/neuralmagic/lm-evaluation-harness.git@enable_thinking",
+        "git+https://github.com/neuralmagic/lm-evaluation-harness.git@main",
         "numpy==2.1"
     ]
 
