@@ -6,7 +6,7 @@ import os
 class LMEvalTask(BaseTask):
 
     lmeval_packages = [
-        "git+https://github.com/neuralmagic/lm-evaluation-harness.git@main",
+        "git+https://github.com/EleutherAI/lm-evaluation-harness.git@main",
         "numpy==2.1"
     ]
 
