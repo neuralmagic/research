@@ -15,6 +15,7 @@ class LightEvalTask(BaseTask):
         "latex2sympy2_extended",
         "langdetect",
         "openai",
+        "hf_xet",
     ]
 
     def __init__(

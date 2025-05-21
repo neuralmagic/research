@@ -11,6 +11,7 @@ class GuideLLMTask(BaseTask):
     guidellm_packages = [
         "vllm",
         GUIDELLM_PACKAGE,
+        "hf_xet",
     ]
 
     def __init__(

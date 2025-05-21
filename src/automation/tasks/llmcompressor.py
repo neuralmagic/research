@@ -8,7 +8,8 @@ import yaml
 class LLMCompressorTask(BaseTask):
     llmcompressor_packages = [
         "git+https://github.com/vllm-project/llm-compressor.git",
-        "torchvision"
+        "torchvision",
+        "hf_xet",
     ]
 
     def __init__(

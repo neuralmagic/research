@@ -9,6 +9,7 @@ class LMEvalTask(BaseTask):
         "vllm",
         "git+https://github.com/neuralmagic/lm-evaluation-harness.git@enable_thinking",
         "numpy==2.1"
+        "hf_xet",
     ]
 
     def __init__(
