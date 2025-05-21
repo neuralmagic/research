@@ -7,7 +7,7 @@ import yaml
 
 class LLMCompressorTask(BaseTask):
     llmcompressor_packages = [
-        "git+https://github.com/vllm-project/llm-compressor.git@traceable_mistral3",
+        "git+https://github.com/vllm-project/llm-compressor.git",
         "torchvision"
     ]
 
