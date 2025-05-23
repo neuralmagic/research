@@ -12,8 +12,6 @@ class LMEvalTask(BaseTask):
         "hf_xet",
         "rouge-score",
         "bert-score",
-        "moverscore"
-        "pyemd==0.5.1",
         "nltk",
     ]
 
