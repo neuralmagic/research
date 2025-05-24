@@ -13,6 +13,7 @@ class LMEvalTask(BaseTask):
         "rouge-score",
         "bert-score",
         "nltk",
+        "torch==2.6.0"
     ]
 
     def __init__(
