@@ -8,7 +8,7 @@ class LMEvalTask(BaseTask):
     lmeval_packages = [
         "vllm",
         "git+https://github.com/neuralmagic/lm-evaluation-harness.git@tldr",
-        "numpy==2.1"
+        "numpy==2.1",
         "hf_xet",
         "rouge-score",
         "bert-score",
