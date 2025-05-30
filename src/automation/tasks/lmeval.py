@@ -6,7 +6,7 @@ import os
 class LMEvalTask(BaseTask):
 
     lmeval_packages = [
-        "vllm==0.8.5.post1",
+        "vllm",
         "git+https://github.com/neuralmagic/lm-evaluation-harness.git@tldr",
         "numpy==2.1",
         "hf_xet",
@@ -37,6 +37,11 @@ class LMEvalTask(BaseTask):
         # Set packages, taking into account default packages
         # for the LMEvalTask and packages set in the config
         if packages is not None:
+            # If a specific version of vLLM is specified in packages,
+            # use that version instead of the latest
+            for package in packages:
+                if "vllm" in package:
+                    self.lmeval_packages.pop("vllm")
             packages = list(set(packages + self.lmeval_packages))
         else:
             packages = self.lmeval_packages
