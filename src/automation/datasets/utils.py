@@ -134,7 +134,8 @@ def load_vlm_messages(
                 messages, 
                 add_generation_prompt=False, 
                 tokenize=True,
-                return_dict=True, 
+                return_dict=True,
+                return_tensors="pt",
             )
         else:
             return message_processor(messages, processor)
