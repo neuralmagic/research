@@ -7,13 +7,12 @@ class LMEvalTask(BaseTask):
 
     lmeval_packages = [
         "vllm",
-        "git+https://github.com/neuralmagic/lm-evaluation-harness.git@tldr",
+        "git+https://github.com/EleutherAI/lm-evaluation-harness.git",
         "numpy==2.1",
         "hf_xet",
         "rouge-score",
         "bert-score",
         "nltk",
-        "torch==2.6.0"
     ]
 
     def __init__(
@@ -42,6 +41,8 @@ class LMEvalTask(BaseTask):
             for package in packages:
                 if "vllm" in package:
                     self.lmeval_packages.pop("vllm")
+                if "lm-evaluation-harness" in package:
+                    self.lmeval_packages.pop("git+https://github.com/EleutherAI/lm-evaluation-harness.git")
             packages = list(set(packages + self.lmeval_packages))
         else:
             packages = self.lmeval_packages
