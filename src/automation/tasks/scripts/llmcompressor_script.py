@@ -27,6 +27,7 @@ def llmcompressor_main(
     max_seq_len,
     text_samples,
     vision_samples,
+    skip_sparsity_compression_stats,
     save_directory,
     data_collator,
 ):
@@ -129,7 +130,7 @@ def llmcompressor_main(
     )
 
     # Save model compressed
-    model.save_pretrained(save_directory, save_compressed=True)
+    model.save_pretrained(save_directory, save_compressed=True, skip_sparsity_compression_stats=skip_sparsity_compression_stats)
     processor.save_pretrained(save_directory)
 
     return recipe
@@ -155,6 +156,7 @@ def main(configurations=None):
     recipe = args.get("recipe", None)
     recipe_args = args.get("recipe_args", None)
     tags = args.get("tags", None)
+    skip_sparsity_compression_stats = parse_argument(args["skip_sparsity_compression_stats"], bool)
 
     dataset_loader_fn = load_callable_configuration("dataset loader", configurations)
     data_collator_fn = load_callable_configuration("data collator", configurations)
@@ -175,6 +177,7 @@ def main(configurations=None):
         max_seq_len,
         text_samples,
         vision_samples,
+        skip_sparsity_compression_stats,
         save_directory,
         data_collator_fn,
     )

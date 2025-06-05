@@ -32,7 +32,8 @@ class LLMCompressorTask(BaseTask):
         vision_samples: Optional[int]=None,
         max_seq_len: int=8192,
         trust_remote_code: bool=False,
-        max_memory_per_gpu: str="hessian",
+        max_memory_per_gpu: str="auto",
+        skip_sparsity_compression_stats=True,
         tracing_class: Optional[str]=None,
         tags: Union[str, List[str]]=None,
         task_type: str="training",
@@ -94,6 +95,7 @@ class LLMCompressorTask(BaseTask):
         self.model_class = model_class
         self.dataset_loader = dataset_loader
         self.data_collator = data_collator
+        self.skip_sparsity_compression_stats = skip_sparsity_compression_stats
 
         if tags is not None:
             tags = list(set(config_kwargs.pop("tags", []).extend(tags)))
@@ -140,6 +142,7 @@ class LLMCompressorTask(BaseTask):
                 "trust_remote_code": self.trust_remote_code,
                 "max_memory_per_gpu": self.max_memory_per_gpu,
                 "tracing_class": self.tracing_class,
+                "skip_sparsity_compression_stats": self.skip_sparsity_compression_stats,
                 "tags": self.tags,
             },
         }
