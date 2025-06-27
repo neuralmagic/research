@@ -14,6 +14,7 @@ class BaseTask():
         project_name: str,
         task_name: str,
         docker_image: str,
+        branch: str = "main"
         packages: Optional[Sequence[str]]=None,
         task_type: str="training",
     ):
@@ -29,6 +30,7 @@ class BaseTask():
         self.packages = packages
         self.task_type = task_type
         self.task = None
+        self.branch= branch
         self.script_path = None
         self.callable_artifacts = None
   
@@ -91,7 +93,7 @@ class BaseTask():
             add_task_init_call=True,
             script=self.script_path,
             repo="https://github.com/neuralmagic/research.git",
-            branch="main",
+            branch=self.branch,
         )
         self.task.output_uri = DEFAULT_OUTPUT_URI
         self.set_arguments()
