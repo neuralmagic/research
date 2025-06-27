@@ -9,8 +9,6 @@ from pyhocon import ConfigFactory
 def main(configurations=None):
     task = Task.current_task()
 
-    """
-
     args = task.get_parameters_as_dict(cast=True)
     
     if configurations is None:
@@ -54,12 +52,12 @@ def main(configurations=None):
         args["Args"]["server_wait_time"],
     )
 
-    """
     if not server_initialized:
         kill_process_tree(server_process.pid)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         raise AssertionError("Server failed to intialize")
 
+    """
     # Parse through environment variables
     for k, v in environment_args.items():
         os.environ[k] = str(v)
@@ -74,7 +72,6 @@ def main(configurations=None):
     task.upload_artifact(name="guidellm guidance report", artifact_object=report.to_json())
     task.upload_artifact(name="vLLM server log", artifact_object=server_log)
 
-    """
 
 if __name__ == '__main__':
     main()
