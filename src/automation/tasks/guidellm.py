@@ -4,7 +4,7 @@ from typing import Optional, Sequence
 import os
 
 DEFAULT_SERVER_WAIT_TIME = 600 # 600 seconds = 10 minutes
-GUIDELLM_PACKAGE = "git+https://github.com/neuralmagic/guidellm.git@http_backend"
+GUIDELLM_PACKAGE = "git+https://github.com/neuralmagic/guidellm.git@main"
 
 class GuideLLMTask(BaseTask):
 
