@@ -1,3 +1,12 @@
+import os
+import sys
+
+from clearml import Task
+executable_path = os.path.dirname(sys.executable)
+vllm_path = os.path.join(executable_path, "vllm")
+print(f"The vllm path is: {vllm_path}")
+
+"""
 from automation.tasks import GuideLLMTask
 
 task = GuideLLMTask(
@@ -14,6 +23,8 @@ task = GuideLLMTask(
     data="prompt_tokens=512,generated_tokens=256",
     vllm_kwargs={"enable-chunked-prefill": True}
 )
+"""
 
-task.execute_remotely("oneshot-a100x1")
+task = Task.init(project_name="alexandre_debug", task_name="test_guidellm_task")
+task.execute_remotely("remote-upgrade-default")
 #task.execute_locally()
