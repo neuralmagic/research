@@ -9,5 +9,6 @@ task = LMEvalTask(
     batch_size="auto",    
 )
 
-task.execute_remotely("oneshot-a100x1")
+#task.execute_remotely("oneshot-a100x1")
+task.execute_remotely("remote-upgrade-default")
 #task.execute_locally()
