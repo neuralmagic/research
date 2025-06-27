@@ -89,6 +89,8 @@ def main():
     print("[DEBUG] Calling benchmark_generative_text with:")
     print(json.dumps(guidellm_args, indent=2))
 
+    GenerativeBenchmarksReport()
+
     """
     try:
         asyncio.run(
