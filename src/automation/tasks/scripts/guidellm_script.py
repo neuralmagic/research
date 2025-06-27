@@ -1,35 +1,44 @@
-
 import os
 from clearml import Task
 from automation.utils import resolve_model_id, cast_args, kill_process_tree
 from automation.vllm import start_vllm_server
 from pyhocon import ConfigFactory
 
-
-def main(configurations=None):
+def main():
     task = Task.current_task()
 
     args = task.get_parameters_as_dict(cast=True)
     
-    if configurations is None:
-        guidellm_args = ConfigFactory.parse_string(task.get_configuration_object("GuideLLM"))
-    
-        environment_args = task.get_configuration_object("environment")
-        if environment_args is None:
-            environment_args = {}
-        else:
-            environment_args = ConfigFactory.parse_string(environment_args)
-    
-        vllm_args = task.get_configuration_object("vLLM")
-        if vllm_args is None:
-            vllm_args = {}
-        else:
-            vllm_args = ConfigFactory.parse_string(vllm_args)
+    raw_config = task.get_configuration_object("GuideLLM")
+    if raw_config is None:
+        print("[DEBUG] `GuideLLM` config not found in configuration — checking parameters as fallback")
+        raw_config = task.get_parameters_as_dict().get("GuideLLM")
+        if raw_config is None:
+            raise RuntimeError("GuideLLM config is None. This likely means `get_configurations()` is not returning it or it's not passed via parameters.")
+        guidellm_args = ConfigFactory.from_dict(raw_config)
     else:
-        guidellm_args = configurations.get("GuideLLM", {})
-        environment_args = configurations.get("environment", {})
-        vllm_args = configurations.get("vLLM", {})
-        
+        guidellm_args = ConfigFactory.parse_string(raw_config)
+
+    def clean_hocon_value(v):
+        if isinstance(v, str) and v.startswith('"') and v.endswith('"'):
+            return v[1:-1]
+        return v
+
+    guidellm_args = {k: clean_hocon_value(v) for k, v in guidellm_args.items()}
+
+    print("[DEBUG] Guidellm_Args:", guidellm_args)
+
+    environment_args = task.get_configuration_object("environment")
+    if environment_args is None:
+        environment_args = {}
+    else:
+        environment_args = ConfigFactory.parse_string(environment_args)
+    
+    vllm_args = task.get_configuration_object("vLLM")
+    if vllm_args is None:
+        vllm_args = {}
+    else:
+        vllm_args = ConfigFactory.parse_string(vllm_args)
 
     clearml_model = args["Args"]["clearml_model"]
     if isinstance(clearml_model, str):
@@ -39,9 +48,11 @@ def main(configurations=None):
     if isinstance(force_download, str):
         force_download = force_download.lower() == "true"
 
-
     # Resolve model_id
     model_id = resolve_model_id(args["Args"]["model"], clearml_model, force_download)
+
+    gpu_count = int(guidellm_args.get("gpu_count", 1)) 
+
     """
 
     # Start vLLM server
@@ -50,28 +61,65 @@ def main(configurations=None):
         model_id,
         guidellm_args["target"],
         args["Args"]["server_wait_time"],
+        gpu_count,
     )
 
     if not server_initialized:
         kill_process_tree(server_process.pid)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
-        raise AssertionError("Server failed to intialize")
-
+        raise AssertionError("Server failed to initialize")
     """
+
     # Parse through environment variables
     for k, v in environment_args.items():
         os.environ[k] = str(v)
 
     guidellm_args["model"] = model_id
 
-    from guidellm import generate_benchmark_report
-    guidellm_args = cast_args(guidellm_args, generate_benchmark_report)
-    report = generate_benchmark_report(**guidellm_args)
-    kill_process_tree(server_process.pid)
+    import json
+    import asyncio
+    from pathlib import Path
+    from guidellm.benchmark import benchmark_generative_text
 
-    task.upload_artifact(name="guidellm guidance report", artifact_object=report.to_json())
-    task.upload_artifact(name="vLLM server log", artifact_object=server_log)
+    # Ensure output_path is set and consistent
+    output_path = Path(guidellm_args.get("output_path", "guidellm-output.json"))
+    guidellm_args["output_path"] = str(output_path)
 
+    print("[DEBUG] Calling benchmark_generative_text with:")
+    print(json.dumps(guidellm_args, indent=2))
+
+    try:
+        asyncio.run(
+            benchmark_generative_text(
+                target=guidellm_args["target"],
+                backend_type=guidellm_args.get("backend_type", "openai_http"),
+                backend_args=guidellm_args.get("backend_args", None),
+                model=guidellm_args.get("model"),
+                processor=guidellm_args.get("processor", None),
+                processor_args=guidellm_args.get("processor_args", None),
+                data=guidellm_args["data"],
+                data_args=guidellm_args.get("data_args", None),
+                data_sampler=guidellm_args.get("data_sampler", None),
+                rate_type=guidellm_args["rate_type"],
+                rate=guidellm_args.get("rate", None),
+                max_seconds=guidellm_args.get("max_seconds", None),
+                max_requests=guidellm_args.get("max_requests", None),
+                warmup_percent=guidellm_args.get("warmup_percent", None),
+                cooldown_percent=guidellm_args.get("cooldown_percent", None),
+                show_progress=not guidellm_args.get("disable_progress", False),
+                show_progress_scheduler_stats=guidellm_args.get("display_scheduler_stats", False),
+                output_console=not guidellm_args.get("disable_console_outputs", False),
+                output_path=output_path,
+                output_extras=guidellm_args.get("output_extras", None),
+                output_sampling=guidellm_args.get("output_sampling", None),
+                random_seed=guidellm_args.get("random_seed", 42),
+            )
+        )
+
+    finally:
+        task.upload_artifact(name="guidellm guidance report", artifact_object=output_path)
+        task.upload_artifact(name="vLLM server log", artifact_object=server_log)
+        kill_process_tree(server_process.pid)
 
 if __name__ == '__main__':
     main()
