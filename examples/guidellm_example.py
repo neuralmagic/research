@@ -12,7 +12,7 @@ task = GuideLLMTask(
     GUIDELLM__MAX_CONCURRENCY=256,
     GUIDELLM__REQUEST_TIMEOUT=21600,
     #target="http://localhost:8000/v1",
-    target="http://192.130.2.20:8000/v1",
+    target="http://192.130.2.29:8000/v1",
     data_type="emulated",
     max_seconds=30,
     data="prompt_tokens=512,generated_tokens=256",
