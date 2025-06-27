@@ -89,9 +89,9 @@ def main():
     print("[DEBUG] Calling benchmark_generative_text with:")
     print(json.dumps(guidellm_args, indent=2))
 
-    GenerativeBenchmarksReport()
+    #GenerativeBenchmarksReport()
+    from guidellm.benchmark.entrypoints import benchmark_generative_text
 
-    """
     try:
         asyncio.run(
             benchmark_generative_text(
@@ -124,7 +124,6 @@ def main():
         task.upload_artifact(name="guidellm guidance report", artifact_object=output_path)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         kill_process_tree(server_process.pid)
-    """
 
 if __name__ == '__main__':
     main()
