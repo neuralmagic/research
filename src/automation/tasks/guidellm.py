@@ -17,7 +17,7 @@ class GuideLLMTask(BaseTask):
     def __init__(
         self,
         project_name: str,
-        #branch: Optional[str],
+        branch: str="main" ,
         task_name: str,
         model: str,
         server_wait_time: int=DEFAULT_SERVER_WAIT_TIME,
@@ -53,7 +53,7 @@ class GuideLLMTask(BaseTask):
             docker_image=docker_image,
             packages=packages,
             task_type=task_type,
-            #branch = branch,
+            branch = branch,
         )
 
         # Check for conflicts in configs and constructor arguments
