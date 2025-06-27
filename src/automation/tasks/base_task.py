@@ -14,7 +14,7 @@ class BaseTask():
         project_name: str,
         task_name: str,
         docker_image: str,
-        branch: str = "main"
+        branch: str = "main",
         packages: Optional[Sequence[str]]=None,
         task_type: str="training",
     ):
