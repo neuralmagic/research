@@ -14,7 +14,7 @@ class BaseTask():
         project_name: str,
         task_name: str,
         docker_image: str,
-        branch: str,
+        branch: Optional[str] = "main",
         packages: Optional[Sequence[str]]=None,
         task_type: str="training",
     ):
@@ -52,8 +52,8 @@ class BaseTask():
             return yaml.safe_load(open(STANDARD_CONFIGS[config], "r"))
         elif os.path.exists(config):
             return yaml.safe_load(open(config, "r"))
-        elif os.path.exists(os.path.join("..", "standatrds", config)):
-            return yaml.safe_load(open(os.path.join("..", "standatrds", config)), "r")
+        elif os.path.exists(os.path.join("..", "standards", config)):
+            return yaml.safe_load(open(os.path.join("..", "standards", config)), "r")
         else:
             return yaml.safe_load(config)
 
