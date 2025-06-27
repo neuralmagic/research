@@ -9,6 +9,8 @@ from pyhocon import ConfigFactory
 def main(configurations=None):
     task = Task.current_task()
 
+    """
+
     args = task.get_parameters_as_dict(cast=True)
     
     if configurations is None:
@@ -42,6 +44,7 @@ def main(configurations=None):
 
     # Resolve model_id
     model_id = resolve_model_id(args["Args"]["model"], clearml_model, force_download)
+    """
 
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(
@@ -51,6 +54,7 @@ def main(configurations=None):
         args["Args"]["server_wait_time"],
     )
 
+    """
     if not server_initialized:
         kill_process_tree(server_process.pid)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
@@ -69,6 +73,8 @@ def main(configurations=None):
 
     task.upload_artifact(name="guidellm guidance report", artifact_object=report.to_json())
     task.upload_artifact(name="vLLM server log", artifact_object=server_log)
+
+    """
 
 if __name__ == '__main__':
     main()
