@@ -100,11 +100,17 @@ def main():
 
     #import time 
     #time.sleep(300)
+    current_scenario = GenerativeTextScenario
+    overlap_keys = current_scenario.model_fields.keys() & dict(guidellm_args)
+    for element  in overlap_keys:
+        element_field_info = current_scenario.model_fields[element]
+        element_field_info.default = guidellm_args[element]
+        current_scenario.model_fields[element] = element_field_info
 
     try:
         asyncio.run(
             benchmark_with_scenario(
-                GenerativeTextScenario,
+                current_scenario,
             )
         )
 
