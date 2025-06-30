@@ -1,4 +1,5 @@
 import os
+import sys
 from clearml import Task
 from automation.utils import resolve_model_id, cast_args, kill_process_tree
 from automation.vllm import start_vllm_server
@@ -90,8 +91,6 @@ def main():
     print(json.dumps(guidellm_args, indent=2))
 
     #GenerativeBenchmarksReport()
-    import os
-    import sys
     executable_path = os.path.dirname(sys.executable)
     vllm_path = os.path.join(executable_path, "vllm")
     print(f"The vllm path is: {vllm_path}")
