@@ -97,7 +97,9 @@ def main():
     vllm_path = os.path.join(executable_path, "vllm")
     print(f"The vllm path is: {vllm_path}")
 
-    current_scenario = GenerativeTextScenario.from_builtin("chat", dict(guidellm_args))
+    default_scenario = get_builtin_scenarios()[0]
+
+    current_scenario = GenerativeTextScenario.from_builtin(default_scenario, dict(guidellm_args))
 
     #import time 
     #time.sleep(300)
