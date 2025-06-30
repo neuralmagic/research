@@ -104,28 +104,7 @@ def main():
     try:
         asyncio.run(
             benchmark_generative_text(
-                target=guidellm_args["target"],
-                backend_type=guidellm_args.get("backend_type", "openai_http"),
-                backend_args=guidellm_args.get("backend_args", None),
-                model=guidellm_args.get("model"),
-                processor=guidellm_args.get("processor", None),
-                processor_args=guidellm_args.get("processor_args", None),
-                data=guidellm_args["data"],
-                data_args=guidellm_args.get("data_args", None),
-                data_sampler=guidellm_args.get("data_sampler", None),
-                rate_type=guidellm_args["rate_type"],
-                rate=guidellm_args.get("rate", None),
-                max_seconds=guidellm_args.get("max_seconds", None),
-                max_requests=guidellm_args.get("max_requests", None),
-                warmup_percent=guidellm_args.get("warmup_percent", None),
-                cooldown_percent=guidellm_args.get("cooldown_percent", None),
-                show_progress=not guidellm_args.get("disable_progress", False),
-                show_progress_scheduler_stats=guidellm_args.get("display_scheduler_stats", False),
-                output_console=not guidellm_args.get("disable_console_outputs", False),
-                output_path=output_path,
-                output_extras=guidellm_args.get("output_extras", None),
-                output_sampling=guidellm_args.get("output_sampling", None),
-                random_seed=guidellm_args.get("random_seed", 42),
+                GenerativeTextScenario,
             )
         )
 
