@@ -1,5 +1,5 @@
 from automation.tasks import BaseTask
-from automation.configs import DEFAULT_DOCKER_IMAGE
+from automation.configs import DEFAULT_DOCKER_IMAGE, DEFAULT_RESEARCH_BRANCH
 from typing import Optional, Sequence
 import os
 
@@ -23,7 +23,7 @@ class GuideLLMTask(BaseTask):
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
         clearml_model: bool=False,
-        branch: str="main",
+        branch: str= DEFAULT_RESEARCH_BRANCH,
         task_type: str="training",
         vllm_kwargs: dict={},
         target: str="http://localhost:8000/v1",

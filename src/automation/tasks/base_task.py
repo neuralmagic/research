@@ -1,6 +1,6 @@
 from clearml import Task
 from typing import Sequence, Optional
-from automation.configs import DEFAULT_OUTPUT_URI
+from automation.configs import DEFAULT_OUTPUT_URI, DEFAULT_RESEARCH_BRANCH
 from automation.standards import STANDARD_CONFIGS
 import yaml
 import os
@@ -14,7 +14,7 @@ class BaseTask():
         project_name: str,
         task_name: str,
         docker_image: str,
-        branch: Optional[str] = "main",
+        branch: Optional[str] = DEFAULT_RESEARCH_BRANCH,
         packages: Optional[Sequence[str]]=None,
         task_type: str="training",
     ):

@@ -92,6 +92,9 @@ def main():
     #GenerativeBenchmarksReport()
     from guidellm.benchmark.entrypoints import benchmark_generative_text
 
+    import time 
+    time.sleep(300)
+
     try:
         asyncio.run(
             benchmark_generative_text(
