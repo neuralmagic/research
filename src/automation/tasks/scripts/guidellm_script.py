@@ -95,7 +95,7 @@ def main():
     vllm_path = os.path.join(executable_path, "vllm")
     print(f"The vllm path is: {vllm_path}")
 
-    from guidellm.benchmark.entrypoints import benchmark_generative_text
+    from guidellm.benchmark.entrypoints import benchmark_generative_text, benchmark_with_scenario
     from guidellm.benchmark.scenario import GenerativeTextScenario, get_builtin_scenarios
 
     #import time 
@@ -103,7 +103,7 @@ def main():
 
     try:
         asyncio.run(
-            benchmark_generative_text(
+            benchmark_with_scenario(
                 GenerativeTextScenario,
             )
         )
