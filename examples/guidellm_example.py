@@ -1,5 +1,3 @@
-import os
-import sys
 
 from automation.tasks import GuideLLMTask
 
@@ -25,6 +23,8 @@ task = GuideLLMTask(
 #task = Task.init(project_name="alexandre_debug", task_name="test_guidellm_task")
 task.execute_remotely("remote-upgrade-default")
 #task.execute_locally()
+import os
+import sys
 executable_path = os.path.dirname(sys.executable)
 vllm_path = os.path.join(executable_path, "vllm")
 print(f"The vllm path is: {vllm_path}")

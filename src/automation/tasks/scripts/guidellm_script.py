@@ -82,6 +82,8 @@ def main():
     from pathlib import Path
     #from guidellm.benchmark import benchmark_generative_text
     from guidellm.benchmark.output import GenerativeBenchmarksReport
+    from guidellm.benchmark.entrypoints import benchmark_generative_text, benchmark_with_scenario
+    from guidellm.benchmark.scenario import GenerativeTextScenario, get_builtin_scenarios
 
     # Ensure output_path is set and consistent
     output_path = Path(guidellm_args.get("output_path", "guidellm-output.json"))
@@ -95,16 +97,16 @@ def main():
     vllm_path = os.path.join(executable_path, "vllm")
     print(f"The vllm path is: {vllm_path}")
 
-    from guidellm.benchmark.entrypoints import benchmark_generative_text, benchmark_with_scenario
-    from guidellm.benchmark.scenario import GenerativeTextScenario, get_builtin_scenarios
+    current_scenario = GenerativeTextScenario.from_builtin("chat", dict(guidellm_args))
 
     #import time 
     #time.sleep(300)
+    """
     current_scenario = GenerativeTextScenario
     print(current_scenario.model_fields["target"])
     print(current_scenario.model_fields["model"])
     overlap_keys = current_scenario.model_fields.keys() & dict(guidellm_args)
-    overlap_keys = ["model"]
+    #overlap_keys = ["model"]
     for element  in overlap_keys:
         #print(element)
         element_field_info = current_scenario.model_fields[element]
@@ -116,16 +118,19 @@ def main():
     print(current_scenario.model_fields["target"])
     print(current_scenario.model_fields["model"])
 
+    current_scenario = GenerativeTextScenario
+    """
+
     try:
         asyncio.run(
             benchmark_with_scenario(
                 current_scenario,
+                output_path= output_path,
+                output_extras= None
             )
         )
 
     finally:
-        import time 
-        time.sleep(300)
         task.upload_artifact(name="guidellm guidance report", artifact_object=output_path)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         kill_process_tree(server_process.pid)
