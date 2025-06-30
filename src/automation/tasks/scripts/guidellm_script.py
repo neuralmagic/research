@@ -104,6 +104,7 @@ def main():
     print(current_scenario.model_fields["target"])
     print(current_scenario.model_fields["model"])
     overlap_keys = current_scenario.model_fields.keys() & dict(guidellm_args)
+    overlap_keys = ["model"]
     for element  in overlap_keys:
         #print(element)
         element_field_info = current_scenario.model_fields[element]
