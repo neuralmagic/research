@@ -90,10 +90,17 @@ def main():
     print(json.dumps(guidellm_args, indent=2))
 
     #GenerativeBenchmarksReport()
-    from guidellm.benchmark.entrypoints import benchmark_generative_text
+    import os
+    import sys
+    executable_path = os.path.dirname(sys.executable)
+    vllm_path = os.path.join(executable_path, "vllm")
+    print(f"The vllm path is: {vllm_path}")
 
-    import time 
-    time.sleep(300)
+    from guidellm.benchmark.entrypoints import benchmark_generative_text
+    from guidellm.benchmark.scenario import GenerativeTextScenario, get_builtin_scenarios
+
+    #import time 
+    #time.sleep(300)
 
     try:
         asyncio.run(
@@ -124,6 +131,8 @@ def main():
         )
 
     finally:
+        import time 
+        time.sleep(300)
         task.upload_artifact(name="guidellm guidance report", artifact_object=output_path)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         kill_process_tree(server_process.pid)
