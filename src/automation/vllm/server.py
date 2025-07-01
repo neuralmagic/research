@@ -32,14 +32,13 @@ def start_vllm_server(
 
     parsed_target = urlparse(target)
     print(f"vllm path is: {vllm_path}")
+    """
     server_command = [
         f"{vllm_path}", "serve", 
         "Qwen/Qwen2.5-1.5B-Instruct",
     ]
-
-    print(server_command)
-
     """
+
     server_command = [
         f"{vllm_path}", "serve", 
         model_id,
@@ -47,8 +46,8 @@ def start_vllm_server(
         "--port", str(parsed_target.port),
         "--tensor-parallel-size", str(gpu_count),
     ]
-    """
 
+    print(server_command)
     subprocess_env = os.environ.copy()
 
     for k, v in vllm_args.items():
