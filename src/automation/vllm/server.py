@@ -19,6 +19,8 @@ def start_vllm_server(
 ):
     task = Task.current_task()
 
+    print("Inside start vllm server")
+
     executable_path = os.path.dirname(sys.executable)
     vllm_path = os.path.join(executable_path, "vllm")
 
@@ -34,6 +36,8 @@ def start_vllm_server(
         f"{vllm_path}", "serve", 
         "Qwen/Qwen2.5-1.5B-Instruct",
     ]
+
+    print(server_command)
 
     """
     server_command = [
