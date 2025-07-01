@@ -25,6 +25,8 @@ class BaseTask():
         else:
             packages = self.base_packages
 
+        print(packages)
+
         self.project_name = project_name
         self.task_name = task_name
         self.docker_image = docker_image
