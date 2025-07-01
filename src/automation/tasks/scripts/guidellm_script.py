@@ -59,6 +59,7 @@ def main():
     print(guidellm_args["target"])
     print(args["Args"]["server_wait_time"])
     print(gpu_count)
+    print(os.getcwd())
 
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(
