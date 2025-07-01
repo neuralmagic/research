@@ -16,7 +16,7 @@ task = GuideLLMTask(
     max_seconds=30,
     data="prompt_tokens=512,generated_tokens=256",
     branch = "update_guidellm",
-    vllm_kwargs={"enable-chunked-prefill": True}
+    #vllm_kwargs={"enable-chunked-prefill": True}
 )
 
 #from clearml import Task
