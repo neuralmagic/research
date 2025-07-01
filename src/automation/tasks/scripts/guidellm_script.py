@@ -54,6 +54,12 @@ def main():
 
     gpu_count = int(guidellm_args.get("gpu_count", 1)) 
 
+    print(vllm_args)
+    print(model_id)
+    print(guidellm_args["target"])
+    print(args["Args"]["server_wait_time"])
+    print(gpu_count)
+
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(
         vllm_args,
