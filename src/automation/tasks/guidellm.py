@@ -39,14 +39,18 @@ class GuideLLMTask(BaseTask):
 
         # Set packages, taking into account default packages
         # for the LMEvalTask and packages set in the config
+        print(self.guidellm_packages)
+        print(packages)
         if packages is not None:
             packages = list(set(packages + self.guidellm_packages))
         else:
             packages = self.guidellm_packages
 
+        print(packages)
         if "packages" in config_kwargs:
             packages = list(set(packages + config_kwargs.pop("packages")))
 
+        print(packages)
         # Initialize base parameters
         super().__init__(
             project_name=project_name,
