@@ -14,32 +14,29 @@ def start_vllm_server(
     vllm_args, 
     model_id, 
     target, 
-    server_wait_time, 
+    server_wait_time,
+    gpu_count,
 ):
     task = Task.current_task()
 
     executable_path = os.path.dirname(sys.executable)
     vllm_path = os.path.join(executable_path, "vllm")
 
-    num_gpus = torch.cuda.device_count()
+    available_gpus = list(range(torch.cuda.device_count()))
+    selected_gpus = available_gpus[:gpu_count]
+
+    subprocess_env = os.environ.copy()
+    subprocess_env["CUDA_VISIBLE_DEVICES"] = ",".join(str(i) for i in selected_gpus)
 
     parsed_target = urlparse(target)
 
-    """
     server_command = [
         f"{vllm_path}", "serve", 
         model_id,
         "--host", parsed_target.hostname, 
         "--port", str(parsed_target.port),
-        "--tensor-parallel-size", str(num_gpus)
+        "--tensor-parallel-size", str(gpu_count),
     ]
-    """
-
-    server_command = [
-        f"{vllm_path}", "serve", 
-        "Qwen/Qwen2.5-1.5B-Instruct",
-    ]
-
 
     subprocess_env = os.environ.copy()
 
@@ -53,6 +50,7 @@ def start_vllm_server(
 
     server_log_file_name = f"{SERVER_LOG_PREFIX}_{task.id}.txt"
     server_log_file = open(server_log_file_name, "w")
+    print("Server command:", " ".join(server_command))
     server_process = subprocess.Popen(server_command, stdout=server_log_file, stderr=server_log_file, shell=False, env=subprocess_env)
 
     delay = 5
@@ -60,6 +58,7 @@ def start_vllm_server(
     for _ in range(server_wait_time // delay):
         try:
             response = requests.get(target + "/models")
+            print(f"response: {response}")
             if response.status_code == 200:
                 print("Server initialized")
                 server_initialized = True
