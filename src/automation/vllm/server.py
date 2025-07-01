@@ -29,7 +29,13 @@ def start_vllm_server(
     subprocess_env["CUDA_VISIBLE_DEVICES"] = ",".join(str(i) for i in selected_gpus)
 
     parsed_target = urlparse(target)
+    print(f"vllm path is: {vllm_path}")
+    server_command = [
+        f"{vllm_path}", "serve", 
+        "Qwen/Qwen2.5-1.5B-Instruct",
+    ]
 
+    """
     server_command = [
         f"{vllm_path}", "serve", 
         model_id,
@@ -37,6 +43,7 @@ def start_vllm_server(
         "--port", str(parsed_target.port),
         "--tensor-parallel-size", str(gpu_count),
     ]
+    """
 
     subprocess_env = os.environ.copy()
 
