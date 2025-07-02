@@ -5,16 +5,10 @@ import os
 
 DEFAULT_SERVER_WAIT_TIME = 600 # 600 seconds = 10 minutes
 GUIDELLM_PACKAGE = "git+https://github.com/neuralmagic/guidellm.git"
-#GUIDELLM_PACKAGE = "git+https://github.com/neuralmagic/guidellm.git@clearml-guidellm"
-#GUIDELLM_PACKAGE = "git+https://github.com/neuralmagic/guidellm.git@clearml-guidellm#egg=guidellm"
-#GUIDELLM_PACKAGE = "git+https://github.com/neuralmagic/guidellm.git@main#egg=guidellm[dev]"
 
 class GuideLLMTask(BaseTask):
 
     guidellm_packages = [
-        #"build>=1.0.0",
-        #"setuptools>=61.0",
-        #"setuptools-git-versioning>=2.0,<3",
         "vllm",
         GUIDELLM_PACKAGE,
         "hf_xet",

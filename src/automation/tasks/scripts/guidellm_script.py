@@ -88,7 +88,6 @@ def main():
     import json
     import asyncio
     from pathlib import Path
-    #from guidellm.benchmark import benchmark_generative_text
     from guidellm.benchmark.output import GenerativeBenchmarksReport
     from guidellm.benchmark.entrypoints import benchmark_generative_text, benchmark_with_scenario
     from guidellm.benchmark.scenario import GenerativeTextScenario, get_builtin_scenarios
@@ -100,40 +99,9 @@ def main():
     print("[DEBUG] Calling benchmark_generative_text with:")
     print(json.dumps(guidellm_args, indent=2))
 
-    #GenerativeBenchmarksReport()
     executable_path = os.path.dirname(sys.executable)
     vllm_path = os.path.join(executable_path, "vllm")
     print(f"The vllm path is: {vllm_path}")
-
-
-    #default_scenario = get_builtin_scenarios()[0]
-    #current_scenario = GenerativeTextScenario.from_builtin(default_scenario, dict(guidellm_args))
-
-    #from pathlib import Path
-    #filepath = Path(os.path.join(".", "src", "automation", "standards", "benchmarking", "chat.json"))
-    #current_scenario = GenerativeTextScenario.from_file(filepath, dict(guidellm_args))
-
-    #import time 
-    #time.sleep(300)
-    """
-    current_scenario = GenerativeTextScenario
-    print(current_scenario.model_fields["target"])
-    print(current_scenario.model_fields["model"])
-    overlap_keys = current_scenario.model_fields.keys() & dict(guidellm_args)
-    #overlap_keys = ["model"]
-    for element  in overlap_keys:
-        #print(element)
-        element_field_info = current_scenario.model_fields[element]
-        element_field_info.default = guidellm_args[element]
-        current_scenario.model_fields[element] = element_field_info
-        #print(element_field_info.annotation)
-    print(overlap_keys)
-
-    print(current_scenario.model_fields["target"])
-    print(current_scenario.model_fields["model"])
-
-    current_scenario = GenerativeTextScenario
-    """
 
     try:
         asyncio.run(

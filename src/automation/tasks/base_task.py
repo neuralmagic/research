@@ -8,7 +8,7 @@ import os
 class BaseTask():
 
     #base_packages = ["git+https://github.com/neuralmagic/research.git"]
-    base_packages = ["git+https://github.com/neuralmagic/research.git@update_guidellm"]
+    #base_packages = ["git+https://github.com/neuralmagic/research.git@update_guidellm"]
 
     def __init__(
         self,
@@ -19,6 +19,7 @@ class BaseTask():
         packages: Optional[Sequence[str]]=None,
         task_type: str="training",
     ):
+        base_packages = [f"git+https://github.com/neuralmagic/research.git@{branch}"]
         
         if packages is not None:
             packages = list(set(packages + self.base_packages))
