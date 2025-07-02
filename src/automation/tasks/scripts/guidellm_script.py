@@ -61,9 +61,9 @@ def main():
     print(gpu_count)
     print(os.getcwd())
 
-    from guidellm.benchmark.scenario import GenerativeTextScenario, get_builtin_scenarios
-    print(get_builtin_scenarios())
-    default_scenario = get_builtin_scenarios()[0]
+    from pathlib import Path
+    filepath = Path(os.path.join(".", "src", "automation", "standards", "benchmarking", "chat.json"))
+    current_scenario = GenerativeTextScenario.from_file(filepath, dict(guidellm_args))
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(
         vllm_args,
@@ -105,10 +105,12 @@ def main():
     print(f"The vllm path is: {vllm_path}")
 
 
-    print(get_builtin_scenarios())
-    default_scenario = get_builtin_scenarios()[0]
+    #default_scenario = get_builtin_scenarios()[0]
+    #current_scenario = GenerativeTextScenario.from_builtin(default_scenario, dict(guidellm_args))
 
-    current_scenario = GenerativeTextScenario.from_builtin(default_scenario, dict(guidellm_args))
+    from pathlib import Path
+    filepath = Path(os.path.join(".", "src", "automation", "standards", "benchmarking", "chat.json"))
+    current_scenario = GenerativeTextScenario.from_file(filepath, dict(guidellm_args))
 
     #import time 
     #time.sleep(300)
