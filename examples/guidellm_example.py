@@ -11,22 +11,11 @@ task = GuideLLMTask(
     GUIDELLM__MAX_CONCURRENCY=256,
     GUIDELLM__REQUEST_TIMEOUT=21600,
     target="http://localhost:8000/v1",
-    #target="http://fed73cc1-us-east.lb.appdomain.cloud/v1",
     data_type="emulated",
     max_seconds=30,
-    #data="{'prompt_tokens': 512, 'generated_tokens': 256, 'output_tokens' : 256}",
     data="prompt_tokens=512,generated_tokens=256,output_tokens=256",
-    #data="prompt_tokens=512,generated_tokens=256",
     branch = "update_guidellm",
     #vllm_kwargs={"enable-chunked-prefill": True}
 )
 
-#from clearml import Task
-#task = Task.init(project_name="alexandre_debug", task_name="test_guidellm_task")
 task.execute_remotely("remote-upgrade-default")
-#task.execute_locally()
-import os
-import sys
-executable_path = os.path.dirname(sys.executable)
-vllm_path = os.path.join(executable_path, "vllm")
-print(f"The vllm path is: {vllm_path}")
