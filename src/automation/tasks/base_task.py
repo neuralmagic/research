@@ -22,9 +22,9 @@ class BaseTask():
         base_packages = [f"git+https://github.com/neuralmagic/research.git@{branch}"]
         
         if packages is not None:
-            packages = list(set(packages + self.base_packages))
+            packages = list(set(packages + base_packages))
         else:
-            packages = self.base_packages
+            packages = base_packages
 
         print(packages)
 
