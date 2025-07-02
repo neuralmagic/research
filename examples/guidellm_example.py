@@ -14,7 +14,9 @@ task = GuideLLMTask(
     #target="http://fed73cc1-us-east.lb.appdomain.cloud/v1",
     data_type="emulated",
     max_seconds=30,
-    data="prompt_tokens=512,generated_tokens=256",
+    #data="{'prompt_tokens': 512, 'generated_tokens': 256, 'output_tokens' : 256}",
+    data="prompt_tokens=512,generated_tokens=256,output_tokens=256",
+    #data="prompt_tokens=512,generated_tokens=256",
     branch = "update_guidellm",
     #vllm_kwargs={"enable-chunked-prefill": True}
 )
