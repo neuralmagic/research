@@ -62,6 +62,7 @@ def main():
     print(os.getcwd())
 
     from pathlib import Path
+    from guidellm.benchmark.scenario import GenerativeTextScenario, get_builtin_scenarios
     filepath = Path(os.path.join(".", "src", "automation", "standards", "benchmarking", "chat.json"))
     current_scenario = GenerativeTextScenario.from_file(filepath, dict(guidellm_args))
     # Start vLLM server
