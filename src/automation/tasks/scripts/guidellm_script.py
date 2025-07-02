@@ -61,6 +61,9 @@ def main():
     print(gpu_count)
     print(os.getcwd())
 
+    from guidellm.benchmark.scenario import GenerativeTextScenario, get_builtin_scenarios
+    print(get_builtin_scenarios())
+    default_scenario = get_builtin_scenarios()[0]
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(
         vllm_args,

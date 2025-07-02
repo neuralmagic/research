@@ -1,5 +1,5 @@
 from automation.tasks import BaseTask
-from guidellm.benchmark.scenario import GenerativeTextScenario, get_builtin_scenarios
+#from guidellm.benchmark.scenario import GenerativeTextScenario, get_builtin_scenarios
 from automation.configs import DEFAULT_DOCKER_IMAGE, DEFAULT_RESEARCH_BRANCH
 from typing import Optional, Sequence
 import os
@@ -52,8 +52,8 @@ class GuideLLMTask(BaseTask):
             packages = self.guidellm_packages
 
         print(packages)
-        print(get_builtin_scenarios())
-        default_scenario = get_builtin_scenarios()[0]
+        #print(get_builtin_scenarios())
+        #default_scenario = get_builtin_scenarios()[0]
         if "packages" in config_kwargs:
             packages = list(set(packages + config_kwargs.pop("packages")))
 
