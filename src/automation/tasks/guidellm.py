@@ -11,9 +11,9 @@ GUIDELLM_PACKAGE = "git+https://github.com/neuralmagic/guidellm.git@clearml-guid
 class GuideLLMTask(BaseTask):
 
     guidellm_packages = [
-        "build>=1.0.0",
-        "setuptools>=61.0",
-        "setuptools-git-versioning>=2.0,<3",
+        #"build>=1.0.0",
+        #"setuptools>=61.0",
+        #"setuptools-git-versioning>=2.0,<3",
         "vllm",
         GUIDELLM_PACKAGE,
         "hf_xet",

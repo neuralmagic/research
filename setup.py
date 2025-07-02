@@ -17,6 +17,9 @@ setup(
         #"google-cloud-storage>=1.13.2",
         "datasets",
         "pyhocon",
+        "build>=1.0.0",
+        "setuptools>=61.0",
+        "setuptools-git-versioning>=2.0,<3",
     ],
     python_requires=">=3.7",
 )
