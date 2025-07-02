@@ -65,6 +65,7 @@ def main():
     from guidellm.benchmark.scenario import GenerativeTextScenario, get_builtin_scenarios
     filepath = Path(os.path.join(".", "src", "automation", "standards", "benchmarking", "rag.json"))
     current_scenario = GenerativeTextScenario.from_file(filepath, dict(guidellm_args))
+    print(current_scenario.model_fields)
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(
         vllm_args,
