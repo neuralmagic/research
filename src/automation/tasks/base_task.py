@@ -19,7 +19,8 @@ class BaseTask():
         packages: Optional[Sequence[str]]=None,
         task_type: str="training",
     ):
-        base_packages = [f"git+https://github.com/neuralmagic/research.git@{branch}"]
+        branch_name = branch or DEFAULT_RESEARCH_BRANCH
+        base_packages = [f"git+https://github.com/neuralmagic/research.git@{branch_name}"]
         
         if packages is not None:
             packages = list(set(packages + base_packages))
