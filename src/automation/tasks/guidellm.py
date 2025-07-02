@@ -15,7 +15,7 @@ class GuideLLMTask(BaseTask):
         #"build>=1.0.0",
         #"setuptools>=61.0",
         #"setuptools-git-versioning>=2.0,<3",
-        "vllm",
+        #"vllm",
         GUIDELLM_PACKAGE,
         "hf_xet",
     ]
