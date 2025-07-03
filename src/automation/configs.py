@@ -3,4 +3,4 @@ DEFAULT_DOCKER_IMAGE = "498127099666.dkr.ecr.us-east-1.amazonaws.com/mlops/k8s-r
 #DEFAULT_OUTPUT_URI = "gs://neuralmagic-clearml"
 DEFAULT_OUTPUT_URI = "http://10.128.20.60:8081"
 DEFAULT_RESEARCH_BRANCH = "main"
-DEFAULT_GUIDELLM_SCENARIO = "rag"
+DEFAULT_GUIDELLM_SCENARIO = "chat"
