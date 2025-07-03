@@ -11,10 +11,10 @@ task = GuideLLMTask(
     GUIDELLM__MAX_CONCURRENCY=256,
     GUIDELLM__REQUEST_TIMEOUT=21600,
     target="http://localhost:8000/v1",
-    data_type="emulated",
+    #data_type="emulated",
     max_seconds=30,
     #config = "benchmarking_32k",
-    data="prompt_tokens=128,output_tokens=128",
+    #data="prompt_tokens=128,output_tokens=128",
     branch = "update_guidellm",
     vllm_kwargs={"enable-chunked-prefill": True}
 )
