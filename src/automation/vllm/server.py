@@ -32,12 +32,6 @@ def start_vllm_server(
 
     parsed_target = urlparse(target)
     print(f"vllm path is: {vllm_path}")
-    """
-    server_command = [
-        f"{vllm_path}", "serve", 
-        "Qwen/Qwen2.5-1.5B-Instruct",
-    ]
-    """
 
     server_command = [
         f"{vllm_path}", "serve", 
