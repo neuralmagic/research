@@ -4,6 +4,7 @@ from clearml import Task
 from automation.utils import resolve_model_id, cast_args, kill_process_tree
 from automation.vllm import start_vllm_server
 from pyhocon import ConfigFactory
+from automation.configs import DEFAULT_GUIDELLM_SCENARIO
 
 def main():
     task = Task.current_task()
@@ -63,8 +64,11 @@ def main():
 
     from pathlib import Path
     from guidellm.benchmark.scenario import GenerativeTextScenario, get_builtin_scenarios
-    filepath = Path(os.path.join(".", "src", "automation", "standards", "benchmarking", "rag.json"))
-    current_scenario = GenerativeTextScenario.from_file(filepath, dict(guidellm_args))
+    if len(get_builtin_scenarios()) > 0:
+        current_scenario = GenerativeTextScenario.from_builtin(DEFAULT_GUIDELLM_SCENARIO, dict(guidellm_args))
+    else:
+        filepath = Path(os.path.join(".", "src", "automation", "standards", "benchmarking", f"{DEFAULT_GUIDELLM_SCENARIO}.json"))
+        current_scenario = GenerativeTextScenario.from_file(filepath, dict(guidellm_args))
     print(current_scenario.model_fields)
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(

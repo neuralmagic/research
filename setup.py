@@ -7,7 +7,7 @@ setup(
     version="0.1.0",
     author="NM MLR",
     description="Automation tools",
-    #url="https://github.com/neuralmagic/research",
+    url="https://github.com/neuralmagic/research",
     package_dir={"": "src"},
     packages=find_packages(
         "src", include=["automation", "automation.*"], exclude=["*.__pycache__.*"]

@@ -55,12 +55,15 @@ def start_vllm_server(
             subprocess_env[k] = str(v)
         else:
             if v == True or v == "True":
-                v = "true"
-            server_command.extend([f"--{k}", str(v)])
+                server_command.append(f"--{k}")
+            else:
+                server_command.extend([f"--{k}", str(v)])
+
 
     server_log_file_name = f"{SERVER_LOG_PREFIX}_{task.id}.txt"
     server_log_file = open(server_log_file_name, "w")
     print("Server command:", " ".join(server_command))
+    print(f"VLLM logs are located at: {server_log_file} in {os.getcwd()}")
     server_process = subprocess.Popen(server_command, stdout=server_log_file, stderr=server_log_file, shell=False, env=subprocess_env)
 
     delay = 5
