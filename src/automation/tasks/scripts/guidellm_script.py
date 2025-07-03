@@ -64,6 +64,7 @@ def main():
 
     from pathlib import Path
     from guidellm.benchmark.scenario import GenerativeTextScenario, get_builtin_scenarios
+    print(get_builtin_scenarios())
     if len(get_builtin_scenarios()) > 0:
         current_scenario = GenerativeTextScenario.from_builtin(DEFAULT_GUIDELLM_SCENARIO, dict(guidellm_args))
     else:
