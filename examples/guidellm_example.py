@@ -12,9 +12,10 @@ task = GuideLLMTask(
     max_seconds=30,
     #scenario = "benchmarking_32k",
     data="prompt_tokens=128,output_tokens=128",
-    branch = "update_guidellm",
+    branch = "test_quay",
     vllm_kwargs={"enable-chunked-prefill": True}
 )
 
-task.execute_remotely("oneshot-a100x1")
+#task.execute_remotely("oneshot-a100x1")
+task.execute_remotely("remote-upgrade-default")
 #task.execute_locally()
