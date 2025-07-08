@@ -17,18 +17,18 @@ def main():
         raw_config = task.get_parameters_as_dict().get("GuideLLM")
         if raw_config is None:
             raise RuntimeError("GuideLLM config is None. This likely means `get_configurations()` is not returning it or it's not passed via parameters.")
-        guidellm_args = ConfigFactory.from_dict(raw_config)
+        arenahard_args = ConfigFactory.from_dict(raw_config)
     else:
-        guidellm_args = ConfigFactory.parse_string(raw_config)
+        arenahard_args = ConfigFactory.parse_string(raw_config)
 
     def clean_hocon_value(v):
         if isinstance(v, str) and v.startswith('"') and v.endswith('"'):
             return v[1:-1]
         return v
 
-    guidellm_args = {k: clean_hocon_value(v) for k, v in guidellm_args.items()}
+    arenahard_args = {k: clean_hocon_value(v) for k, v in arenahard_args.items()}
 
-    print("[DEBUG] Guidellm_Args:", guidellm_args)
+    print("[DEBUG] Guidellm_Args:", arenahard_args)
 
     environment_args = task.get_configuration_object("environment")
     if environment_args is None:
@@ -53,13 +53,13 @@ def main():
     # Resolve model_id
     model_id = resolve_model_id(args["Args"]["generate_model"], clearml_model, force_download)
 
-    gpu_count = int(guidellm_args.get("gpu_count", 1)) 
+    gpu_count = int(arenahard_args.get("gpu_count", 1)) 
 
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(
         vllm_args,
         model_id,
-        guidellm_args["target"],
+        arenahard_args["target"],
         args["Args"]["server_wait_time"],
         gpu_count,
     )
@@ -73,16 +73,18 @@ def main():
     for k, v in environment_args.items():
         os.environ[k] = str(v)
 
-    guidellm_args["model"] = model_id
+    arenahard_args["model"] = model_id
 
     import json
     import asyncio
     from pathlib import Path
-    output_path = Path(guidellm_args.get("output_path", "guidellm-output.json"))
-    guidellm_args["output_path"] = str(output_path)
+    output_path = Path(arenahard_args.get("output_path", "arenahard-output.json"))
+    with open(output_path, 'w') as f:
+        f.write('helloworld')
+    arenahard_args["output_path"] = str(output_path)
 
     print("[DEBUG] Calling benchmark_with_scenario with:")
-    print(json.dumps(guidellm_args, indent=2))
+    print(json.dumps(arenahard_args, indent=2))
 
     executable_path = os.path.dirname(sys.executable)
     vllm_path = os.path.join(executable_path, "vllm")
@@ -90,15 +92,6 @@ def main():
 
     try:
         print ("Running arena hard")
-        """
-        asyncio.run(
-            benchmark_with_scenario(
-                current_scenario,
-                output_path= output_path,
-                output_extras= None
-            )
-        )
-        """
 
     finally:
         task.upload_artifact(name="guidellm guidance report", artifact_object=output_path)
