@@ -78,25 +78,6 @@ def main():
     import json
     import asyncio
     from pathlib import Path
-    from guidellm.benchmark.entrypoints import benchmark_with_scenario
-    from guidellm.benchmark.scenario import GenerativeTextScenario, get_builtin_scenarios
-
-    user_scenario = guidellm_args.get("scenario", "")
-    if user_scenario:
-        filepath = Path(os.path.join(".", "src", "automation", "standards", "benchmarking", f"{user_scenario}.json"))
-        if os.path.exists(filepath):
-            current_scenario = GenerativeTextScenario.from_file(filepath, dict(guidellm_args))
-        else:
-            raise ValueError(f"Scenario path {filepath} does not exist")
-    #elif len(get_builtin_scenarios()) > 0:
-    #    to be used when get_builtin_scenarios() bug is fiexed
-    #    current_scenario = GenerativeTextScenario.from_builtin(get_builtin_scenarios()[0], dict(guidellm_args))
-    else:
-        filepath = Path(os.path.join(".", "src", "automation", "standards", "benchmarking", f"{DEFAULT_GUIDELLM_SCENARIO}.json"))
-        current_scenario = GenerativeTextScenario.from_file(filepath, dict(guidellm_args))
-    print(current_scenario.model_fields)
-
-    # Ensure output_path is set and consistent
     output_path = Path(guidellm_args.get("output_path", "guidellm-output.json"))
     guidellm_args["output_path"] = str(output_path)
 
@@ -108,6 +89,8 @@ def main():
     print(f"The vllm path is: {vllm_path}")
 
     try:
+        print ("Running arena hard")
+        """
         asyncio.run(
             benchmark_with_scenario(
                 current_scenario,
@@ -115,6 +98,7 @@ def main():
                 output_extras= None
             )
         )
+        """
 
     finally:
         task.upload_artifact(name="guidellm guidance report", artifact_object=output_path)
