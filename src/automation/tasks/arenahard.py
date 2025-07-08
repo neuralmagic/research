@@ -11,6 +11,17 @@ class ArenaHardGenerateTask(BaseTask):
     guidellm_packages = [
         "vllm",
         "hf_xet",
+
+        "tiktoken",
+        "openai",
+        "numpy",
+        "pandas",
+        "shortuuid",
+        "tqdm",
+        "gradio==5.25.2",
+        "plotly",
+        "scikit-learn",
+        "boto3",
     ]
 
     def __init__(
