@@ -51,7 +51,7 @@ def main():
         force_download = force_download.lower() == "true"
 
     # Resolve model_id
-    model_id = resolve_model_id(args["Args"]["model"], clearml_model, force_download)
+    model_id = resolve_model_id(args["Args"]["generate_model"], clearml_model, force_download)
 
     gpu_count = int(guidellm_args.get("gpu_count", 1)) 
 
@@ -120,6 +120,7 @@ def main():
         task.upload_artifact(name="guidellm guidance report", artifact_object=output_path)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         kill_process_tree(server_process.pid)
+
 
 if __name__ == '__main__':
     main()
