@@ -1,6 +1,6 @@
-from automation.tasks import GuideLLMTask
+from automation.tasks import ArenaHardGenerateTask
 
-task = GuideLLMTask(
+task = ArenaHardGenerateTask(
     project_name="alexandre_debug",
     task_name="test_guidellm_task",
     #model="meta-llama/Llama-3.2-1B-Instruct",
@@ -11,7 +11,6 @@ task = GuideLLMTask(
     GUIDELLM__REQUEST_TIMEOUT=21600,
     target="http://localhost:8000/v1",
     max_seconds=30,
-    #scenario = "benchmarking_32k",
     data="prompt_tokens=128,output_tokens=128",
     branch = "test_quay",
     vllm_kwargs={"enable-chunked-prefill": True}
