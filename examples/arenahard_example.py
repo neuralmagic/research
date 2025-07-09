@@ -13,7 +13,7 @@ task = ArenaHardGenerateTask(
     max_seconds=30,
     data="prompt_tokens=128,output_tokens=128",
     branch = "test_quay",
-    vllm_kwargs={"enable-chunked-prefill": True}
+    #vllm_kwargs={"enable-chunked-prefill": True}
 )
 
 #task.execute_remotely("oneshot-a100x1")

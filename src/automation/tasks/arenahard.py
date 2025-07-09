@@ -3,8 +3,8 @@ from automation.configs import DEFAULT_DOCKER_IMAGE, DEFAULT_RESEARCH_BRANCH
 from typing import Optional, Sequence
 import os
 
-DEFAULT_SERVER_WAIT_TIME = 30 # 600 seconds = 10 minutes
-#DEFAULT_SERVER_WAIT_TIME = 600 # 600 seconds = 10 minutes
+#DEFAULT_SERVER_WAIT_TIME = 30 # 600 seconds = 10 minutes
+DEFAULT_SERVER_WAIT_TIME = 600 # 600 seconds = 10 minutes
 
 class ArenaHardGenerateTask(BaseTask):
 
@@ -87,7 +87,7 @@ class ArenaHardGenerateTask(BaseTask):
         }
         environment_variables = {}
         for k, v in kwargs.items():
-            if k.startswith("GUIDELLM__"):
+            if k.startswith("ARENAHARD__"):
                 environment_variables[k] = v
             else:
                 arenahard_kwargs[k] = v
@@ -110,7 +110,7 @@ class ArenaHardGenerateTask(BaseTask):
 
     def get_configurations(self):
         configs = {
-            "GuideLLM": self.arenahard_kwargs,
+            "ArenaHard": self.arenahard_kwargs,
         }
         if len(self.vllm_kwargs) > 0:
             configs["vLLM"] = self.vllm_kwargs
