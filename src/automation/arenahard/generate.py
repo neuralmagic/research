@@ -18,6 +18,8 @@ def start_generation(
     print("Inside start generation server")
 
     executable_path = os.path.dirname(sys.executable)
+    python_path = os.path.join(executable_path, "python3")
+    print(f"python path is: {python_path}")
     generation_path = os.path.join(os.getcwd(), "src", "automation", "arenahard", "gen_judgment.py")
     print(f"generation path is: {generation_path}")
 
@@ -26,6 +28,7 @@ def start_generation(
 
 
     server_command = [
+        python_path,
         f"{generation_path}", "--help", 
     ]
 
