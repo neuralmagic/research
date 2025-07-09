@@ -11,11 +11,7 @@ SERVER_LOG_PREFIX = "generation_server_log"
 
 
 def start_generation(
-    generation_args, 
-    model_id, 
-    target, 
-    server_wait_time,
-    gpu_count,
+    #generation_args, 
 ):
     task = Task.current_task()
 
