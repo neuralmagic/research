@@ -97,8 +97,8 @@ def main():
 
     finally:
         task.upload_artifact(name="guidellm guidance report", artifact_object=output_path)
-        task.upload_artifact(name="vLLM server log", artifact_object=server_log)
-        kill_process_tree(server_process.pid)
+        #task.upload_artifact(name="vLLM server log", artifact_object=server_log)
+        #kill_process_tree(server_process.pid)
 
 
 if __name__ == '__main__':
