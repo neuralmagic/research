@@ -55,7 +55,8 @@ def main():
 
     gpu_count = int(arenahard_args.get("gpu_count", 1)) 
 
-    start_generation(generation_args)
+    start_generation()
+    #start_generation(generation_args)
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(
         vllm_args,
