@@ -8,13 +8,12 @@ DEFAULT_SERVER_WAIT_TIME = 600 # 600 seconds = 10 minutes
 
 class ArenaHardGenerateTask(BaseTask):
 
-    """
     arenahard_packages = [
         "vllm",
         "hf_xet",
     ]
-    """
 
+    """
     arenahard_packages = [
         "vllm",
         "hf_xet",
@@ -30,6 +29,7 @@ class ArenaHardGenerateTask(BaseTask):
         "scikit-learn",
         "boto3",
     ]
+    """
 
     def __init__(
         self,
@@ -101,7 +101,7 @@ class ArenaHardGenerateTask(BaseTask):
         self.environment_variables = environment_variables
         self.force_download = force_download
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "arenahard.py")
-        self.generate_path = os.path.join(".", "src", "automation", "arenahard", "generate.py")
+        #self.generate_path = os.path.join(".", "src", "automation", "arenahard", "generate.py")
 
     def script(self, configurations):
         from automation.tasks.scripts.arenahard_script import main
