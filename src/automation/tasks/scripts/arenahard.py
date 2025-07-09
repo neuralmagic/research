@@ -4,19 +4,18 @@ from clearml import Task
 from automation.utils import resolve_model_id, cast_args, kill_process_tree
 from automation.vllm import start_vllm_server
 from pyhocon import ConfigFactory
-from automation.configs import DEFAULT_GUIDELLM_SCENARIO
 
 def main():
     task = Task.current_task()
 
     args = task.get_parameters_as_dict(cast=True)
     
-    raw_config = task.get_configuration_object("GuideLLM")
+    raw_config = task.get_configuration_object("ArenaHard")
     if raw_config is None:
-        print("[DEBUG] `GuideLLM` config not found in configuration — checking parameters as fallback")
-        raw_config = task.get_parameters_as_dict().get("GuideLLM")
+        print("[DEBUG] `ArenaHard` config not found in configuration — checking parameters as fallback")
+        raw_config = task.get_parameters_as_dict().get("ArenaHard")
         if raw_config is None:
-            raise RuntimeError("GuideLLM config is None. This likely means `get_configurations()` is not returning it or it's not passed via parameters.")
+            raise RuntimeError("ArenaHard config is None. This likely means `get_configurations()` is not returning it or it's not passed via parameters.")
         arenahard_args = ConfigFactory.from_dict(raw_config)
     else:
         arenahard_args = ConfigFactory.parse_string(raw_config)
@@ -28,7 +27,7 @@ def main():
 
     arenahard_args = {k: clean_hocon_value(v) for k, v in arenahard_args.items()}
 
-    print("[DEBUG] Guidellm_Args:", arenahard_args)
+    print("[DEBUG] Arenahard_Args:", arenahard_args)
 
     environment_args = task.get_configuration_object("environment")
     if environment_args is None:
@@ -96,7 +95,7 @@ def main():
         print ("Running arena hard")
 
     finally:
-        task.upload_artifact(name="guidellm guidance report", artifact_object=output_path)
+        task.upload_artifact(name="arenahard report", artifact_object=output_path)
         #task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         #kill_process_tree(server_process.pid)
 
