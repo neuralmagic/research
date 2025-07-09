@@ -33,6 +33,7 @@ def start_generation(
     print(server_command)
     subprocess_env = os.environ.copy()
 
+    """
     for k, v in generation_args.items():
         if k.startswith("GENERATION_"):
             subprocess_env[k] = str(v)
@@ -41,6 +42,7 @@ def start_generation(
                 server_command.append(f"--{k}")
             else:
                 server_command.extend([f"--{k}", str(v)])
+    """
 
 
     server_log_file_name = f"{SERVER_LOG_PREFIX}_{task.id}.txt"
