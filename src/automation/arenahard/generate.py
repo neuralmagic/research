@@ -20,13 +20,10 @@ def start_generation(
     executable_path = os.path.dirname(sys.executable)
     generation_path = os.path.join(executable_path, "generation")
 
-    available_gpus = list(range(torch.cuda.device_count()))
-    selected_gpus = available_gpus[:gpu_count]
 
     subprocess_env = os.environ.copy()
-    subprocess_env["CUDA_VISIBLE_DEVICES"] = ",".join(str(i) for i in selected_gpus)
+    #subprocess_env["CUDA_VISIBLE_DEVICES"] = ",".join(str(i) for i in selected_gpus)
 
-    parsed_target = urlparse(target)
     print(f"generation path is: {generation_path}")
 
     server_command = [
@@ -50,6 +47,7 @@ def start_generation(
     server_log_file = open(server_log_file_name, "w")
     print("Server command:", " ".join(server_command))
     print(f"GENERATION logs are located at: {server_log_file} in {os.getcwd()}")
+    """
     server_process = subprocess.Popen(server_command, stdout=server_log_file, stderr=server_log_file, shell=False, env=subprocess_env)
 
     delay = 5
@@ -71,3 +69,4 @@ def start_generation(
         return server_process, True, server_log_file_name
     else:
         return server_process, False, server_log_file_name
+    """
