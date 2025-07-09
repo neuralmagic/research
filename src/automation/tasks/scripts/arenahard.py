@@ -55,6 +55,7 @@ def main():
 
     gpu_count = int(arenahard_args.get("gpu_count", 1)) 
 
+    """
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(
         vllm_args,
@@ -68,6 +69,7 @@ def main():
         kill_process_tree(server_process.pid)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         raise AssertionError("Server failed to initialize")
+    """
 
     # Parse through environment variables
     for k, v in environment_args.items():
