@@ -18,13 +18,13 @@ def start_generation(
     print("Inside start generation server")
 
     executable_path = os.path.dirname(sys.executable)
-    generation_path = os.path.join(executable_path, "generation")
-
+    #generation_path = os.path.join(executable_path, "generation")
+    generate_path = os.path.join(os.getcwd(), "src", "automation", "arenahard", "gen_judgment.py")
+    print(f"generation path is: {generation_path}")
 
     subprocess_env = os.environ.copy()
     #subprocess_env["CUDA_VISIBLE_DEVICES"] = ",".join(str(i) for i in selected_gpus)
 
-    print(f"generation path is: {generation_path}")
 
     server_command = [
         f"{generation_path}", "--help", 
