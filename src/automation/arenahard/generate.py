@@ -20,16 +20,25 @@ def start_generation(
     executable_path = os.path.dirname(sys.executable)
     python_path = os.path.join(executable_path, "python3")
     print(f"python path is: {python_path}")
-    generation_path = os.path.join(os.getcwd(), "src", "automation", "arenahard", "gen_judgment.py")
+    generation_path = os.path.join(os.getcwd(), "src", "automation", "arenahard", "gen_answer.py")
+    api_config_path = os.path.join(os.getcwd(), "src", "automation", "standards", "arenahard", "api_config.yaml")
+    gen_answer_config_path = os.path.join(os.getcwd(), "src", "automation", "standards", "arenahard", "gen_answer_config.yaml")
     print(f"generation path is: {generation_path}")
 
     subprocess_env = os.environ.copy()
     #subprocess_env["CUDA_VISIBLE_DEVICES"] = ",".join(str(i) for i in selected_gpus)
+    # src/automation/standards/arenahard/api_config.yaml
+    # src/automation/standards/arenahard/gen_answer_config.yaml
+    # python3 gen_answer.py --config-file config/gen_answer_config.yaml  --endpoint-file config/api_config.yaml
 
 
     server_command = [
         python_path,
-        f"{generation_path}", "--help", 
+        f"{generation_path}",
+        "--config-file",
+        gen_answer_config_path,
+        "--endpoint-file",
+        api_config_path
     ]
 
     print(server_command)
