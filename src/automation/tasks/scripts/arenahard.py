@@ -85,7 +85,7 @@ def main():
         f.write('helloworld')
     arenahard_args["output_path"] = str(output_path)
 
-    print("[DEBUG] Calling benchmark_with_scenario with:")
+    print("[DEBUG] Calling arena hard with:")
     print(json.dumps(arenahard_args, indent=2))
 
     executable_path = os.path.dirname(sys.executable)
