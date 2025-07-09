@@ -8,12 +8,13 @@ DEFAULT_SERVER_WAIT_TIME = 600 # 600 seconds = 10 minutes
 
 class ArenaHardGenerateTask(BaseTask):
 
+    """
     arenahard_packages = [
         "vllm",
         "hf_xet",
     ]
-
     """
+
     arenahard_packages = [
         "vllm",
         "hf_xet",
@@ -29,7 +30,6 @@ class ArenaHardGenerateTask(BaseTask):
         "scikit-learn",
         "boto3",
     ]
-    """
 
     def __init__(
         self,
