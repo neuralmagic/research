@@ -29,8 +29,8 @@ class ArenaHardGenerateTask(BaseTask):
     arenahard_packages = [
         "shortuuid",
         "boto3",
-        "numpy",
-        "pandas",
+        #"numpy",
+        #"pandas",
         "vllm",
         "hf_xet",
     ]
