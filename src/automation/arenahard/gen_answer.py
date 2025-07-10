@@ -96,10 +96,11 @@ if __name__ == "__main__":
         assert model in endpoints
         endpoint_settings = endpoints[model]
 
-        question_file = os.path.join("data", config["bench_name"], "question.jsonl")
+        datapath = os.path.join(os.getcwd(),"data")
+        question_file = os.path.join(datapath, config["bench_name"], "question.jsonl")
         questions = load_questions(question_file)
 
-        answer_file = os.path.join("data", config["bench_name"], "model_answer", f"{model}.jsonl")
+        answer_file = os.path.join(datapath, config["bench_name"], "model_answer", f"{model}.jsonl")
         print(f"Output to {answer_file}")
 
         if "parallel" in endpoint_settings:
