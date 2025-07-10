@@ -10,7 +10,7 @@ class ArenaHardGenerateTask(BaseTask):
 
     arenahard_packages = [
         "vllm",
-        #"hf_xet",
+        "hf_xet",
         "shortuuid",
         "tiktoken",
         #"openai",
