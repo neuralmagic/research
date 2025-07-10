@@ -24,10 +24,13 @@ class ArenaHardGenerateTask(BaseTask):
         "scikit-learn",
         "boto3",
     ]
+    """
 
     arenahard_packages = [
         "vllm",
         "hf_xet",
+        "shortuuid",
+        "boto3",
     ]
 
     """
@@ -46,6 +49,7 @@ class ArenaHardGenerateTask(BaseTask):
         "vllm",
         "hf_xet",
     ]
+    """
 
     def __init__(
         self,
