@@ -62,6 +62,7 @@ def start_generation(
     print(f"GENERATION logs are located at: {server_log_file} in {os.getcwd()}")
     server_process = subprocess.Popen(server_command)
     #server_process = subprocess.Popen(server_command, stdout=server_log_file, stderr=server_log_file, shell=False, env=subprocess_env)
+    time.sleep(300)
     """
 
     delay = 5
