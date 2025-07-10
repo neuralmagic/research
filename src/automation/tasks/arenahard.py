@@ -27,10 +27,10 @@ class ArenaHardGenerateTask(BaseTask):
     """
 
     arenahard_packages = [
-        "vllm",
-        "hf_xet",
         "shortuuid",
         "boto3",
+        "vllm",
+        "hf_xet",
     ]
 
     """
