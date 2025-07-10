@@ -17,6 +17,11 @@ class ArenaHardGenerateTask(BaseTask):
         "numpy",
         "pandas",
         "shortuuid",
+        "tqdm",
+        "gradio==5.25.2",
+        "plotly",
+        "scikit-learn",
+        "boto3",
     ]
 
     """
