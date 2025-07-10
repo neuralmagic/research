@@ -11,7 +11,15 @@ class ArenaHardGenerateTask(BaseTask):
     arenahard_packages = [
         "vllm",
         "hf_xet",
+        "shortuuid",
     ]
+
+    """
+    arenahard_packages = [
+        "vllm",
+        "hf_xet",
+    ]
+    """
 
     """
     arenahard_packages = [
