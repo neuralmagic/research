@@ -58,7 +58,8 @@ def start_vllm_server(
     server_log_file = open(server_log_file_name, "w")
     print("Server command:", " ".join(server_command))
     print(f"VLLM logs are located at: {server_log_file} in {os.getcwd()}")
-    server_process = subprocess.Popen(server_command, stdout=server_log_file, stderr=server_log_file, shell=False, env=subprocess_env)
+    #server_process = subprocess.Popen(server_command, stdout=server_log_file, stderr=server_log_file, shell=False, env=subprocess_env)
+    server_process = subprocess.Popen(server_command, shell=False, env=subprocess_env)
 
     delay = 5
     server_initialized = False
