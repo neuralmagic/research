@@ -96,7 +96,8 @@ if __name__ == "__main__":
         assert model in endpoints
         endpoint_settings = endpoints[model]
 
-        datapath = os.path.join(os.getcwd(),"data")
+        #datapath = os.path.join(os.getcwd(),"data")
+        datapath = os.path.join(os.getcwd(), "src", "automation", "arenahard", "data")
         question_file = os.path.join(datapath, config["bench_name"], "question.jsonl")
         questions = load_questions(question_file)
 
