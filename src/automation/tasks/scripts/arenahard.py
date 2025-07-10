@@ -80,10 +80,7 @@ def main():
     import json
     import asyncio
     from pathlib import Path
-    #output_path = Path(arenahard_args.get("output_path", "arenahard-output.json"))
     output_path = os.path.join(os.getcwd(), "src", "automation", "arenahard", "data", "arena-hard-v2.0", "model_answer", "qwen2.5-1.5b-instruct.jsonl")
-    #with open(output_path, 'w') as f:
-    #    f.write('helloworld')
     arenahard_args["output_path"] = str(output_path)
 
     print("[DEBUG] Calling arena hard with:")
