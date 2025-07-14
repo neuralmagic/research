@@ -12,7 +12,7 @@ task = ArenaHardGenerateTask(
     target="http://localhost:8000/v1",
     max_seconds=30,
     data="prompt_tokens=128,output_tokens=128",
-    branch = "test_quay",
+    branch = "arena_upgrade",
     #vllm_kwargs={"enable-chunked-prefill": True}
 )
 
