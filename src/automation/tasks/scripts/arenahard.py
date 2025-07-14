@@ -3,6 +3,7 @@ import sys
 from clearml import Task
 from automation.utils import resolve_model_id, cast_args, kill_process_tree
 from automation.arenahard import start_generation
+import arenahard
 from automation.vllm import start_vllm_server
 from pyhocon import ConfigFactory
 
@@ -70,7 +71,8 @@ def main():
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         raise AssertionError("Server failed to initialize")
 
-    start_generation()
+    module_path = os.path.dirname(arenahard.__file__)
+    start_generation(module_path)
     # Parse through environment variables
     for k, v in environment_args.items():
         os.environ[k] = str(v)

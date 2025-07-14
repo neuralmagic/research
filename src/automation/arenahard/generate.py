@@ -3,7 +3,7 @@ import requests
 import time
 import sys
 import os
-import arenahard
+#import arenahard
 from urllib.parse import urlparse
 from clearml import Task
 
@@ -11,21 +11,24 @@ SERVER_LOG_PREFIX = "generation_server_log"
 
 
 def start_generation(
+    module_path
     #generation_args, 
 ):
-    #task = Task.current_task()
+    task = Task.current_task()
 
     print("Inside start generation server")
 
     executable_path = os.path.dirname(sys.executable)
     python_path = os.path.join(executable_path, "python3")
     print(f"python path is: {python_path}")
-    module_path = os.path.dirname(arenahard.__file__)
+    #module_path = os.path.dirname(arenahard.__file__)
     generation_path = os.path.join(module_path, "gen_answer.py")
     assert os.path.exists(generation_path), f"{generation_path} does not exist"
-    api_config_path = os.path.join(os.getcwd(), "src", "automation", "standards", "arenahard", "api_config.yaml")
-    gen_answer_config_path = os.path.join(os.getcwd(), "src", "automation", "standards", "arenahard", "gen_answer_config.yaml")
-    print(f"generation path is: {generation_path}")
+    config_path = os.path.join(os.getcwd(), "src", "automation", "standards", "arenahard")
+    api_config_path = os.path.join(config_path, "api_config.yaml")
+    assert os.path.exists(api_config_path), f"{api_config_path} does not exist"
+    gen_answer_config_path = os.path.join(config_path, "gen_answer_config.yaml")
+    assert os.path.exists(gen_answer_config_path), f"{gen_answer_config_path} does not exist"
 
     subprocess_env = os.environ.copy()
     #subprocess_env["CUDA_VISIBLE_DEVICES"] = ",".join(str(i) for i in selected_gpus)
@@ -38,9 +41,13 @@ def start_generation(
         python_path,
         f"{generation_path}",
         "--config-file",
-        gen_answer_config_path,
+        "api_config.yaml",
         "--endpoint-file",
-        api_config_path
+        "gen_answer_config.yaml",
+        "--config-path",
+        config_path,
+        "--question-path",
+        config_path
     ]
 
     print(server_command)
