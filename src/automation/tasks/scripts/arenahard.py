@@ -4,6 +4,17 @@ from clearml import Task
 from automation.utils import resolve_model_id, cast_args, kill_process_tree
 from automation.vllm import start_vllm_server
 from pyhocon import ConfigFactory
+import subprocess
+import requests
+import time
+import sys
+import os
+from urllib.parse import urlparse
+from clearml import Task
+from pathlib import Path
+
+SERVER_LOG_PREFIX = "generation_server_log"
+
 
 def main():
     task = Task.current_task()
@@ -54,12 +65,24 @@ def main():
 
     gpu_count = int(arenahard_args.get("gpu_count", 1)) 
 
-    #start_generation(generation_args)
-    #print(arenahard.__file__)
-    from arenahard.gen_answer import run
-    from automation.evaluation.arenahard_generate import start_generation
+    print("Inside start generation server")
+    executable_path = os.path.dirname(sys.executable)
+    python_path = os.path.join(executable_path, "python3")
+    print(f"python path is: {python_path}")
+    base_path = Path(executable_path)
+    sitepackages_path = os.path.join(base_path.parents[0], "lib", "python3.10", "site-packages")
+    generation_path = os.path.join(sitepackages_path, "arenahard", "gen_answer.py")
+    assert os.path.exists(generation_path), f"{generation_path} does not exist"
+    config_path = os.path.join(os.getcwd(), "src", "automation", "standards", "arenahard")
+    api_config_path = os.path.join(config_path, "api_config.yaml")
+    assert os.path.exists(api_config_path), f"{api_config_path} does not exist"
+    gen_answer_config_path = os.path.join(config_path, "gen_answer_config.yaml")
+    assert os.path.exists(gen_answer_config_path), f"{gen_answer_config_path} does not exist"
 
-    start_generation()
+    from arenahard.gen_answer import run
+    run (config_file = 'custom_gen_answer_config.yaml',  endpoint_file='custom_api_config.yaml', question_path = config_path,  config_path = config_path, answer_path = config_path )
+    time.sleep(300)
+
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(
         vllm_args,
@@ -74,8 +97,6 @@ def main():
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         raise AssertionError("Server failed to initialize")
 
-    #module_path = os.path.dirname(arenahard.__file__)
-    #start_generation(module_path)
     # Parse through environment variables
     for k, v in environment_args.items():
         os.environ[k] = str(v)
