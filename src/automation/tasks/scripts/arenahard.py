@@ -2,8 +2,6 @@ import os
 import sys
 from clearml import Task
 from automation.utils import resolve_model_id, cast_args, kill_process_tree
-#from automation.arenahard import start_generation
-from automation.evaluation.arenahard_generate import start_generation
 from automation.vllm import start_vllm_server
 from pyhocon import ConfigFactory
 
@@ -58,6 +56,7 @@ def main():
 
     #start_generation(generation_args)
     #print(arenahard.__file__)
+    from automation.evaluation.arenahard_generate import start_generation
 
     start_generation()
     # Start vLLM server
