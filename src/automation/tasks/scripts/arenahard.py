@@ -79,7 +79,9 @@ def main():
     gen_answer_config_path = os.path.join(config_path, "gen_answer_config.yaml")
     assert os.path.exists(gen_answer_config_path), f"{gen_answer_config_path} does not exist"
 
-    arenahard_path = os.path.join(sitepackages_path, "arenahard", "gen_answer.py")
+    import site
+    site.addsitedir("/root/.clearml/venvs-builds/3.10/lib/python3.10/site-packages")
+    python_path = Path("/root/.clearml/venvs-builds/3.10/lib/python3.10")
     os.environ['PYTHONPATH'] = f"{python_path}:" + os.environ.get('PYTHONPATH','')
     print(os.environ)
     #sys.path.append(sitepackages_path)
