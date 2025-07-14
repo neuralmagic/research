@@ -81,8 +81,8 @@ def main():
 
     arenahard_path = os.path.join(sitepackages_path, "arenahard", "gen_answer.py")
     #os.environ['PYTHONPATH'] = f"{arenahard_path}:" + os.environ.get('PYTHONPATH','')
-    sys.path.append(sitepackages_path)
-    #sys.path.append(python_path)
+    #sys.path.append(sitepackages_path)
+    sys.path.append(python_path)
 
     from arenahard.gen_answer import run
     run (config_file = 'custom_gen_answer_config.yaml',  endpoint_file='custom_api_config.yaml', question_path = config_path,  config_path = config_path, answer_path = config_path )
