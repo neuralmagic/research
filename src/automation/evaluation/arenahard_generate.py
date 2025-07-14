@@ -14,7 +14,6 @@ def start_generation(
     #module_path
     #generation_args, 
 ):
-    from arenahard.gen_answer import run
     task = Task.current_task()
 
     print("Inside start generation server")
@@ -24,8 +23,8 @@ def start_generation(
     print(f"python path is: {python_path}")
     base_path = Path(executable_path)
     sitepackages_path = os.path.join(base_path.parents[0], "lib", "python3.10", "site-packages")
-    #sys.path.append(sitepackages_path)
-    #sys.path.append(python_path)
+    sys.path.append(sitepackages_path)
+    sys.path.append(python_path)
     generation_path = os.path.join(sitepackages_path, "arenahard", "gen_answer.py")
     assert os.path.exists(generation_path), f"{generation_path} does not exist"
     config_path = os.path.join(os.getcwd(), "src", "automation", "standards", "arenahard")
@@ -70,6 +69,7 @@ def start_generation(
     print("Server command:", " ".join(server_command))
     print(f"GENERATION logs are located at: {server_log_file} in {os.getcwd()}")
     #server_process = subprocess.Popen(server_command)
+    from arenahard.gen_answer import run
     run (config_file = 'custom_gen_answer_config.yaml',  endpoint_file='custom_api_config.yaml', question_path = config_path,  config_path = config_path, answer_path = config_path )
     #server_process = subprocess.Popen(server_command, subprocess_env)
     #server_process = subprocess.Popen(server_command, stdout=server_log_file, stderr=server_log_file, shell=False, env=subprocess_env)
