@@ -11,6 +11,7 @@ import sys
 import os
 from urllib.parse import urlparse
 from clearml import Task
+from arenahard.gen_answer import run
 
 SERVER_LOG_PREFIX = "generation_server_log"
 
@@ -84,7 +85,7 @@ def main():
     #sys.path.append(sitepackages_path)
     sys.path.append(python_path)
 
-    from arenahard.gen_answer import run
+    #from arenahard.gen_answer import run
     run (config_file = 'custom_gen_answer_config.yaml',  endpoint_file='custom_api_config.yaml', question_path = config_path,  config_path = config_path, answer_path = config_path )
     time.sleep(300)
 
