@@ -11,7 +11,6 @@ import sys
 import os
 from urllib.parse import urlparse
 from clearml import Task
-from pathlib import Path
 
 SERVER_LOG_PREFIX = "generation_server_log"
 
@@ -65,6 +64,7 @@ def main():
 
     gpu_count = int(arenahard_args.get("gpu_count", 1)) 
 
+    from pathlib import Path
     print("Inside start generation server")
     executable_path = os.path.dirname(sys.executable)
     python_path = os.path.join(executable_path, "python3")
@@ -105,7 +105,6 @@ def main():
 
     import json
     import asyncio
-    from pathlib import Path
     output_path = os.path.join(os.getcwd(), "src", "automation", "arenahard", "data", "arena-hard-v2.0", "model_answer", "qwen2.5-1.5b-instruct.jsonl")
     arenahard_args["output_path"] = str(output_path)
 
