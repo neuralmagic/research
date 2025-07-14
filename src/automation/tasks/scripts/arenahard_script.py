@@ -90,7 +90,7 @@ def main():
     #sys.path.append(python_path)
 
     from arenahard.gen_answer import run
-    run (config_file = 'custom_gen_answer_config.yaml',  endpoint_file='custom_api_config.yaml', question_path = config_path,  config_path = config_path, answer_path = config_path )
+    run (config_file='gen_answer_config.yaml', endpoint_file='api_config.yaml', question_path=config_path, config_path = config_path, answer_path = config_path )
     time.sleep(300)
 
     # Start vLLM server
