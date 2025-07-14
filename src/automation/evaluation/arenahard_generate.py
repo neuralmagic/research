@@ -36,7 +36,7 @@ def start_generation(
 
     subprocess_env = os.environ.copy()
     #subprocess_env["PYTHONPATH"] = sitepackages_path
-    subprocess_env["PYTHONPATH"] = python_path
+    #subprocess_env["PYTHONPATH"] = python_path
 
     server_command = [
         python_path,
@@ -69,8 +69,8 @@ def start_generation(
     server_log_file = open(server_log_file_name, "w")
     print("Server command:", " ".join(server_command))
     print(f"GENERATION logs are located at: {server_log_file} in {os.getcwd()}")
-    #server_process = subprocess.Popen(server_command)
-    server_process = subprocess.Popen(server_command, subprocess_env)
+    server_process = subprocess.Popen(server_command)
+    #server_process = subprocess.Popen(server_command, subprocess_env)
     #server_process = subprocess.Popen(server_command, stdout=server_log_file, stderr=server_log_file, shell=False, env=subprocess_env)
     time.sleep(300)
     """
