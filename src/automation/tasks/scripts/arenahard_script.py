@@ -81,11 +81,11 @@ def main():
 
     #import site
     #site.addsitedir("/root/.clearml/venvs-builds/3.10/lib/python3.10/site-packages")
-    sitepackages_path  = Path("/root/.clearml/venvs-builds/3.10/lib/python3.10/site-packages")
-    python_path = Path("/root/.clearml/venvs-builds/3.10/lib/python3.10")
-    os.environ['PYTHONPATH'] = f"{python_path}:" + os.environ.get('PYTHONPATH','')
-    os.environ['PYTHONPATH'] = f"{sitepackages_path}:" + os.environ.get('PYTHONPATH','')
-    print(os.environ)
+    #sitepackages_path  = Path("/root/.clearml/venvs-builds/3.10/lib/python3.10/site-packages")
+    #python_path = Path("/root/.clearml/venvs-builds/3.10/lib/python3.10")
+    #os.environ['PYTHONPATH'] = f"{python_path}:" + os.environ.get('PYTHONPATH','')
+    #os.environ['PYTHONPATH'] = f"{sitepackages_path}:" + os.environ.get('PYTHONPATH','')
+    #print(os.environ)
     #sys.path.append(sitepackages_path)
     #sys.path.append(python_path)
 
