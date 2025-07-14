@@ -1,2 +1,1 @@
-#from automation.arenahard.generate import start_generation
 from automation.evaluation.arenahard_generate import start_generation
