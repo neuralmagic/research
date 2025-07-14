@@ -35,8 +35,8 @@ def start_generation(
     assert os.path.exists(gen_answer_config_path), f"{gen_answer_config_path} does not exist"
 
     subprocess_env = os.environ.copy()
-    subprocess_env["PYTHONPATH"] = sitepackages_path
-    #subprocess_env["PYTHONPATH"] = python_path
+    #subprocess_env["PYTHONPATH"] = sitepackages_path
+    subprocess_env["PYTHONPATH"] = python_path
 
     server_command = [
         python_path,
