@@ -35,11 +35,8 @@ def start_generation(
     assert os.path.exists(gen_answer_config_path), f"{gen_answer_config_path} does not exist"
 
     subprocess_env = os.environ.copy()
-    #subprocess_env["CUDA_VISIBLE_DEVICES"] = ",".join(str(i) for i in selected_gpus)
-    # src/automation/standards/arenahard/api_config.yaml
-    # src/automation/standards/arenahard/gen_answer_config.yaml
-    # python3 gen_answer.py --config-file config/gen_answer_config.yaml  --endpoint-file config/api_config.yaml
-
+    subprocess_env["PYTHONPATH"] = sitepackages_path
+    #subprocess_env["PYTHONPATH"] = python_path
 
     server_command = [
         python_path,
@@ -55,7 +52,6 @@ def start_generation(
     ]
 
     print(server_command)
-    subprocess_env = os.environ.copy()
 
     """
     for k, v in generation_args.items():
@@ -73,7 +69,8 @@ def start_generation(
     server_log_file = open(server_log_file_name, "w")
     print("Server command:", " ".join(server_command))
     print(f"GENERATION logs are located at: {server_log_file} in {os.getcwd()}")
-    server_process = subprocess.Popen(server_command)
+    #server_process = subprocess.Popen(server_command)
+    server_process = subprocess.Popen(server_command, subprocess_env)
     #server_process = subprocess.Popen(server_command, stdout=server_log_file, stderr=server_log_file, shell=False, env=subprocess_env)
     time.sleep(300)
     """
