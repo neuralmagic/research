@@ -4,8 +4,6 @@ from clearml import Task
 from automation.utils import resolve_model_id, cast_args, kill_process_tree
 #from automation.arenahard import start_generation
 from automation.evaluation.arenahard_generate import start_generation
-from arenahard.utils.add_markdown_info import count_markdown_elements, remove_pattern
-#import arenahard
 from automation.vllm import start_vllm_server
 from pyhocon import ConfigFactory
 
