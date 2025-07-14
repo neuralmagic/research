@@ -56,6 +56,7 @@ def main():
 
     #start_generation(generation_args)
     #print(arenahard.__file__)
+    from arenahard.gen_answer import run
     from automation.evaluation.arenahard_generate import start_generation
 
     start_generation()
