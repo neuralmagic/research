@@ -80,7 +80,7 @@ def main():
     assert os.path.exists(gen_answer_config_path), f"{gen_answer_config_path} does not exist"
 
     arenahard_path = os.path.join(sitepackages_path, "arenahard", "gen_answer.py")
-    os.environ['PYTHONPATH'] = f"{arenahard_path}:" + os.environ.get('PYTHONPATH','')
+    os.environ['PYTHONPATH'] = f"{python_path}:" + os.environ.get('PYTHONPATH','')
     print(os.environ)
     #sys.path.append(sitepackages_path)
     #sys.path.append(python_path)
