@@ -6,7 +6,6 @@ import os
 from urllib.parse import urlparse
 from clearml import Task
 from pathlib import Path
-from arenahard.gen_answer import run
 
 SERVER_LOG_PREFIX = "generation_server_log"
 
@@ -15,6 +14,7 @@ def start_generation(
     #module_path
     #generation_args, 
 ):
+    from arenahard.gen_answer import run
     task = Task.current_task()
 
     print("Inside start generation server")
