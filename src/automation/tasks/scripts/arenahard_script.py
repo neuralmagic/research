@@ -89,9 +89,6 @@ def main():
     #sys.path.append(sitepackages_path)
     #sys.path.append(python_path)
 
-    from arenahard.gen_answer import run
-    run (config_file='gen_answer_config.yaml', endpoint_file='api_config.yaml', question_path=config_path, config_path = config_path, answer_path = config_path )
-    time.sleep(300)
 
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(
@@ -112,6 +109,9 @@ def main():
         os.environ[k] = str(v)
 
     arenahard_args["model"] = model_id
+    from arenahard.gen_answer import run
+    run (config_file='gen_answer_config.yaml', endpoint_file='api_config.yaml', question_path=config_path, config_path = config_path, answer_path = config_path )
+    time.sleep(300)
 
     import json
     import asyncio
