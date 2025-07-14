@@ -6,12 +6,13 @@ import os
 #import arenahard
 from urllib.parse import urlparse
 from clearml import Task
+from pathlib import Path
 
 SERVER_LOG_PREFIX = "generation_server_log"
 
 
 def start_generation(
-    module_path
+    #module_path
     #generation_args, 
 ):
     task = Task.current_task()
@@ -21,8 +22,8 @@ def start_generation(
     executable_path = os.path.dirname(sys.executable)
     python_path = os.path.join(executable_path, "python3")
     print(f"python path is: {python_path}")
-    #module_path = os.path.dirname(arenahard.__file__)
-    generation_path = os.path.join(module_path, "gen_answer.py")
+    base_path = Path(executable_path)
+    generation_path = os.path.join(base_path.parents[0], "lib", "python3.10", "site-packages", "arenahard", "gen_answer.py")
     assert os.path.exists(generation_path), f"{generation_path} does not exist"
     config_path = os.path.join(os.getcwd(), "src", "automation", "standards", "arenahard")
     api_config_path = os.path.join(config_path, "api_config.yaml")

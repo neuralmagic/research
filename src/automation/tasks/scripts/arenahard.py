@@ -57,6 +57,7 @@ def main():
     gpu_count = int(arenahard_args.get("gpu_count", 1)) 
 
     #start_generation(generation_args)
+    start_generation()
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(
         vllm_args,
@@ -72,7 +73,7 @@ def main():
         raise AssertionError("Server failed to initialize")
 
     module_path = os.path.dirname(arenahard.__file__)
-    start_generation(module_path)
+    #start_generation(module_path)
     # Parse through environment variables
     for k, v in environment_args.items():
         os.environ[k] = str(v)
