@@ -25,6 +25,7 @@ def start_generation(
     base_path = Path(executable_path)
     sitepackages_path = os.path.join(base_path.parents[0], "lib", "python3.10", "site-packages")
     sys.path.append(sitepackages_path)
+    sys.path.append(python_path)
     generation_path = os.path.join(sitepackages_path, "arenahard", "gen_answer.py")
     assert os.path.exists(generation_path), f"{generation_path} does not exist"
     config_path = os.path.join(os.getcwd(), "src", "automation", "standards", "arenahard")
