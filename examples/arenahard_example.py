@@ -14,6 +14,9 @@ task = ArenaHardGenerateTask(
     data="prompt_tokens=128,output_tokens=128",
     branch = "arena_upgrade",
     #vllm_kwargs={"enable-chunked-prefill": True}
+
+    generation_config_file='gen_answer_config.yaml',
+    generation_endpoint_file='api_config.yaml',
 )
 
 #task.execute_remotely("oneshot-a100x1")

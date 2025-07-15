@@ -26,18 +26,18 @@ def main():
         raw_config = task.get_parameters_as_dict().get("ArenaHard")
         if raw_config is None:
             raise RuntimeError("ArenaHard config is None. This likely means `get_configurations()` is not returning it or it's not passed via parameters.")
-        arenahard_args = ConfigFactory.from_dict(raw_config)
+        arenahard_generate_args = ConfigFactory.from_dict(raw_config)
     else:
-        arenahard_args = ConfigFactory.parse_string(raw_config)
+        arenahard_generate_args = ConfigFactory.parse_string(raw_config)
 
     def clean_hocon_value(v):
         if isinstance(v, str) and v.startswith('"') and v.endswith('"'):
             return v[1:-1]
         return v
 
-    arenahard_args = {k: clean_hocon_value(v) for k, v in arenahard_args.items()}
+    arenahard_generate_args = {k: clean_hocon_value(v) for k, v in arenahard_generate_args.items()}
 
-    print("[DEBUG] Arenahard_Args:", arenahard_args)
+    print("[DEBUG] Arenahard_Args:", arenahard_generate_args)
 
     environment_args = task.get_configuration_object("environment")
     if environment_args is None:
@@ -62,7 +62,7 @@ def main():
     # Resolve model_id
     model_id = resolve_model_id(args["Args"]["generate_model"], clearml_model, force_download)
 
-    gpu_count = int(arenahard_args.get("gpu_count", 1)) 
+    gpu_count = int(arenahard_generate_args.get("gpu_count", 1))
 
     from pathlib import Path
     print("Inside start generation server")
@@ -81,7 +81,7 @@ def main():
     server_process, server_initialized, server_log = start_vllm_server(
         vllm_args,
         model_id,
-        arenahard_args["target"],
+        arenahard_generate_args["target"],
         args["Args"]["server_wait_time"],
         gpu_count,
     )
@@ -95,30 +95,29 @@ def main():
     for k, v in environment_args.items():
         os.environ[k] = str(v)
 
-    arenahard_args["model"] = model_id
-    from arenahard.gen_answer import run
-    run (config_file='gen_answer_config.yaml', endpoint_file='api_config.yaml', question_path=config_path, config_path = config_path, answer_path = config_path )
-    time.sleep(300)
+    arenahard_generate_args["model"] = model_id
 
     import json
     import asyncio
-    output_path = os.path.join(os.getcwd(), "src", "automation", "arenahard", "data", "arena-hard-v2.0", "model_answer", "qwen2.5-1.5b-instruct.jsonl")
-    arenahard_args["output_path"] = str(output_path)
 
-    print("[DEBUG] Calling arena hard with:")
-    print(json.dumps(arenahard_args, indent=2))
+    print("[DEBUG] Calling arena hard generate with:")
+    print(json.dumps(arenahard_generate_args, indent=2))
 
-    executable_path = os.path.dirname(sys.executable)
-    vllm_path = os.path.join(executable_path, "vllm")
-    print(f"The vllm path is: {vllm_path}")
 
     try:
-        print ("Running arena hard")
+        print ("Running arena hard generate")
+        from arenahard.gen_answer import run
+        print(f"Arenahard args: {arenahard_generate_args}")
+
+        run (config_file= arenahard_args["generation_config_file"] , endpoint_file= arenahard_args["generation_endpoint_file"], question_path=config_path, config_path = config_path, answer_path = config_path )
+        time.sleep(150)
 
     finally:
+        output_path = os.path.join(os.getcwd(), "src", "automation", "arenahard", "data", "arena-hard-v2.0", "model_answer", "qwen2.5-1.5b-instruct.jsonl")
+        arenahard_generate_args["output_path"] = str(output_path)
         task.upload_artifact(name="arenahard report", artifact_object=output_path)
-        #task.upload_artifact(name="vLLM server log", artifact_object=server_log)
-        #kill_process_tree(server_process.pid)
+        task.upload_artifact(name="vLLM server log", artifact_object=server_log)
+        kill_process_tree(server_process.pid)
 
 
 if __name__ == '__main__':
