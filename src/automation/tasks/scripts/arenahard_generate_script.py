@@ -14,6 +14,7 @@ from clearml import Task
 
 SERVER_LOG_PREFIX = "generation_server_log"
 
+ARENAHARD_CONFIG_PATH = os.path.join(os.getcwd(), "src", "automation", "standards", "arenahard")
 
 def main():
     task = Task.current_task()
@@ -65,10 +66,9 @@ def main():
     gpu_count = int(arenahard_generate_args.get("gpu_count", 1))
 
     # verify that the input file paths exist
-    config_path = os.path.join(os.getcwd(), "src", "automation", "standards", "arenahard")
-    api_config_path = os.path.join(config_path, arenahard_generate_args["generation_endpoint_file"])
+    api_config_path = os.path.join( ARENAHARD_CONFIG_PATH , arenahard_generate_args["generation_endpoint_file"])
     assert os.path.exists(api_config_path), f"{api_config_path} does not exist"
-    gen_answer_config_path = os.path.join(config_path, arenahard_generate_args["generation_config_file"] )
+    gen_answer_config_path = os.path.join(ARENAHARD_CONFIG_PATH , arenahard_generate_args["generation_config_file"] )
     assert os.path.exists(gen_answer_config_path), f"{gen_answer_config_path} does not exist"
 
     # Start vLLM server
@@ -103,7 +103,7 @@ def main():
         from arenahard.gen_answer import run
         print(f"Arenahard args: {arenahard_generate_args}")
 
-        run (config_file= arenahard_generate_args["generation_config_file"] , endpoint_file= arenahard_generate_args["generation_endpoint_file"], question_path=config_path, config_path = config_path, answer_path = config_path )
+        run(config_file=arenahard_generate_args["generation_config_file"], endpoint_file=arenahard_generate_args["generation_endpoint_file"], question_path= ARENAHARD_CONFIG_PATH, config_path=ARENAHARD_CONFIG_PATH, answer_path=ARENAHARD_CONFIG_PATH)
         time.sleep(150)
 
     finally:
