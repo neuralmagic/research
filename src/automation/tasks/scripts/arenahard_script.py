@@ -67,8 +67,6 @@ def main():
     from pathlib import Path
     print("Inside start generation server")
     executable_path = os.path.dirname(sys.executable)
-    python_path = os.path.join(executable_path, "python3")
-    print(f"python path is: {python_path}")
     base_path = Path(executable_path)
     sitepackages_path = os.path.join(base_path.parents[0], "lib", "python3.10", "site-packages")
     generation_path = os.path.join(sitepackages_path, "arenahard", "gen_answer.py")
@@ -78,17 +76,6 @@ def main():
     assert os.path.exists(api_config_path), f"{api_config_path} does not exist"
     gen_answer_config_path = os.path.join(config_path, "gen_answer_config.yaml")
     assert os.path.exists(gen_answer_config_path), f"{gen_answer_config_path} does not exist"
-
-    #import site
-    #site.addsitedir("/root/.clearml/venvs-builds/3.10/lib/python3.10/site-packages")
-    #sitepackages_path  = Path("/root/.clearml/venvs-builds/3.10/lib/python3.10/site-packages")
-    #python_path = Path("/root/.clearml/venvs-builds/3.10/lib/python3.10")
-    #os.environ['PYTHONPATH'] = f"{python_path}:" + os.environ.get('PYTHONPATH','')
-    #os.environ['PYTHONPATH'] = f"{sitepackages_path}:" + os.environ.get('PYTHONPATH','')
-    #print(os.environ)
-    #sys.path.append(sitepackages_path)
-    #sys.path.append(python_path)
-
 
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(

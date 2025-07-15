@@ -1,1 +1,0 @@
-from automation.evaluation.arenahard_generate import start_generation
