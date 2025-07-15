@@ -65,7 +65,6 @@ def main():
     gpu_count = int(arenahard_generate_args.get("gpu_count", 1))
 
     from pathlib import Path
-    print("Inside start generation server")
     executable_path = os.path.dirname(sys.executable)
     base_path = Path(executable_path)
     sitepackages_path = os.path.join(base_path.parents[0], "lib", "python3.10", "site-packages")
@@ -109,7 +108,7 @@ def main():
         from arenahard.gen_answer import run
         print(f"Arenahard args: {arenahard_generate_args}")
 
-        run (config_file= arenahard_args["generation_config_file"] , endpoint_file= arenahard_args["generation_endpoint_file"], question_path=config_path, config_path = config_path, answer_path = config_path )
+        run (config_file= arenahard_generate_args["generation_config_file"] , endpoint_file= arenahard_generate_args["generation_endpoint_file"], question_path=config_path, config_path = config_path, answer_path = config_path )
         time.sleep(150)
 
     finally:
