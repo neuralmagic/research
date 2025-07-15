@@ -84,10 +84,10 @@ class ArenaHardGenerateTask(BaseTask):
         self.arenahard_kwargs = arenahard_kwargs
         self.environment_variables = environment_variables
         self.force_download = force_download
-        self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "arenahard_script.py")
+        self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "arenahard_generate_script.py")
 
     def script(self, configurations):
-        from automation.tasks.scripts.arenahard_script import main
+        from automation.tasks.scripts.arenahard_generate_script import main
         main(configurations)
 
 
