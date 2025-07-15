@@ -64,16 +64,11 @@ def main():
 
     gpu_count = int(arenahard_generate_args.get("gpu_count", 1))
 
-    from pathlib import Path
-    executable_path = os.path.dirname(sys.executable)
-    base_path = Path(executable_path)
-    sitepackages_path = os.path.join(base_path.parents[0], "lib", "python3.10", "site-packages")
-    generation_path = os.path.join(sitepackages_path, "arenahard", "gen_answer.py")
-    assert os.path.exists(generation_path), f"{generation_path} does not exist"
+    # verify that the input file paths exist
     config_path = os.path.join(os.getcwd(), "src", "automation", "standards", "arenahard")
-    api_config_path = os.path.join(config_path, "api_config.yaml")
+    api_config_path = os.path.join(config_path, arenahard_generate_args["generation_endpoint_file"])
     assert os.path.exists(api_config_path), f"{api_config_path} does not exist"
-    gen_answer_config_path = os.path.join(config_path, "gen_answer_config.yaml")
+    gen_answer_config_path = os.path.join(config_path, arenahard_generate_args["generation_config_file"] )
     assert os.path.exists(gen_answer_config_path), f"{gen_answer_config_path} does not exist"
 
     # Start vLLM server
