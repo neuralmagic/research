@@ -68,8 +68,8 @@ def main():
     # verify that the input file paths exist
     api_config_path = os.path.join( ARENAHARD_CONFIG_PATH , arenahard_judgement_args["judgement_endpoint_file"])
     assert os.path.exists(api_config_path), f"{api_config_path} does not exist"
-    gen_answer_config_path = os.path.join(ARENAHARD_CONFIG_PATH , arenahard_judgement_args["judgement_config_file"] )
-    assert os.path.exists(gen_answer_config_path), f"{gen_answer_config_path} does not exist"
+    gen_judgement_config_path = os.path.join(ARENAHARD_CONFIG_PATH , arenahard_judgement_args["judgement_setting_file"] )
+    assert os.path.exists(gen_judgement_config_path), f"{gen_judgement_config_path} does not exist"
 
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(
@@ -100,10 +100,10 @@ def main():
 
     try:
         print ("Running arena hard generate")
-        from arenahard.gen_answer import run
+        from arenahard.gen_judgement import run
         print(f"Arenahard args: {arenahard_judgement_args}")
 
-        run(config_file=arenahard_judgement_args["judgement_config_file"], endpoint_file=arenahard_judgement_args["judgement_endpoint_file"], question_path= ARENAHARD_CONFIG_PATH, config_path=ARENAHARD_CONFIG_PATH, answer_path=ARENAHARD_CONFIG_PATH)
+        run(setting_file=arenahard_judgement_args["judgement_setting_file"], endpoint_file=arenahard_judgement_args["judgement_endpoint_file"], question_path= ARENAHARD_CONFIG_PATH, config_path=ARENAHARD_CONFIG_PATH, answer_path=ARENAHARD_CONFIG_PATH)
         time.sleep(150)
 
     finally:

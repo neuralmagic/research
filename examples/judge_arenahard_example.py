@@ -15,7 +15,7 @@ task = ArenaHardJudgeTask(
     branch = "arena_upgrade",
     #vllm_kwargs={"enable-chunked-prefill": True}
 
-    judgement_config_file='gen_answer_config.yaml',
+    judgement_setting_file='arena-hard-v2.0.yaml',
     judgement_endpoint_file='api_config.yaml',
 )
 
