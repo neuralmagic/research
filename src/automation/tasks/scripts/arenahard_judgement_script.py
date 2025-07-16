@@ -7,8 +7,6 @@ from pyhocon import ConfigFactory
 import subprocess
 import requests
 import time
-import sys
-import os
 from urllib.parse import urlparse
 from clearml import Task
 
@@ -17,7 +15,8 @@ SERVER_LOG_PREFIX = "judgement_server_log"
 ARENAHARD_CONFIG_PATH = os.path.join(os.getcwd(), "src", "automation", "standards", "arenahard")
 
 def main():
-    #from pathlib import Path
+    from pathlib import Path
+    import os
     #answer_task = Task.get_task(project_name="alexandre_debug",task_name="test_generate_task" )
     #artifact_obj = answer_task.artifacts['arenahard report'].get()
     #arenahard_answer_dir = Path(artifact_obj).parents[2]
