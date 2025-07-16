@@ -110,7 +110,9 @@ def main():
         from arenahard.utils.completion import load_model_answers
         from pathlib import Path
         output_path = os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0" , "model_answer")
-        answer_data = load_model_answers(Path(output_path))
+        import json
+
+        answer_data = json.dumps(load_model_answers(Path(output_path)))
         arenahard_generate_args["output_path"] = str(output_path)
         task.upload_artifact(name="arenahard report", artifact_object=answer_data)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
