@@ -101,8 +101,8 @@ def main():
     try:
         from pathlib import Path
 
-        task = Task.get_task(project_name="alexandre_debug",task_name="test_guidellm_task" )
-        artifact_obj = task.artifacts['arenahard report'].get()
+        answer_task = Task.get_task(project_name="alexandre_debug",task_name="test_generate_task" )
+        artifact_obj = answer_task.artifacts['arenahard report'].get()
         arenahard_answer_dir = Path(artifact_obj).parents[0]
 
         print ("Running arena hard generate")
@@ -115,7 +115,7 @@ def main():
     finally:
         output_path = os.path.join(os.getcwd(), "src", "automation", "arenahard", "data", "arena-hard-v2.0", "model_answer", "qwen2.5-1.5b-instruct.jsonl")
         arenahard_judgement_args["output_path"] = str(output_path)
-        task.upload_artifact(name="arenahard report", artifact_object=output_path)
+        task.upload_artifact(name="arenahard judgement report", artifact_object=output_path)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         kill_process_tree(server_process.pid)
 
