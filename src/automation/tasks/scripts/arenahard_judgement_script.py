@@ -103,7 +103,7 @@ def main():
         from arenahard.gen_answer import run
         print(f"Arenahard args: {arenahard_judgement_args}")
 
-        run(config_file=arenahard_judgement_args["judgement_config_file"], endpoint_file=arenahard_judgement_args["generation_endpoint_file"], question_path= ARENAHARD_CONFIG_PATH, config_path=ARENAHARD_CONFIG_PATH, answer_path=ARENAHARD_CONFIG_PATH)
+        run(config_file=arenahard_judgement_args["judgement_config_file"], endpoint_file=arenahard_judgement_args["judgement_endpoint_file"], question_path= ARENAHARD_CONFIG_PATH, config_path=ARENAHARD_CONFIG_PATH, answer_path=ARENAHARD_CONFIG_PATH)
         time.sleep(150)
 
     finally:
