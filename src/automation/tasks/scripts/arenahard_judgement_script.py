@@ -99,11 +99,17 @@ def main():
 
 
     try:
+        from pathlib import Path
+
+        task = Task.get_task(project_name="alexandre_debug",task_name="test_guidellm_task" )
+        artifact_obj = task.artifacts['arenahard report'].get()
+        arenahard_answer_dir = Path(artifact_obj).parents[0]
+
         print ("Running arena hard generate")
         from arenahard.gen_judgment import run
         print(f"Arenahard args: {arenahard_judgement_args}")
 
-        run(setting_file=arenahard_judgement_args["judgement_setting_file"], endpoint_file=arenahard_judgement_args["judgement_endpoint_file"], question_path= ARENAHARD_CONFIG_PATH, config_path=ARENAHARD_CONFIG_PATH, answer_path=ARENAHARD_CONFIG_PATH)
+        run(setting_file=arenahard_judgement_args["judgement_setting_file"], endpoint_file=arenahard_judgement_args["judgement_endpoint_file"], question_path= ARENAHARD_CONFIG_PATH, config_path=ARENAHARD_CONFIG_PATH, answer_path=arenahard_answer_dir)
         time.sleep(150)
 
     finally:

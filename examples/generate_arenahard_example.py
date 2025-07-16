@@ -2,7 +2,7 @@ from automation.tasks import ArenaHardGenerateTask
 
 task = ArenaHardGenerateTask(
     project_name="alexandre_debug",
-    task_name="test_guidellm_task",
+    task_name="test_generate_task",
     #model="meta-llama/Llama-3.2-1B-Instruct",
     generate_model="Qwen/Qwen2.5-1.5B-Instruct",
     rate_type="throughput",
