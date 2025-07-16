@@ -16,7 +16,16 @@ ARENAHARD_CONFIG_PATH = os.path.join(os.getcwd(), "src", "automation", "standard
 
 def main():
     from pathlib import Path
+    import shutil
     import os
+
+    answer_task = Task.get_task(project_name="alexandre_debug",task_name="test_generate_task" )
+    artifact_obj = answer_task.artifacts['arenahard report'].get_local_copy()
+    arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0"))
+
+    answer_dir = os.path.join(arenahard_dir, "model_answer")
+    os.makedirs(answer_dir , exist_ok=True)
+    shutil.move(artifact_obj,os.path.join(answer_dir, "qwen2.5-1.5b-instruct.jsonl"))
     #answer_task = Task.get_task(project_name="alexandre_debug",task_name="test_generate_task" )
     #artifact_obj = answer_task.artifacts['arenahard report'].get()
     #arenahard_answer_dir = Path(artifact_obj).parents[2]
@@ -104,15 +113,11 @@ def main():
 
     try:
         from pathlib import Path
+        import shutil
+        import os
 
         answer_task = Task.get_task(project_name="alexandre_debug",task_name="test_generate_task" )
         artifact_obj = answer_task.artifacts['arenahard report'].get_local_copy()
-        #arenahard_answer_dir = Path(artifact_obj).parents[2]
-
-        import shutil
-        from pathlib import Path
-        import os
-
         arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0"))
 
         answer_dir = os.path.join(arenahard_dir, "model_answer")
