@@ -17,6 +17,7 @@ SERVER_LOG_PREFIX = "judgement_server_log"
 ARENAHARD_CONFIG_PATH = os.path.join(os.getcwd(), "src", "automation", "standards", "arenahard")
 
 def main():
+    from pathlib import Path
     answer_task = Task.get_task(project_name="alexandre_debug",task_name="test_generate_task" )
     artifact_obj = answer_task.artifacts['arenahard report'].get()
     arenahard_answer_dir = Path(artifact_obj).parents[0]
