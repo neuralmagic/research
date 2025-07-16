@@ -107,7 +107,7 @@ def main():
         time.sleep(150)
 
     finally:
-        output_path = os.path.join(os.getcwd(), "src", "automation", "arenahard", "data", "arena-hard-v2.0", "model_answer", "qwen2.5-1.5b-instruct.jsonl")
+        output_path = os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0" , "model_answer")
         arenahard_generate_args["output_path"] = str(output_path)
         task.upload_artifact(name="arenahard report", artifact_object=output_path)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
