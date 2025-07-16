@@ -113,16 +113,17 @@ def main():
         from pathlib import Path
         import os
 
-        answer_path = Path(os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0", "model_answer"))
-        #answer_path = Path("/home/ubuntu/arena-research.git/src/automation/standards/arenahard/arena-hard-v2.0/model_answer/")
-        os.makedirs(answer_path, exist_ok=True)
-        shutil.move(artifact_obj,os.path.join(answer_path, "qwen2.5-1.5b-instruct.jsonl"))
+        arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0"))
+
+        answer_dir = os.path.join(arenahard_dir, "model_answer")
+        os.makedirs(answer_dir , exist_ok=True)
+        shutil.move(artifact_obj,os.path.join(answer_dir, "qwen2.5-1.5b-instruct.jsonl"))
 
         print ("Running arena hard generate")
         from arenahard.gen_judgment import run
         print(f"Arenahard args: {arenahard_judgement_args}")
 
-        run(setting_file=arenahard_judgement_args["judgement_setting_file"], endpoint_file=arenahard_judgement_args["judgement_endpoint_file"], question_path= ARENAHARD_CONFIG_PATH, config_path=ARENAHARD_CONFIG_PATH, answer_path=arenahard_answer_dir)
+        run(setting_file=arenahard_judgement_args["judgement_setting_file"], endpoint_file=arenahard_judgement_args["judgement_endpoint_file"], question_path= ARENAHARD_CONFIG_PATH, config_path=ARENAHARD_CONFIG_PATH, answer_path=arenahard_dir)
         time.sleep(150)
 
     finally:
