@@ -107,8 +107,17 @@ def main():
         from pathlib import Path
 
         answer_task = Task.get_task(project_name="alexandre_debug",task_name="test_generate_task" )
-        artifact_obj = answer_task.artifacts['arenahard report'].get()
-        arenahard_answer_dir = Path(artifact_obj).parents[2]
+        artifact_obj = answer_task.artifacts['arenahard report'].get_local_copy()
+        #arenahard_answer_dir = Path(artifact_obj).parents[2]
+
+        import shutil
+        from pathlib import Path
+        import os
+
+        answer_path = Path(os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0", "model_answer"))
+        #answer_path = Path("/home/ubuntu/arena-research.git/src/automation/standards/arenahard/arena-hard-v2.0/model_answer/")
+        os.makedirs(answer_path, exist_ok=True)
+        shutil.move(artifact_obj,os.path.join(answer_path, "qwen2.5-1.5b-instruct.jsonl"))
 
         print ("Running arena hard generate")
         from arenahard.gen_judgment import run
@@ -120,7 +129,7 @@ def main():
     finally:
         output_path = os.path.join(os.getcwd(), "src", "automation", "arenahard", "data", "arena-hard-v2.0", "model_answer", "qwen2.5-1.5b-instruct.jsonl")
         arenahard_judgement_args["output_path"] = str(output_path)
-        task.upload_artifact(name="arenahard judgement report", artifact_object=output_path)
+        #task.upload_artifact(name="arenahard judgement report", artifact_object=output_path)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         kill_process_tree(server_process.pid)
 
