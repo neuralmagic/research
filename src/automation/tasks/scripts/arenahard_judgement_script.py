@@ -76,7 +76,7 @@ def main():
         force_download = force_download.lower() == "true"
 
     # Resolve model_id
-    model_id = resolve_model_id(args["Args"]["generate_model"], clearml_model, force_download)
+    model_id = resolve_model_id(args["Args"]["judgement_model"], clearml_model, force_download)
 
     gpu_count = int(arenahard_judgement_args.get("gpu_count", 1))
 
@@ -118,7 +118,8 @@ def main():
         import shutil
         import os
 
-        answer_task = Task.get_task(project_name="alexandre_debug",task_name="generate_task" )
+        answer_task = Task.get_task(task_id=arenahard_judgement_args["answer_task_id"])
+        #answer_task = Task.get_task(project_name="alexandre_debug",task_name="generate_task" )
         artifact_obj = answer_task.artifacts['arenahard report'].get_local_copy()
         arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0"))
 
