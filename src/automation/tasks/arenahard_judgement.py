@@ -19,7 +19,7 @@ class ArenaHardJudgeTask(BaseTask):
         self,
         project_name: str,
         task_name: str,
-        generate_model: str,
+        judgement_model: str,
         server_wait_time: int=DEFAULT_SERVER_WAIT_TIME,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
@@ -77,7 +77,7 @@ class ArenaHardJudgeTask(BaseTask):
                 arenahard_kwargs[k] = v
 
         # Store class attributes
-        self.generate_model = generate_model
+        self.judgement_model = judgement_model
         self.clearml_model = clearml_model
         self.server_wait_time = server_wait_time
         self.vllm_kwargs = vllm_kwargs
@@ -107,7 +107,7 @@ class ArenaHardJudgeTask(BaseTask):
     def get_arguments(self):
         return {
             "Args": {
-                "generate_model": self.generate_model,
+                "judgement_model": self.judgement_model,
                 "clearml_model": self.clearml_model,
                 "server_wait_time": self.server_wait_time,
                 "force_download": self.force_download,
