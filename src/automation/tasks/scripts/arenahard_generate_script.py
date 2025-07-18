@@ -99,6 +99,8 @@ def main():
 
 
     try:
+        from arenahard.utils.completion import make_config
+        configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, arenahard_generate_args["generation_config_file"] ))
         print ("Running arena hard generate")
         from arenahard.gen_answer import run
         print(f"Arenahard args: {arenahard_generate_args}")
@@ -109,9 +111,8 @@ def main():
     finally:
         from arenahard.utils.completion import load_model_answers
         from pathlib import Path
-        output_path = os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0" , "model_answer")
-        arenahard_generate_args["output_path"] = str(output_path)
-        output_file_path = os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0" , "model_answer", "qwen2.5-1.5b-instruct.jsonl")
+        output_file_path = os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0" , "model_answer", f"{configs['bench_name']}.jsonl")
+        arenahard_generate_args["output_path"] = str(output_file_path)
         task.upload_artifact(name="arenahard report", artifact_object=output_file_path)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         kill_process_tree(server_process.pid)
