@@ -19,19 +19,6 @@ def main():
     import shutil
     import os
 
-    """
-    answer_task = Task.get_task(project_name="alexandre_debug",task_name="generate_task" )
-    artifact_obj = answer_task.artifacts['arenahard report'].get_local_copy()
-    arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0"))
-
-    answer_dir = os.path.join(arenahard_dir, "model_answer")
-    os.makedirs(answer_dir , exist_ok=True)
-    shutil.move(artifact_obj,os.path.join(answer_dir, "qwen2.5-1.5b-instruct.jsonl"))
-    #answer_task = Task.get_task(project_name="alexandre_debug",task_name="test_generate_task" )
-    #artifact_obj = answer_task.artifacts['arenahard report'].get()
-    #arenahard_answer_dir = Path(artifact_obj).parents[2]
-    #print(f"The arenahard_answer_dir is {arenahard_answer_dir} at {artifact_obj}")
-    """
     task = Task.current_task()
 
     args = task.get_parameters_as_dict(cast=True)
@@ -114,19 +101,18 @@ def main():
 
 
     try:
-        from pathlib import Path
-        import shutil
-        import os
-
-        answer_task = Task.get_task(task_id=arenahard_judgement_args["answer_task_id"])
-        #answer_task = Task.get_task(project_name="alexandre_debug",task_name="generate_task" )
-        artifact_obj = answer_task.artifacts['arenahard report'].get_local_copy()
         arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0"))
-
         answer_dir = os.path.join(arenahard_dir, "model_answer")
-        os.makedirs(answer_dir , exist_ok=True)
-        shutil.move(artifact_obj,os.path.join(answer_dir, "qwen2.5-1.5b-instruct.jsonl"))
-
+        if arenahard_judgement_args("answer_task_id","") :
+            from pathlib import Path
+            import shutil
+            import os
+    
+            answer_task = Task.get_task(task_id=arenahard_judgement_args["answer_task_id"])
+            artifact_obj = answer_task.artifacts['arenahard report'].get_local_copy()
+            os.makedirs(answer_dir , exist_ok=True)
+            shutil.move(artifact_obj,os.path.join(answer_dir, "qwen2.5-1.5b-instruct.jsonl"))
+    
         print ("Running arena hard generate")
         from arenahard.gen_judgment import run
         print(f"Arenahard args: {arenahard_judgement_args}")
