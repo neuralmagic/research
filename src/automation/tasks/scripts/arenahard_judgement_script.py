@@ -124,7 +124,8 @@ def main():
         time.sleep(150)
 
     finally:
-        output_path = os.path.join(answer_dir, f"{configs['bench_name']}.jsonl")
+        model_name = configs["model_list"][0]
+        output_path = os.path.join(answer_dir, f"{model_name}.jsonl")
         arenahard_judgement_args["output_path"] = str(output_path)
         #task.upload_artifact(name="arenahard judgement report", artifact_object=output_path)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
