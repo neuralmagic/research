@@ -106,6 +106,7 @@ def main():
         answer_dir = os.path.join(arenahard_dir, "model_answer")
         from arenahard.utils.completion import make_config
         configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, arenahard_judgement_args["judgement_setting_file"]))
+        model_name = configs["model_list"][0]
         if arenahard_judgement_args.get("answer_task_id","") :
             from pathlib import Path
             import shutil
@@ -114,7 +115,7 @@ def main():
             answer_task = Task.get_task(task_id=arenahard_judgement_args["answer_task_id"])
             artifact_obj = answer_task.artifacts['arenahard report'].get_local_copy()
             os.makedirs(answer_dir , exist_ok=True)
-            shutil.move(artifact_obj,os.path.join(answer_dir, f"{configs['bench_name']}.jsonl"))
+            shutil.move(artifact_obj,os.path.join(answer_dir, f"{model_name}.jsonl"))
     
         print ("Running arena hard generate")
         from arenahard.gen_judgment import run
@@ -124,7 +125,6 @@ def main():
         time.sleep(150)
 
     finally:
-        model_name = configs["model_list"][0]
         output_path = os.path.join(answer_dir, f"{model_name}.jsonl")
         arenahard_judgement_args["output_path"] = str(output_path)
         #task.upload_artifact(name="arenahard judgement report", artifact_object=output_path)
