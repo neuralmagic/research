@@ -1,6 +1,6 @@
 judge_model: qwen2.5-math-1.5b-instruct
 temperature: 0.0
-max_tokens: 20000
+max_tokens: 2000
 
 bench_name: arena-hard-v2.0
 
