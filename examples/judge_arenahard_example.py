@@ -3,7 +3,8 @@ from automation.tasks import ArenaHardJudgeTask
 task = ArenaHardJudgeTask(
     project_name="alexandre_debug",
     task_name="test_judge_task",
-    answer_task_id  = "cf688bf523c842ff8d8c9d721613aabc",
+    #answer_task_id  = "cf688bf523c842ff8d8c9d721613aabc",
+    #answer_task_id = "4630730469114ed397fc876d578a469e",
     #judgement_model="meta-llama/Llama-3.2-1B-Instruct",
     #judgement_model="Qwen/Qwen2.5-1.5B-Instruct",
     judgement_model="Qwen/Qwen2.5-Math-1.5B-Instruct",

@@ -18,6 +18,7 @@ def main():
     from pathlib import Path
     import shutil
     import os
+    from arenahard.utils.completion import make_config
 
     task = Task.current_task()
 
@@ -103,6 +104,8 @@ def main():
     try:
         arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0"))
         answer_dir = os.path.join(arenahard_dir, "model_answer")
+        from arenahard.utils.completion import make_config
+        configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, arenahard_judgement_args["judgement_setting_file"]))
         if arenahard_judgement_args.get("answer_task_id","") :
             from pathlib import Path
             import shutil
@@ -111,7 +114,7 @@ def main():
             answer_task = Task.get_task(task_id=arenahard_judgement_args["answer_task_id"])
             artifact_obj = answer_task.artifacts['arenahard report'].get_local_copy()
             os.makedirs(answer_dir , exist_ok=True)
-            shutil.move(artifact_obj,os.path.join(answer_dir, "qwen2.5-1.5b-instruct.jsonl"))
+            shutil.move(artifact_obj,os.path.join(answer_dir, f"{configs['bench_name']}.jsonl"))
     
         print ("Running arena hard generate")
         from arenahard.gen_judgment import run
@@ -121,7 +124,7 @@ def main():
         time.sleep(150)
 
     finally:
-        output_path = os.path.join(os.getcwd(), "src", "automation", "arenahard", "data", "arena-hard-v2.0", "model_answer", "qwen2.5-1.5b-instruct.jsonl")
+        output_path = os.path.join(answer_dir, f"{configs['bench_name']}.jsonl")
         arenahard_judgement_args["output_path"] = str(output_path)
         #task.upload_artifact(name="arenahard judgement report", artifact_object=output_path)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
