@@ -6,5 +6,5 @@ qwen2.5-math-1.5b-instruct:
     api_type: openai
     temperature: 0.6
     end_think_token: "</think>"
-    max_tokens: 20000
+    max_tokens: 2000
     parallel: 1
