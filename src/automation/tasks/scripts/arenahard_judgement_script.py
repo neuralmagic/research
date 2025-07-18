@@ -103,7 +103,7 @@ def main():
     try:
         arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0"))
         answer_dir = os.path.join(arenahard_dir, "model_answer")
-        if arenahard_judgement_args("answer_task_id","") :
+        if arenahard_judgement_args.get("answer_task_id","") :
             from pathlib import Path
             import shutil
             import os
