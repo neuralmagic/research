@@ -111,9 +111,13 @@ def main():
             from pathlib import Path
             import shutil
             import os
+            from clearml.storage import StorageManager
+
+            print(f"File downloaded to: {local_path}")
     
-            answer_task = Task.get_task(task_id=arenahard_judgement_args["answer_task_id"])
-            artifact_obj = answer_task.artifacts['arenahard report'].get_local_copy()
+            #answer_task = Task.get_task(task_id=arenahard_judgement_args["answer_task_id"])
+            #artifact_obj = answer_task.artifacts['arenahard report'].get_local_copy()
+            artifact_obj = StorageManager.get_local_copy(arenahard_judgement_args["answer_task_id"])
             os.makedirs(answer_dir , exist_ok=True)
             shutil.move(artifact_obj,os.path.join(answer_dir, f"{model_name}.jsonl"))
     
