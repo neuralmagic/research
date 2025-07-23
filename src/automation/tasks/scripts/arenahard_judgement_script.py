@@ -107,13 +107,12 @@ def main():
         from arenahard.utils.completion import make_config
         configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, arenahard_judgement_args["judgement_setting_file"]))
         model_name = configs["model_list"][0]
-        answer_task_id = args["Args"].get("answer_task_id","") 
-        if answer_task_id:
+        if arenahard_judgement_args.get("answer_task_id","") :
             from pathlib import Path
             import shutil
             import os
     
-            answer_task = Task.get_task(task_id=answer_task_id)
+            answer_task = Task.get_task(task_id=arenahard_judgement_args["answer_task_id"])
             artifact_obj = answer_task.artifacts['arenahard report'].get_local_copy()
             os.makedirs(answer_dir , exist_ok=True)
             shutil.move(artifact_obj,os.path.join(answer_dir, f"{model_name}.jsonl"))
