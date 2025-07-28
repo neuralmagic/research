@@ -11,6 +11,7 @@ class ArenaHardGenerateTask(BaseTask):
 
     arenahard_packages = [
         "vllm==0.9.1",
+        "huggingface-hub==0.34.2",
         ARENAHARD_PACKAGE,
         "hf_xet",
     ]
