@@ -10,7 +10,7 @@ ARENAHARD_PACKAGE = "git+https://github.com/neuralmagic/arena-hard-auto.git@refa
 class ArenaHardGenerateTask(BaseTask):
 
     arenahard_packages = [
-        "vllm",
+        "vllm==0.9.1",
         ARENAHARD_PACKAGE,
         "hf_xet",
     ]
