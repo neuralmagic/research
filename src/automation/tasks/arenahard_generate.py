@@ -13,8 +13,9 @@ class ArenaHardGenerateTask(BaseTask):
         ARENAHARD_PACKAGE,
         "hf_xet",
         "transformers==4.53.0",
-        "vllm==0.9.1",
-        "huggingface-hub==0.34.2",
+        #"vllm==0.9.1",
+        "huggingface-hub==0.34.3",
+        "vllm",
     ]
 
     def __init__(
