@@ -77,7 +77,7 @@ def main():
         model_id,
         arenahard_generate_args["target"],
         args["Args"]["server_wait_time"],
-        gpu_count,
+        #gpu_count,
     )
 
     if not server_initialized:
