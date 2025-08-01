@@ -84,6 +84,8 @@ def main():
         kill_process_tree(server_process.pid)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         raise AssertionError("Server failed to initialize")
+    import time
+    time.sleep(500)
 
     # Parse through environment variables
     for k, v in environment_args.items():
