@@ -3,22 +3,26 @@ from automation.configs import DEFAULT_DOCKER_IMAGE, DEFAULT_RESEARCH_BRANCH
 from typing import Optional, Sequence
 import os
 
+#DEFAULT_SERVER_WAIT_TIME = 30 # 600 seconds = 10 minutes
 DEFAULT_SERVER_WAIT_TIME = 600 # 600 seconds = 10 minutes
-GUIDELLM_PACKAGE = "git+https://github.com/neuralmagic/guidellm.git"
+ARENAHARD_PACKAGE = "git+https://github.com/neuralmagic/arena-hard-auto.git@refactor_arenahard"
 
-class GuideLLMTask(BaseTask):
+class ArenaHardGenerateTask(BaseTask):
 
-    guidellm_packages = [
-        "vllm",
-        GUIDELLM_PACKAGE,
+    arenahard_packages = [
+        "transformers==4.53.0",
+        "huggingface-hub==0.34.3",
+        ARENAHARD_PACKAGE,
         "hf_xet",
+        "vllm==0.9.1",
+        #"vllm",
     ]
 
     def __init__(
         self,
         project_name: str,
         task_name: str,
-        model: str,
+        generate_model: str,
         server_wait_time: int=DEFAULT_SERVER_WAIT_TIME,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
@@ -39,9 +43,9 @@ class GuideLLMTask(BaseTask):
         # Set packages, taking into account default packages
         # for the LMEvalTask and packages set in the config
         if packages is not None:
-            packages = list(set(packages + self.guidellm_packages))
+            packages = list(set(packages + self.arenahard_packages))
         else:
-            packages = self.guidellm_packages
+            packages = self.arenahard_packages
 
         if "packages" in config_kwargs:
             packages = list(set(packages + config_kwargs.pop("packages")))
@@ -63,37 +67,36 @@ class GuideLLMTask(BaseTask):
 
         kwargs.update(config_kwargs)
 
-        # Sort guidellm kwargs from environment variables
-        guidellm_kwargs = {
+        # Sort arenahard kwargs from environment variables
+        arenahard_kwargs = {
             "target": target,
             "backend": backend,
         }
         environment_variables = {}
         for k, v in kwargs.items():
-            if k.startswith("GUIDELLM__"):
+            if k.startswith("ARENAHARD__"):
                 environment_variables[k] = v
             else:
-                guidellm_kwargs[k] = v
+                arenahard_kwargs[k] = v
 
         # Store class attributes
-        self.model = model
+        self.generate_model = generate_model
         self.clearml_model = clearml_model
         self.server_wait_time = server_wait_time
         self.vllm_kwargs = vllm_kwargs
-        self.guidellm_kwargs = guidellm_kwargs
+        self.arenahard_kwargs = arenahard_kwargs
         self.environment_variables = environment_variables
         self.force_download = force_download
-        self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "guidellm_script.py")
-
+        self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "arenahard_generate_script.py")
 
     def script(self, configurations):
-        from automation.tasks.scripts.guidellm_script import main
+        from automation.tasks.scripts.arenahard_generate_script import main
         main(configurations)
 
 
     def get_configurations(self):
         configs = {
-            "GuideLLM": self.guidellm_kwargs,
+            "ArenaHard": self.arenahard_kwargs,
         }
         if len(self.vllm_kwargs) > 0:
             configs["vLLM"] = self.vllm_kwargs
@@ -107,7 +110,7 @@ class GuideLLMTask(BaseTask):
     def get_arguments(self):
         return {
             "Args": {
-                "model": self.model,
+                "generate_model": self.generate_model,
                 "clearml_model": self.clearml_model,
                 "server_wait_time": self.server_wait_time,
                 "force_download": self.force_download,

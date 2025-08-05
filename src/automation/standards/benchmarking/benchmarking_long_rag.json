@@ -1,0 +1,13 @@
+{
+    "rate_type": "sweep",
+    "data": {
+        "prompt_tokens": 10240,
+        "prompt_tokens_stdev": 128,
+        "prompt_tokens_min": 1,
+        "prompt_tokens_max": 10240,
+        "output_tokens": 1536,
+        "output_tokens_stdev": 64,
+        "output_tokens_min": 1,
+        "output_tokens_max": 1536
+    }
+}
