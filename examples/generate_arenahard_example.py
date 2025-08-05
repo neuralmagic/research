@@ -1,8 +1,8 @@
 from automation.tasks import ArenaHardGenerateTask
 
 task = ArenaHardGenerateTask(
-    project_name="alexandre_debug",
-    task_name="generate_math_task",
+    project_name="simple_debug",
+    task_name="generate_math_task_4",
     #generate_model="meta-llama/Llama-3.2-1B-Instruct",
     #generate_model="Qwen/Qwen2.5-1.5B-Instruct",
     generate_model="Qwen/Qwen2.5-Math-1.5B-Instruct",
@@ -20,6 +20,5 @@ task = ArenaHardGenerateTask(
     generation_endpoint_file='math_api_config.yaml',
 )
 
-#task.execute_remotely("oneshot-a100x1")
-task.execute_remotely("remote-upgrade-default")
+task.execute_remotely("oneshot-a100x4")
 #task.execute_locally()
