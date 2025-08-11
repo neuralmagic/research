@@ -6,7 +6,7 @@ from automation.vllm import start_vllm_server
 from pyhocon import ConfigFactory
 from automation.configs import DEFAULT_GUIDELLM_SCENARIO
 
-def main():
+def main(configurations=None):
     task = Task.current_task()
 
     args = task.get_parameters_as_dict(cast=True)
@@ -53,15 +53,12 @@ def main():
     # Resolve model_id
     model_id = resolve_model_id(args["Args"]["model"], clearml_model, force_download)
 
-    gpu_count = int(guidellm_args.get("gpu_count", 1)) 
-
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(
         vllm_args,
         model_id,
         guidellm_args["target"],
         args["Args"]["server_wait_time"],
-        gpu_count,
     )
 
     if not server_initialized:
@@ -94,7 +91,6 @@ def main():
     else:
         filepath = Path(os.path.join(".", "src", "automation", "standards", "benchmarking", f"{DEFAULT_GUIDELLM_SCENARIO}.json"))
         current_scenario = GenerativeTextScenario.from_file(filepath, dict(guidellm_args))
-    print(current_scenario.model_fields)
 
     # Ensure output_path is set and consistent
     output_path = Path(guidellm_args.get("output_path", "guidellm-output.json"))
