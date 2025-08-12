@@ -10,12 +10,11 @@ ARENAHARD_PACKAGE = "git+https://github.com/neuralmagic/arena-hard-auto.git@refa
 class ArenaHardGenerateTask(BaseTask):
 
     arenahard_packages = [
-        "transformers==4.53.0",
         "huggingface-hub==0.34.3",
+        "triton==3.3.1",
+        "vllm==0.10.0",
         ARENAHARD_PACKAGE,
         "hf_xet",
-        "vllm==0.9.1",
-        #"vllm",
     ]
 
     def __init__(
