@@ -10,7 +10,8 @@ class GuideLLMTask(BaseTask):
 
     guidellm_packages = [
         "huggingface-hub==0.34.3",
-        "vllm",
+        "triton==3.3.1",
+        "vllm==0.10.0",
         GUIDELLM_PACKAGE,
         "hf_xet",
     ]
