@@ -78,6 +78,7 @@ def main(configurations=None):
     from guidellm.benchmark.entrypoints import benchmark_with_scenario
     from guidellm.benchmark.scenario import GenerativeTextScenario, get_builtin_scenarios
 
+    # user defined scenarios are a temporary fix until the guidellm bugs get fixed otherwise we would use the upstream scenarios
     user_scenario = guidellm_args.get("scenario", "")
     if user_scenario:
         filepath = Path(os.path.join(".", "src", "automation", "standards", "benchmarking", f"{user_scenario}.json"))
@@ -86,7 +87,7 @@ def main(configurations=None):
         else:
             raise ValueError(f"Scenario path {filepath} does not exist")
     #elif len(get_builtin_scenarios()) > 0:
-    #    to be used when get_builtin_scenarios() bug is fiexed
+    #    to be used when get_builtin_scenarios() bug is fixed
     #    current_scenario = GenerativeTextScenario.from_builtin(get_builtin_scenarios()[0], dict(guidellm_args))
     else:
         filepath = Path(os.path.join(".", "src", "automation", "standards", "benchmarking", f"{DEFAULT_GUIDELLM_SCENARIO}.json"))
