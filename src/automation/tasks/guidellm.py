@@ -54,6 +54,12 @@ class GuideLLMTask(BaseTask):
         if "packages" in config_kwargs:
             packages = list(set(packages + config_kwargs.pop("packages")))
 
+        # keep only the pinned version of a library
+        for pkg in packages:
+            if "==" in pkg and pkg.split("==")[0] in packages:
+                lib_name = pkg.split("==")[0]
+                packages.remove(lib_name)
+
         # Initialize base parameters
         super().__init__(
             project_name=project_name,
