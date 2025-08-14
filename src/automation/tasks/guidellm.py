@@ -8,11 +8,17 @@ GUIDELLM_PACKAGE = "git+https://github.com/neuralmagic/guidellm.git"
 
 class GuideLLMTask(BaseTask):
 
+    """
     guidellm_packages = [
         "huggingface-hub==0.34.3",
         "triton==3.3.1",
         "vllm==0.10.0",
         GUIDELLM_PACKAGE,
+        "hf_xet",
+    """
+    guidellm_packages = [
+        "vllm",
+        "guidellm",
         "hf_xet",
     ]
 
