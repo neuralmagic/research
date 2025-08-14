@@ -5,44 +5,6 @@ from automation.utils import resolve_model_id, cast_args, kill_process_tree
 from automation.vllm import start_vllm_server
 from pyhocon import ConfigFactory
 
-"""
-def main(configurations=None):
-    task = Task.current_task()
-
-    args = task.get_parameters_as_dict(cast=True)
-    
-    raw_config = task.get_configuration_object("GuideLLM")
-    if raw_config is None:
-        print("[DEBUG] `GuideLLM` config not found in configuration — checking parameters as fallback")
-        raw_config = task.get_parameters_as_dict().get("GuideLLM")
-        if raw_config is None:
-            raise RuntimeError("GuideLLM config is None. This likely means `get_configurations()` is not returning it or it's not passed via parameters.")
-        guidellm_args = ConfigFactory.from_dict(raw_config)
-    else:
-        guidellm_args = ConfigFactory.parse_string(raw_config)
-
-    def clean_hocon_value(v):
-        if isinstance(v, str) and v.startswith('"') and v.endswith('"'):
-            return v[1:-1]
-        return v
-
-    guidellm_args = {k: clean_hocon_value(v) for k, v in guidellm_args.items()}
-
-    print("[DEBUG] Guidellm_Args:", guidellm_args)
-
-    environment_args = task.get_configuration_object("environment")
-    if environment_args is None:
-        environment_args = {}
-    else:
-        environment_args = ConfigFactory.parse_string(environment_args)
-    
-    vllm_args = task.get_configuration_object("vLLM")
-    if vllm_args is None:
-        vllm_args = {}
-    else:
-        vllm_args = ConfigFactory.parse_string(vllm_args)
-"""
-
 def main(configurations=None):
     task = Task.current_task()
 
