@@ -79,8 +79,7 @@ def main():
         vllm_args,
         model_id,
         arenahard_judgement_args["target"],
-        args["Args"]["server_wait_time"],
-        gpu_count,
+        args["Args"]["server_wait_time"]
     )
 
     if not server_initialized:
