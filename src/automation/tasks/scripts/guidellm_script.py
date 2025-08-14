@@ -4,7 +4,7 @@ from clearml import Task
 from automation.utils import resolve_model_id, cast_args, kill_process_tree
 from automation.vllm import start_vllm_server
 from pyhocon import ConfigFactory
-from automation.configs import DEFAULT_GUIDELLM_SCENARIO
+#from automation.configs import DEFAULT_GUIDELLM_SCENARIO
 
 def main(configurations=None):
     task = Task.current_task()
@@ -71,6 +71,8 @@ def main(configurations=None):
         os.environ[k] = str(v)
 
     guidellm_args["model"] = model_id
+
+    DEFAULT_GUIDELLM_SCENARIO = guidellm_args["scenario"]
 
     import json
     import asyncio
