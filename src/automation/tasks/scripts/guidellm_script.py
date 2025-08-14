@@ -4,7 +4,6 @@ from clearml import Task
 from automation.utils import resolve_model_id, cast_args, kill_process_tree
 from automation.vllm import start_vllm_server
 from pyhocon import ConfigFactory
-#from automation.configs import DEFAULT_GUIDELLM_SCENARIO
 
 def main(configurations=None):
     task = Task.current_task()
@@ -72,8 +71,6 @@ def main(configurations=None):
 
     guidellm_args["model"] = model_id
 
-    DEFAULT_GUIDELLM_SCENARIO = guidellm_args["scenario"]
-
     import json
     import asyncio
     from pathlib import Path
@@ -92,7 +89,7 @@ def main(configurations=None):
     #    to be used when get_builtin_scenarios() bug is fixed
     #    current_scenario = GenerativeTextScenario.from_builtin(get_builtin_scenarios()[0], dict(guidellm_args))
     else:
-        filepath = Path(os.path.join(".", "src", "automation", "standards", "benchmarking", f"{DEFAULT_GUIDELLM_SCENARIO}.json"))
+        filepath = Path(os.path.join(".", "src", "automation", "standards", "benchmarking", f"{user_scenario}.json"))
         current_scenario = GenerativeTextScenario.from_file(filepath, dict(guidellm_args))
 
     # Ensure output_path is set and consistent

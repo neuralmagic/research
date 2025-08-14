@@ -7,9 +7,6 @@ import os
 
 class BaseTask():
 
-    #base_packages = ["git+https://github.com/neuralmagic/research.git"]
-    #base_packages = ["git+https://github.com/neuralmagic/research.git@update_guidellm"]
-
     def __init__(
         self,
         project_name: str,
@@ -35,7 +32,7 @@ class BaseTask():
         self.packages = packages
         self.task_type = task_type
         self.task = None
-        self.branch= branch
+        self.branch = branch
         self.script_path = None
         self.callable_artifacts = None
   
