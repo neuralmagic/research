@@ -16,7 +16,6 @@ SERVER_LOG_PREFIX = "generation_server_log"
 
 STANDARDS_PATH = os.path.join(os.getcwd(), "src", "automation", "standards")
 ARENAHARD_CONFIG_PATH = os.path.join(STANDARDS_PATH, "arenahard")
-ARENAHARD_CONFIG_PATH = STANDARDS_PATH
 
 def main():
     task = Task.current_task()
@@ -116,7 +115,7 @@ def main():
 
     try:
         from arenahard.utils.completion import make_config
-        configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, arenahard_generate_args["generation_config_file"] ))
+        configs = make_config(os.path.join(STANDARDS_PATH, arenahard_generate_args["generation_config_file"] ))
         print ("Running arena hard generate")
         from arenahard.gen_answer import run
         print(f"Arenahard args: {arenahard_generate_args}")
