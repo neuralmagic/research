@@ -1,7 +1,7 @@
 import os
 import sys
 from clearml import Task
-from automation.utils import resolve_model_id, cast_args, kill_process_tree
+from automation.utils import resolve_model_id, cast_args, kill_process_tree, render_yaml
 from automation.vllm import start_vllm_server
 from pyhocon import ConfigFactory
 import subprocess
@@ -14,7 +14,8 @@ from clearml import Task
 
 SERVER_LOG_PREFIX = "generation_server_log"
 
-ARENAHARD_CONFIG_PATH = os.path.join(os.getcwd(), "src", "automation", "standards", "arenahard")
+STANDARDS_PATH = os.path.join(os.getcwd(), "src", "automation", "standards")
+ARENAHARD_CONFIG_PATH = os.path.join(STANDARDS_PATH, "arenahard")
 
 def main():
     task = Task.current_task()
@@ -64,11 +65,27 @@ def main():
     model_id = resolve_model_id(args["Args"]["generate_model"], clearml_model, force_download)
 
     gpu_count = int(arenahard_generate_args.get("gpu_count", 1))
+    STANDARDS_PATH = os.getcwd()
+    template_arenahard_file = "arena-hard-v2.0.yaml.j2"
+    model_name = args["Args"]["generate_model"]
+    get_lowercase_model = lambda model: model.split("/")[1].lower()
+    
+    
+    render_yaml({"judge_model": get_lowercase_model(model_name), "max_tokens": 20000 }, STANDARDS_PATH , template_arenahard_file, template_arenahard_file[:-3])
+    
+    template_apiconfig_file = "api_config.yaml.j2"
+    render_yaml({"model_name": model_name, "lower_case_model": get_lowercase_model(model_name), "max_tokens": 20000 }, STANDARDS_PATH , template_apiconfig_file, template_apiconfig_file[:-3])
+    
+    
+    template_gen_answer_config_file = "gen_answer_config.yaml.j2"
+    render_yaml({"lower_case_model": get_lowercase_model(model_name)}, STANDARDS_PATH , template_gen_answer_config_file, template_gen_answer_config_file[:-3])
 
     # verify that the input file paths exist
-    api_config_path = os.path.join( ARENAHARD_CONFIG_PATH , arenahard_generate_args["generation_endpoint_file"])
+    api_config_path = os.path.join( ARENAHARD_CONFIG_PATH , "api_config.yaml")
+    #api_config_path = os.path.join( ARENAHARD_CONFIG_PATH , arenahard_generate_args["generation_endpoint_file"])
     assert os.path.exists(api_config_path), f"{api_config_path} does not exist"
-    gen_answer_config_path = os.path.join(ARENAHARD_CONFIG_PATH , arenahard_generate_args["generation_config_file"] )
+    #gen_answer_config_path = os.path.join(ARENAHARD_CONFIG_PATH , arenahard_generate_args["generation_config_file"] )
+    gen_answer_config_path = os.path.join(ARENAHARD_CONFIG_PATH , "gen_answer_config.yaml")
     assert os.path.exists(gen_answer_config_path), f"{gen_answer_config_path} does not exist"
 
     # Start vLLM server
@@ -77,7 +94,6 @@ def main():
         model_id,
         arenahard_generate_args["target"],
         args["Args"]["server_wait_time"],
-        #gpu_count,
     )
 
     if not server_initialized:
