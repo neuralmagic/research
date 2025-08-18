@@ -66,8 +66,6 @@ def main():
     # Resolve model_id
     model_id = resolve_model_id(args["Args"]["judgement_model"], clearml_model, force_download)
 
-    gpu_count = int(arenahard_judgement_args.get("gpu_count", 1))
-
     # verify that the input file paths exist
     api_config_path = os.path.join( ARENAHARD_CONFIG_PATH , arenahard_judgement_args["judgement_endpoint_file"])
     assert os.path.exists(api_config_path), f"{api_config_path} does not exist"

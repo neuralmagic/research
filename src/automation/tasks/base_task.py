@@ -27,6 +27,11 @@ class BaseTask():
         else:
             packages = base_packages
 
+        # keep only the pinned version of a library
+        for pkg in packages:
+            if "==" in pkg and pkg.split("==")[0] in packages:
+                lib_name = pkg.split("==")[0]
+                packages.remove(lib_name)
         print(packages)
 
         self.project_name = project_name
