@@ -13,6 +13,7 @@ class ArenaHardGenerateTask(BaseTask):
         "vllm",
         ARENAHARD_PACKAGE,
         "hf_xet",
+        "Jinja2",
     ]
 
     def __init__(
