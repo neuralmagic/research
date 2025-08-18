@@ -190,6 +190,6 @@ def render_yaml(
     
     print(render_yaml_output)
 
-    with open(join(base_dir, "standards", save_filename), "w") as f:
+    with open(join(base_dir, save_filename), "w") as f:
         f.write(render_yaml_output)
 
