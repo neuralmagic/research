@@ -16,6 +16,7 @@ SERVER_LOG_PREFIX = "generation_server_log"
 
 STANDARDS_PATH = os.path.join(os.getcwd(), "src", "automation", "standards")
 ARENAHARD_CONFIG_PATH = os.path.join(STANDARDS_PATH, "arenahard")
+ARENAHARD_CONFIG_PATH = STANDARDS_PATH
 
 def main():
     task = Task.current_task()
