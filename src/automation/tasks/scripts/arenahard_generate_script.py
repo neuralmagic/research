@@ -65,7 +65,6 @@ def main():
     model_id = resolve_model_id(args["Args"]["generate_model"], clearml_model, force_download)
 
     gpu_count = int(arenahard_generate_args.get("gpu_count", 1))
-    STANDARDS_PATH = os.getcwd()
     template_arenahard_file = "arena-hard-v2.0.yaml.j2"
     model_name = args["Args"]["generate_model"]
     get_lowercase_model = lambda model: model.split("/")[1].lower()
