@@ -70,14 +70,14 @@ def main():
     get_lowercase_model = lambda model: model.split("/")[1].lower()
     
     
-    render_yaml({"judge_model": get_lowercase_model(model_name), "max_tokens": 20000 }, STANDARDS_PATH , template_arenahard_file, template_arenahard_file[:-3])
+    render_yaml({"judge_model": get_lowercase_model(model_name), "max_tokens": 20000 }, ARENAHARD_CONFIG_PATH , template_arenahard_file, template_arenahard_file[:-3])
     
     template_apiconfig_file = "api_config.yaml.j2"
-    render_yaml({"model_name": model_name, "lower_case_model": get_lowercase_model(model_name), "max_tokens": 20000 }, STANDARDS_PATH , template_apiconfig_file, template_apiconfig_file[:-3])
+    render_yaml({"model_name": model_name, "lower_case_model": get_lowercase_model(model_name), "max_tokens": 20000 }, ARENAHARD_CONFIG_PATH , template_apiconfig_file, template_apiconfig_file[:-3])
     
     
     template_gen_answer_config_file = "gen_answer_config.yaml.j2"
-    render_yaml({"lower_case_model": get_lowercase_model(model_name)}, STANDARDS_PATH , template_gen_answer_config_file, template_gen_answer_config_file[:-3])
+    render_yaml({"lower_case_model": get_lowercase_model(model_name)}, ARENAHARD_CONFIG_PATH , template_gen_answer_config_file, template_gen_answer_config_file[:-3])
 
     # verify that the input file paths exist
     api_config_path = os.path.join( STANDARDS_PATH, "api_config.yaml")
