@@ -189,7 +189,9 @@ def render_yaml(
     render_yaml_output = template.render(yaml_data)
     
     print(render_yaml_output)
+    yaml_path = join(base_dir, save_filename)
+    print(f"Saving to: {yaml_path}")
 
-    with open(join(base_dir, save_filename), "w") as f:
+    with open(yaml_path, "w") as f:
         f.write(render_yaml_output)
 
