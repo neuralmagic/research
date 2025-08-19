@@ -81,10 +81,6 @@ class BasePipeline(BaseTask):
         super().execute_remotely(queue_name)
 
 
-    def set_default_execution_queue(self, queue_name: str="services"):
-        super().set_default_execution_queue(queue_name)
-
-
     def start(self, queue_name: str="services"):
         self.execute_remotely(queue_name)
 
