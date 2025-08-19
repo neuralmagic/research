@@ -82,9 +82,7 @@ def main():
 
     # verify that the input file paths exist
     api_config_path = os.path.join( ARENAHARD_CONFIG_PATH, tmp_gen_endpoint_file)
-    #api_config_path = os.path.join( ARENAHARD_CONFIG_PATH , arenahard_generate_args["generation_endpoint_file"])
     assert os.path.exists(api_config_path), f"{api_config_path} does not exist"
-    #gen_answer_config_path = os.path.join(ARENAHARD_CONFIG_PATH , arenahard_generate_args["generation_config_file"] )
     gen_answer_config_path = os.path.join(ARENAHARD_CONFIG_PATH, tmp_gen_config_file)
     assert os.path.exists(gen_answer_config_path), f"{gen_answer_config_path} does not exist"
 
@@ -116,7 +114,6 @@ def main():
 
     try:
         from arenahard.utils.completion import make_config
-        #configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, arenahard_generate_args["generation_config_file"] ))
         configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, tmp_gen_config_file ))
         print ("Running arena hard generate")
         from arenahard.gen_answer import run
@@ -124,7 +121,6 @@ def main():
 
 
         run(config_file = tmp_gen_config_file , endpoint_file= tmp_gen_endpoint_file, question_path= ARENAHARD_CONFIG_PATH, config_path=ARENAHARD_CONFIG_PATH, answer_path=ARENAHARD_CONFIG_PATH)
-        #run(config_file=arenahard_generate_args["generation_config_file"], endpoint_file=arenahard_generate_args["generation_endpoint_file"], question_path= ARENAHARD_CONFIG_PATH, config_path=ARENAHARD_CONFIG_PATH, answer_path=ARENAHARD_CONFIG_PATH)
         time.sleep(150)
 
     finally:
@@ -133,7 +129,7 @@ def main():
         model_name = configs["model_list"][0]
         output_file_path = os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0" , "model_answer", f"{model_name}.jsonl")
         arenahard_generate_args["output_path"] = str(output_file_path)
-        task.upload_artifact(name="arenahard report", artifact_object=output_file_path)
+        task.upload_artifact(name="arenahard model answer", artifact_object=output_file_path)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         kill_process_tree(server_process.pid)
 
