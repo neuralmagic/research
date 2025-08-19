@@ -69,7 +69,7 @@ def main():
     model_name = args["Args"]["generate_model"]
     get_lowercase_model = lambda model: model.split("/")[1].lower()
     
-    max_tokens = 15000
+    max_tokens = 2000
     
     render_yaml({"judge_model": get_lowercase_model(model_name), "max_tokens": max_tokens }, STANDARDS_PATH , template_arenahard_file, template_arenahard_file[:-3])
     
