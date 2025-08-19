@@ -64,23 +64,23 @@ def main():
     # Resolve model_id
     model_id = resolve_model_id(args["Args"]["generate_model"], clearml_model, force_download)
 
-    gpu_count = int(arenahard_generate_args.get("gpu_count", 1))
     template_arenahard_file = "arena-hard-v2.0.yaml.j2"
     model_name = args["Args"]["generate_model"]
     get_lowercase_model = lambda model: model.split("/")[1].lower()
     
     max_tokens = 2000
+    tmp_gen_config_file='gen_answer_config.yaml'
+    tmp_gen_endpoint_file='api_config.yaml'
+    tmp_arenahard_file = 'arena-hard-v2.0.yaml'
     
-    render_yaml({"judge_model": get_lowercase_model(model_name), "max_tokens": max_tokens }, STANDARDS_PATH , template_arenahard_file, template_arenahard_file[:-3])
+    render_yaml({"judge_model": get_lowercase_model(model_name), "max_tokens": max_tokens }, STANDARDS_PATH , template_arenahard_file, tmp_arenahard_file)
     
     template_apiconfig_file = "api_config.yaml.j2"
-    render_yaml({"model_name": model_name, "lower_case_model": get_lowercase_model(model_name), "max_tokens": max_tokens }, STANDARDS_PATH , template_apiconfig_file, template_apiconfig_file[:-3])
+    render_yaml({"model_name": model_name, "lower_case_model": get_lowercase_model(model_name), "max_tokens": max_tokens }, STANDARDS_PATH , template_apiconfig_file, tmp_gen_endpoint_file )
     
     
     template_gen_answer_config_file = "gen_answer_config.yaml.j2"
-    render_yaml({"lower_case_model": get_lowercase_model(model_name)}, STANDARDS_PATH , template_gen_answer_config_file, template_gen_answer_config_file[:-3])
-    tmp_gen_config_file='gen_answer_config.yaml'
-    tmp_gen_endpoint_file='api_config.yaml'
+    render_yaml({"lower_case_model": get_lowercase_model(model_name)}, STANDARDS_PATH , template_gen_answer_config_file, tmp_gen_config_file)
 
     # verify that the input file paths exist
     api_config_path = os.path.join( ARENAHARD_CONFIG_PATH, tmp_gen_endpoint_file)
