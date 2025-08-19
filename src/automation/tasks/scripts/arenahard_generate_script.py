@@ -115,7 +115,7 @@ def main():
 
     try:
         from arenahard.utils.completion import make_config
-        configs = make_config(os.path.join(STANDARDS_PATH, arenahard_generate_args["generation_config_file"] ))
+        configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, arenahard_generate_args["generation_config_file"] ))
         print ("Running arena hard generate")
         from arenahard.gen_answer import run
         print(f"Arenahard args: {arenahard_generate_args}")
