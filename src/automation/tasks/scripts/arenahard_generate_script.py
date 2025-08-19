@@ -69,11 +69,12 @@ def main():
     model_name = args["Args"]["generate_model"]
     get_lowercase_model = lambda model: model.split("/")[1].lower()
     
+    max_tokens = 15000
     
-    render_yaml({"judge_model": get_lowercase_model(model_name), "max_tokens": 20000 }, STANDARDS_PATH , template_arenahard_file, template_arenahard_file[:-3])
+    render_yaml({"judge_model": get_lowercase_model(model_name), "max_tokens": max_tokens }, STANDARDS_PATH , template_arenahard_file, template_arenahard_file[:-3])
     
     template_apiconfig_file = "api_config.yaml.j2"
-    render_yaml({"model_name": model_name, "lower_case_model": get_lowercase_model(model_name), "max_tokens": 20000 }, STANDARDS_PATH , template_apiconfig_file, template_apiconfig_file[:-3])
+    render_yaml({"model_name": model_name, "lower_case_model": get_lowercase_model(model_name), "max_tokens": max_tokens }, STANDARDS_PATH , template_apiconfig_file, template_apiconfig_file[:-3])
     
     
     template_gen_answer_config_file = "gen_answer_config.yaml.j2"
