@@ -80,11 +80,11 @@ def main():
     render_yaml({"lower_case_model": get_lowercase_model(model_name)}, STANDARDS_PATH , template_gen_answer_config_file, template_gen_answer_config_file[:-3])
 
     # verify that the input file paths exist
-    api_config_path = os.path.join( STANDARDS_PATH, "api_config.yaml")
+    api_config_path = os.path.join( ARENAHARD_CONFIG_PATH, "api_config.yaml")
     #api_config_path = os.path.join( ARENAHARD_CONFIG_PATH , arenahard_generate_args["generation_endpoint_file"])
     assert os.path.exists(api_config_path), f"{api_config_path} does not exist"
     #gen_answer_config_path = os.path.join(ARENAHARD_CONFIG_PATH , arenahard_generate_args["generation_config_file"] )
-    gen_answer_config_path = os.path.join(STANDARDS_PATH, "gen_answer_config.yaml")
+    gen_answer_config_path = os.path.join(ARENAHARD_CONFIG_PATH, "gen_answer_config.yaml")
     assert os.path.exists(gen_answer_config_path), f"{gen_answer_config_path} does not exist"
 
     # Start vLLM server
