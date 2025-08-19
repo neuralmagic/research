@@ -118,17 +118,17 @@ def main():
         from arenahard.utils.completion import make_config
         configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, tmp_arenahard_file))
         model_name = configs["model_list"][0]
-        if arenahard_judgement_args.get("answer_task_id","") :
+        if arenahard_judgement_args.get("answer_task_name","") :
             from pathlib import Path
             import shutil
             import os
             from clearml.storage import StorageManager
 
-            answer_task = Task.get_task(project_name="simple_debug",task_name=arenahard_judgement_args["answer_task_id"])
+            answer_task = Task.get_task(project_name=arenahard_judgement_args.get("answer_project_name", task.name ),task_name=arenahard_judgement_args["answer_task_name"])
             artifact_obj = answer_task.artifacts['arenahard model answer'].get_local_copy()
-            #answer_task = Task.get_task(task_id=arenahard_judgement_args["answer_task_id"])
+            #answer_task = Task.get_task(task_id=arenahard_judgement_args["answer_task_name"])
             #artifact_obj = answer_task.artifacts['arenahard report'].get_local_copy()
-            #artifact_obj = StorageManager.get_local_copy(arenahard_judgement_args["answer_task_id"])
+            #artifact_obj = StorageManager.get_local_copy(arenahard_judgement_args["answer_task_name"])
             os.makedirs(answer_dir , exist_ok=True)
             shutil.move(artifact_obj,os.path.join(answer_dir, f"{model_name}.jsonl"))
     
