@@ -29,7 +29,6 @@ class BaseTask():
             if "==" in pkg and pkg.split("==")[0] in packages:
                 lib_name = pkg.split("==")[0]
                 packages.remove(lib_name)
-        print(packages)
 
         self.project_name = project_name
         self.task_name = task_name
