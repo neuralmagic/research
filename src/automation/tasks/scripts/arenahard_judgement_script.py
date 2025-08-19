@@ -129,7 +129,7 @@ def main():
             shutil.move(artifact_obj,os.path.join(answer_dir, f"{model_name}.jsonl"))
         else:
             # use default 03-mini answers
-            shutil.move( os.path.join(answer_dir,"o3-mini-2025-01-31.jsonl"),os.path.join(answer_dir, f"{model_name}.jsonl"))
+            shutil.copy( os.path.join(answer_dir,"o3-mini-2025-01-31.jsonl"),os.path.join(answer_dir, f"{model_name}.jsonl"))
     
         print ("Running arena hard generate")
         from arenahard.gen_judgment import run
