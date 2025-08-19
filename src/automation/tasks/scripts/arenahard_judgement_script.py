@@ -126,11 +126,10 @@ def main():
 
             answer_task = Task.get_task(project_name=arenahard_judgement_args.get("answer_project_name", task.get_project_name() ),task_name=arenahard_judgement_args["answer_task_name"])
             artifact_obj = answer_task.artifacts['arenahard model answer'].get_local_copy()
-            #answer_task = Task.get_task(task_id=arenahard_judgement_args["answer_task_name"])
-            #artifact_obj = answer_task.artifacts['arenahard report'].get_local_copy()
-            #artifact_obj = StorageManager.get_local_copy(arenahard_judgement_args["answer_task_name"])
-            os.makedirs(answer_dir , exist_ok=True)
             shutil.move(artifact_obj,os.path.join(answer_dir, f"{model_name}.jsonl"))
+        else:
+            # use default 03-mini answers
+            shutil.move( os.path.join(answer_dir,"o3-mini-2025-01-31.jsonl"),os.path.join(answer_dir, f"{model_name}.jsonl"))
     
         print ("Running arena hard generate")
         from arenahard.gen_judgment import run
