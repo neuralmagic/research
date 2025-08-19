@@ -1,10 +1,10 @@
 from automation.tasks import BaseTask
-from automation.configs import DEFAULT_DOCKER_IMAGE
+from automation.configs import DEFAULT_DOCKER_IMAGE, DEFAULT_RESEARCH_BRANCH
 from typing import Optional, Sequence
 import os
 
 DEFAULT_SERVER_WAIT_TIME = 600 # 600 seconds = 10 minutes
-GUIDELLM_PACKAGE = "git+https://github.com/neuralmagic/guidellm.git@http_backend"
+GUIDELLM_PACKAGE = "git+https://github.com/neuralmagic/guidellm.git"
 
 class GuideLLMTask(BaseTask):
 
@@ -23,6 +23,7 @@ class GuideLLMTask(BaseTask):
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
         clearml_model: bool=False,
+        branch: str= DEFAULT_RESEARCH_BRANCH,
         task_type: str="training",
         vllm_kwargs: dict={},
         target: str="http://localhost:8000/v1",
@@ -52,6 +53,7 @@ class GuideLLMTask(BaseTask):
             docker_image=docker_image,
             packages=packages,
             task_type=task_type,
+            branch = branch,
         )
 
         # Check for conflicts in configs and constructor arguments

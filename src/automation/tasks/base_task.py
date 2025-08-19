@@ -1,27 +1,35 @@
 from clearml import Task
 from typing import Sequence, Optional
-from automation.configs import DEFAULT_OUTPUT_URI
+from automation.configs import DEFAULT_OUTPUT_URI, DEFAULT_RESEARCH_BRANCH
 from automation.standards import STANDARD_CONFIGS
 import yaml
 import os
 
 class BaseTask():
 
-    base_packages = ["git+https://github.com/neuralmagic/research.git"]
-
     def __init__(
         self,
         project_name: str,
         task_name: str,
         docker_image: str,
+        branch: Optional[str] = DEFAULT_RESEARCH_BRANCH,
         packages: Optional[Sequence[str]]=None,
         task_type: str="training",
     ):
+        branch_name = branch or DEFAULT_RESEARCH_BRANCH
+        base_packages = [f"git+https://github.com/neuralmagic/research.git@{branch_name}"]
         
         if packages is not None:
-            packages = list(set(packages + self.base_packages))
+            packages = list(set(packages + base_packages))
         else:
-            packages = self.base_packages
+            packages = base_packages
+
+        # keep only the pinned version of a library
+        for pkg in packages:
+            if "==" in pkg and pkg.split("==")[0] in packages:
+                lib_name = pkg.split("==")[0]
+                packages.remove(lib_name)
+        print(packages)
 
         self.project_name = project_name
         self.task_name = task_name
@@ -29,6 +37,7 @@ class BaseTask():
         self.packages = packages
         self.task_type = task_type
         self.task = None
+        self.branch = branch
         self.script_path = None
         self.callable_artifacts = None
   
@@ -50,8 +59,8 @@ class BaseTask():
             return yaml.safe_load(open(STANDARD_CONFIGS[config], "r"))
         elif os.path.exists(config):
             return yaml.safe_load(open(config, "r"))
-        elif os.path.exists(os.path.join("..", "standatrds", config)):
-            return yaml.safe_load(open(os.path.join("..", "standatrds", config)), "r")
+        elif os.path.exists(os.path.join("..", "standards", config)):
+            return yaml.safe_load(open(os.path.join("..", "standards", config)), "r")
         else:
             return yaml.safe_load(config)
 
@@ -91,7 +100,7 @@ class BaseTask():
             add_task_init_call=True,
             script=self.script_path,
             repo="https://github.com/neuralmagic/research.git",
-            branch="main",
+            branch=self.branch,
         )
         self.task.output_uri = DEFAULT_OUTPUT_URI
         self.set_arguments()
