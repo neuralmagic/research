@@ -69,9 +69,9 @@ def main():
     get_lowercase_model = lambda model: model.split("/")[1].lower()
     
     max_tokens = 2000
-    tmp_gen_config_file='gen_answer_config.yaml'
-    tmp_gen_endpoint_file='api_config.yaml'
-    tmp_arenahard_file = 'arena-hard-v2.0.yaml'
+    tmp_gen_config_file='tmp_gen_answer_config.yaml'
+    tmp_gen_endpoint_file='tmp_api_config.yaml'
+    tmp_arenahard_file = 'tmp_arena-hard-v2.0.yaml'
     
     render_yaml({"judge_model": get_lowercase_model(model_name), "max_tokens": max_tokens }, STANDARDS_PATH , template_arenahard_file, tmp_arenahard_file)
     
