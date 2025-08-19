@@ -189,7 +189,7 @@ def render_yaml(
     render_yaml_output = template.render(yaml_data)
     
     print(render_yaml_output)
-    yaml_path = join(base_dir, save_filename)
+    yaml_path = join(base_dir, "arenahard", save_filename)
     print(f"Saving to: {yaml_path}")
 
     with open(yaml_path, "w") as f:
