@@ -12,7 +12,8 @@ from clearml import Task
 
 SERVER_LOG_PREFIX = "judgement_server_log"
 
-ARENAHARD_CONFIG_PATH = os.path.join(os.getcwd(), "src", "automation", "standards", "arenahard")
+STANDARDS_PATH = os.path.join(os.getcwd(), "src", "automation", "standards")
+ARENAHARD_CONFIG_PATH = os.path.join(STANDARDS_PATH, "arenahard")
 
 def main():
     from pathlib import Path
@@ -66,10 +67,23 @@ def main():
     # Resolve model_id
     model_id = resolve_model_id(args["Args"]["judgement_model"], clearml_model, force_download)
 
+    model_name = args["Args"]["judgement_model"]
+    get_lowercase_model = lambda model: model.split("/")[1].lower()
+
+    template_apiconfig_file = "api_config.yaml.j2"
+    tmp_judge_endpoint_file='tmp_api_config.yaml'
+
+    template_arenahard_file = "arena-hard-v2.0.yaml.j2"
+    tmp_arenahard_file = 'tmp_arena-hard-v2.0.yaml'
+    
+    render_yaml({"judge_model": get_lowercase_model(model_name), "max_tokens": arenahard_judgement_args["max_tokens"] }, STANDARDS_PATH , template_arenahard_file, tmp_arenahard_file)
+
+    render_yaml({"model_name": model_name, "lower_case_model": get_lowercase_model(model_name), "max_tokens": arenahard_judgement_args["max_tokens"] }, STANDARDS_PATH , template_apiconfig_file, tmp_judge_endpoint_file )
+
     # verify that the input file paths exist
-    api_config_path = os.path.join( ARENAHARD_CONFIG_PATH , arenahard_judgement_args["judgement_endpoint_file"])
+    api_config_path = os.path.join( ARENAHARD_CONFIG_PATH , tmp_judge_endpoint_file )
     assert os.path.exists(api_config_path), f"{api_config_path} does not exist"
-    gen_judgement_config_path = os.path.join(ARENAHARD_CONFIG_PATH , arenahard_judgement_args["judgement_setting_file"] )
+    gen_judgement_config_path = os.path.join(ARENAHARD_CONFIG_PATH , tmp_arenahard_file )
     assert os.path.exists(gen_judgement_config_path), f"{gen_judgement_config_path} does not exist"
 
     # Start vLLM server
@@ -102,7 +116,7 @@ def main():
         arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0"))
         answer_dir = os.path.join(arenahard_dir, "model_answer")
         from arenahard.utils.completion import make_config
-        configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, arenahard_judgement_args["judgement_setting_file"]))
+        configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, tmp_arenahard_file))
         model_name = configs["model_list"][0]
         if arenahard_judgement_args.get("answer_task_id","") :
             from pathlib import Path
@@ -122,7 +136,7 @@ def main():
         from arenahard.gen_judgment import run
         print(f"Arenahard args: {arenahard_judgement_args}")
 
-        run(setting_file=arenahard_judgement_args["judgement_setting_file"], endpoint_file=arenahard_judgement_args["judgement_endpoint_file"], question_path= ARENAHARD_CONFIG_PATH, config_path=ARENAHARD_CONFIG_PATH, answer_path=ARENAHARD_CONFIG_PATH)
+        run(setting_file= tmp_arenahard_file, endpoint_file= tmp_judge_endpoint_file, question_path= ARENAHARD_CONFIG_PATH, config_path=ARENAHARD_CONFIG_PATH, answer_path=ARENAHARD_CONFIG_PATH)
         time.sleep(150)
 
     finally:
