@@ -125,7 +125,7 @@ def main():
             from clearml.storage import StorageManager
 
             answer_task = Task.get_task(project_name="simple_debug",task_name=arenahard_judgement_args["answer_task_id"])
-            artifact_obj = answer_task.artifacts['arenahard report'].get_local_copy()
+            artifact_obj = answer_task.artifacts['arenahard model answer'].get_local_copy()
             #answer_task = Task.get_task(task_id=arenahard_judgement_args["answer_task_id"])
             #artifact_obj = answer_task.artifacts['arenahard report'].get_local_copy()
             #artifact_obj = StorageManager.get_local_copy(arenahard_judgement_args["answer_task_id"])
