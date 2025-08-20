@@ -65,14 +65,8 @@ def main():
         force_download = force_download.lower() == "true"
 
     arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0"))
-    print("[DEBUG] Arenahard_Args:", arenahard_generate_args)
-    print(arenahard_dir)
-    print(arenahard_generate_args["question_size"])
     if arenahard_generate_args.get("question_size","") == "small" :
-        raise ValueError("inside small category")
         shutil.copy(os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
-    else:
-        raise ValueError("inside default category")
 
     # Resolve model_id
     model_id = resolve_model_id(args["Args"]["generate_model"], clearml_model, force_download)
