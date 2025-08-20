@@ -67,9 +67,9 @@ def main():
     arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0"))
     print("[DEBUG] Arenahard_Args:", arenahard_generate_args)
     print(arenahard_dir)
-    print(arenahard_generate_args["category"])
-    if arenahard_generate_args.get("category","") == "quick" :
-        raise ValueError("inside quick category")
+    print(arenahard_generate_args["question_size"])
+    if arenahard_generate_args.get("question_size","") == "small" :
+        raise ValueError("inside small category")
         shutil.copy(os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
     else:
         raise ValueError("inside default category")
