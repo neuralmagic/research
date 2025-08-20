@@ -12,7 +12,6 @@ task = GuideLLMTask(
     max_seconds=30,
     #scenario = "benchmarking_32k",
     data="prompt_tokens=128,output_tokens=128",
-    branch = "update_guidellm",
     vllm_kwargs={"enable-chunked-prefill": True}
 )
 
