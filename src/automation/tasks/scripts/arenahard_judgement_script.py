@@ -130,6 +130,9 @@ def main():
         else:
             # use default 03-mini answers
             shutil.copy( os.path.join(answer_dir,"o3-mini-2025-01-31.jsonl"),os.path.join(answer_dir, f"{model_name}.jsonl"))
+
+        if arenahard_judgement_args.get("category","") == "quick" :
+            shutil.copy( os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
     
         print ("Running arena hard generate")
         from arenahard.gen_judgment import run
