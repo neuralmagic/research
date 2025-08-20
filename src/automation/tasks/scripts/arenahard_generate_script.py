@@ -18,6 +18,9 @@ STANDARDS_PATH = os.path.join(os.getcwd(), "src", "automation", "standards")
 ARENAHARD_CONFIG_PATH = os.path.join(STANDARDS_PATH, "arenahard")
 
 def main():
+    import shutil
+    from pathlib import Path
+
     task = Task.current_task()
 
     args = task.get_parameters_as_dict(cast=True)
@@ -60,6 +63,10 @@ def main():
     force_download = args["Args"]["force_download"]
     if isinstance(force_download, str):
         force_download = force_download.lower() == "true"
+
+    arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0"))
+    if arenahard_generate_args.get("category","") == "quick" :
+        shutil.copy(os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
 
     # Resolve model_id
     model_id = resolve_model_id(args["Args"]["generate_model"], clearml_model, force_download)
