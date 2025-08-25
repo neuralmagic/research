@@ -1,0 +1,11 @@
+{{ lower_case_model }}:
+    model: {{ model_name }}
+    endpoints:
+      - api_base: http://127.0.0.1:8000/v1
+        api_key: '-'
+    api_type: openai
+    temperature: 0.6
+    end_think_token: "</think>"
+    max_tokens: {{ max_tokens }}
+    parallel: 1
+
