@@ -1,5 +1,5 @@
 from automation.tasks.base_task import BaseTask
-from automation.configs import DEFAULT_DOCKER_IMAGE
+from automation.configs import DEFAULT_DOCKER_IMAGE, DEFAULT_RESEARCH_BRANCH
 from typing import Optional, Sequence
 import os
 
@@ -23,6 +23,7 @@ class LMEvalTask(BaseTask):
         model_id: str,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
+        branch: str= DEFAULT_RESEARCH_BRANCH,
         clearml_model: bool=False,
         task_type: str="training",
         force_download: bool=False,
@@ -59,6 +60,7 @@ class LMEvalTask(BaseTask):
             docker_image=docker_image,
             packages=packages,
             task_type=task_type,
+            branch = branch,
         )
 
         # Check for conflicts in configs and constructor arguments
