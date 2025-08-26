@@ -7,7 +7,6 @@ class LMEvalTask(BaseTask):
 
     lmeval_packages = [
         "vllm",
-        #"vllm==0.10.1",
         "git+https://github.com/EleutherAI/lm-evaluation-harness.git",
         "numpy==2.1",
         "hf_xet",
@@ -42,11 +41,9 @@ class LMEvalTask(BaseTask):
             # use that version instead of the latest
             for package in packages:
                 if "vllm" in package:
-                    #self.lmeval_packages.pop("vllm")
                     self.lmeval_packages.remove("vllm")
-                    #self.lmeval_packages.remove("vllm==0.10.1")
                 if "lm-evaluation-harness" in package:
-                    self.lmeval_packages.pop("git+https://github.com/EleutherAI/lm-evaluation-harness.git")
+                    self.lmeval_packages.remove("git+https://github.com/EleutherAI/lm-evaluation-harness.git")
             packages = list(set(packages + self.lmeval_packages))
         else:
             packages = self.lmeval_packages
