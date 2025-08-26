@@ -42,7 +42,7 @@ class LMEvalTask(BaseTask):
             for package in packages:
                 if "vllm" in package:
                     #self.lmeval_packages.pop("vllm")
-                    self.lmeval_packages.remove("vllm")
+                    self.lmeval_packages.remove("vllm==0.10.1")
                 if "lm-evaluation-harness" in package:
                     self.lmeval_packages.pop("git+https://github.com/EleutherAI/lm-evaluation-harness.git")
             packages = list(set(packages + self.lmeval_packages))
