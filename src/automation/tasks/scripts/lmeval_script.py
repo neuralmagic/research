@@ -74,7 +74,7 @@ def lmeval_main(
     results = lm_eval.simple_evaluate( # call simple_evaluate
         task_manager=task_manager,
         apply_chat_template=True,
-        #fewshot_as_multiturn=True,
+        fewshot_as_multiturn=True,
         **lm_eval_args,
     )
 
