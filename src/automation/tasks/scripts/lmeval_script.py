@@ -74,8 +74,8 @@ def lmeval_main(
     print(f"The lm eval args are: {lm_eval_args}")
     results = lm_eval.simple_evaluate( # call simple_evaluate
         task_manager=task_manager,
-        apply_chat_template=True,
-        fewshot_as_multiturn=True,
+        #apply_chat_template=True,
+        #fewshot_as_multiturn=True,
         **lm_eval_args,
     )
 
