@@ -5,6 +5,9 @@ packages:
   - "math-verify"
   - "sympy"
 tasks: leaderboard
+model_args: "add_bos_token=False,max_model_len=15000"
+apply_chat_template: "true"
+fewshot_as_multiturn: "true"
 groups:
   leaderboard:
     math_lvl5:
