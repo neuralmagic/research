@@ -6,7 +6,10 @@ import os
 class LMEvalTask(BaseTask):
 
     lmeval_packages = [
-        "vllm",
+        "huggingface-hub==0.34.3",
+        "triton==3.3.1",
+        "vllm==0.10.1.1",
+        #"vllm",
         "git+https://github.com/EleutherAI/lm-evaluation-harness.git",
         "numpy==2.1",
         "hf_xet",
