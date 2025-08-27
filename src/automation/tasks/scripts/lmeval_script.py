@@ -71,6 +71,7 @@ def lmeval_main(
     #tasks = task_manager.all_tasks
 
     lm_eval_args = cast_args(lm_eval_args, lm_eval.simple_evaluate)
+    print(f"The lm eval args are: {lm_eval_args}")
     results = lm_eval.simple_evaluate( # call simple_evaluate
         task_manager=task_manager,
         apply_chat_template=True,
