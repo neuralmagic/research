@@ -6,6 +6,9 @@ import os
 class LMEvalTask(BaseTask):
 
     lmeval_packages = [
+        "torch==2.7.1", 
+        "torchaudio==2.7.1",
+        "torchvision==0.22.1",
         "huggingface-hub==0.34.3",
         "triton==3.3.1",
         "vllm==0.10.1.1",
