@@ -65,9 +65,9 @@ def lmeval_main(
     lm_eval_args["write_out"] = True
 
     # Run lm_eval
-    task_manager = lm_eval.tasks.TaskManager()
-    #from lm_eval.tasks import TaskManager
-    #task_manager = TaskManager()
+    #task_manager = lm_eval.tasks.TaskManager()
+    from lm_eval.tasks import TaskManager
+    task_manager = TaskManager()
     #tasks = task_manager.all_tasks
 
     lm_eval_args = cast_args(lm_eval_args, lm_eval.simple_evaluate)
