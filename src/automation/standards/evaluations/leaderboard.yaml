@@ -5,6 +5,8 @@ packages:
   - "math-verify"
   - "sympy"
 tasks: leaderboard
+apply_chat_template: true
+fewshot_as_multiturn: true
 groups:
   leaderboard:
     math_lvl5:
