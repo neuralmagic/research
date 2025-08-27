@@ -71,13 +71,13 @@ def lmeval_main(
     #tasks = task_manager.all_tasks
 
     lm_eval_args = cast_args(lm_eval_args, lm_eval.simple_evaluate)
-    boolean_args = {"apply_chat_template": True, "fewshot_as_multiturn": True}
+    #boolean_args = {"apply_chat_template": True, "fewshot_as_multiturn": True}
     print(f"The lm eval args are: {lm_eval_args}")
-    print(f"The boolean eval args are: {boolean_args}")
+    #print(f"The boolean eval args are: {boolean_args}")
     results = lm_eval.simple_evaluate( # call simple_evaluate
         task_manager=task_manager,
         **lm_eval_args,
-        **boolean_args,
+        #**boolean_args,
         #apply_chat_template=True,
         #fewshot_as_multiturn=True,
     )
