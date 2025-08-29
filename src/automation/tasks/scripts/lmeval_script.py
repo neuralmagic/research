@@ -64,6 +64,12 @@ def lmeval_main(
 
     lm_eval_args["write_out"] = True
 
+    from huggingface_hub import snapshot_download
+
+    print("-----------------------------------Downloading model---------------------------")
+    snapshot_download(repo_id=f"{model_id}")
+   
+
     # Run lm_eval
     #task_manager = lm_eval.tasks.TaskManager()
     from lm_eval.tasks import TaskManager
