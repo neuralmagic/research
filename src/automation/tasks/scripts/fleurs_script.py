@@ -7,9 +7,19 @@ from tqdm import tqdm
 # Import the FLEURS dataset script
 from automation.datasets import load_fleurs_dataset
 from automation.datasets.fleurs import _FLEURS_LANG_TO_ID
+from automation.requests import SUPPORTED_REQUESTS
 from automation.metrics import WERMetric
 from automation.requests.mistral.transcript import transcript_request
-from automation.requests.mistral.utils import audio_to_base64
+from automation.utils import resolve_model_id, cast_args, load_callable_configuration
+from pyhocon import ConfigFactory
+
+try:
+    from clearml import Task
+    clearml_available = True
+except ImportError:
+    print("ClearML is not installed.")
+    clearml_available = False
+
 
 def fleurs_main(
     model_id,
@@ -80,3 +90,51 @@ def fleurs_main(
     print(f"WER std: {wer_metric.std()}")
 
     return wer_metric
+
+
+def main(configurations):
+
+    if clearml_available:
+        task = Task.current_task()
+    else:
+        task = None
+
+    if task is not None:
+        args = task.get_parameters_as_dict(cast=True)
+    
+    if task is not None and configurations is None:
+        fleurs_args = ConfigFactory.parse_string(task.get_configuration_object("fleurs_args"))
+    else:
+        fleurs_args = configurations.get("fleurs_args", {})
+
+    model_id = args["Args"]["model_id"]
+    clearml_model = args["Args"]["clearml_model"]
+    if isinstance(clearml_model, str):
+        clearml_model = clearml_model.lower() == "true"
+    force_download = args["Args"]["force_download"]
+    if isinstance(force_download, str):
+        force_download = force_download.lower() == "true"
+
+    # Resolve model_id
+    model_id = resolve_model_id(model_id, clearml_model, force_download)
+
+    if isinstance(configurations.get("request"), str) and configurations.get("request") in SUPPORTED_REQUESTS:
+        request_fn = SUPPORTED_REQUESTS[configurations.get("request")]
+    elif callable(configurations.get("request")):
+        request_fn = load_callable_configuration("request", configurations)
+
+    results = fleurs_main(
+        model_id=model_id,
+        vllm_args=fleurs_args["vllm_args"],
+        server_wait_time=fleurs_args["server_wait_time"],
+        transcript_request_fn=request_fn,
+        **fleurs_args,
+    )
+
+    if task is not None:
+        task.upload_artifact(name="results", artifact_object=results)
+    return results
+
+
+if __name__ == "__main__":
+    main()
