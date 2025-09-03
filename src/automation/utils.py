@@ -1,11 +1,16 @@
 import argparse
-from clearml import InputModel, Task
 import inspect
 import typing
 import psutil
 from pyhocon import ConfigFactory
 import yaml
 
+try:
+    from clearml import InputModel, Task
+    clearml_available = True
+except ImportError:
+    clearml_available = False
+    
 
 def parse_argument(argument, argument_type):
     if argument is None:
