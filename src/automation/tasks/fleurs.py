@@ -11,6 +11,8 @@ class FleursTask(BaseTask):
         "vllm",
         "jiwer",
         "more_itertools",
+        "torchcodec",
+        "soundfile",
     ]
 
     def __init__(
