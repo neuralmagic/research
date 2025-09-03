@@ -25,6 +25,7 @@ def fleurs_main(
     model_id,
     language,
     vllm_args={},
+    target="http://localhost:8000/v1",
     server_wait_time=120,
     transcript_request_fn=transcript_request,
     temperature=0.0,
@@ -38,7 +39,7 @@ def fleurs_main(
     vllm_server = VLLMServer(
         vllm_args=vllm_args,
         model_id=model_id,
-        target="http://localhost:8000/v1",
+        target=target,
         server_wait_time=server_wait_time,
     )
     vllm_server.start()
@@ -104,8 +105,15 @@ def main(configurations):
     
     if task is not None and configurations is None:
         fleurs_args = ConfigFactory.parse_string(task.get_configuration_object("fleurs_args"))
+        vllm_args = ConfigFactory.parse_string(task.get_configuration_object("vllm_args"))
+        target = task.get_configuration_object("target")
+        server_wait_time = task.get_configuration_object("server_wait_time")
     else:
         fleurs_args = configurations.get("fleurs_args", {})
+        vllm_args = configurations.get("vllm_args", {})
+        target = configurations.get("target")
+        server_wait_time = configurations.get("server_wait_time", 120)
+
 
     model_id = args["Args"]["model_id"]
     clearml_model = args["Args"]["clearml_model"]
@@ -125,8 +133,9 @@ def main(configurations):
 
     results = fleurs_main(
         model_id=model_id,
-        vllm_args=fleurs_args["vllm_args"],
-        server_wait_time=fleurs_args["server_wait_time"],
+        vllm_args=vllm_args,
+        target=target,
+        server_wait_time=server_wait_time,
         transcript_request_fn=request_fn,
         **fleurs_args,
     )
