@@ -5,7 +5,7 @@ from typing import Optional, Sequence, Callable, Union
 from automation.utils import serialize_callable
 import os
 
-class FluersTask(BaseTask):
+class FleursTask(BaseTask):
 
     fleurs_packages = [
         "vllm",
