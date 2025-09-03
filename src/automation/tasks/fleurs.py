@@ -45,7 +45,7 @@ class FleursTask(BaseTask):
                     self.fleurs_packages.pop("vllm")
             packages = list(set(packages + self.fleurs_packages))
         else:
-            packages = self.lmeval_packages
+            packages = self.fleurs_packages
 
         if "packages" in config_kwargs:
             packages = list(set(packages + config_kwargs.pop("packages")))
