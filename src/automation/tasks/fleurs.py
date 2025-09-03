@@ -66,6 +66,7 @@ class FleursTask(BaseTask):
         self.force_download = force_download
         self.request = request
         self.vllm_args = vllm_args
+        self.target = target
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "fleurs_script.py")
 
 
