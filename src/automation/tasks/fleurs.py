@@ -67,6 +67,7 @@ class FleursTask(BaseTask):
         self.request = request
         self.vllm_args = vllm_args
         self.target = target
+        self.server_wait_time = server_wait_time
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "fleurs_script.py")
 
 
