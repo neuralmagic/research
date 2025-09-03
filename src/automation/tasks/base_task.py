@@ -95,7 +95,7 @@ class BaseTask():
         return configurations
 
 
-    def script(self):
+    def script(self, configurations, args):
         raise NotImplementedError
 
 
