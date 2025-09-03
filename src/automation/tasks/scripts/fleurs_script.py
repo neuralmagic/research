@@ -50,7 +50,7 @@ def fleurs_main(
     # Initialize the client
     client = AsyncOpenAI(
         api_key="EMPTY",
-        base_url="http://localhost:8000/v1",
+        base_url=target,
     )
 
     # Initialize the semaphore (number of concurrent requests)
@@ -125,6 +125,7 @@ def main(configurations, args):
 
     # Resolve model_id
     model_id = resolve_model_id(model_id, clearml_model, force_download)
+    print
 
     if isinstance(configurations.get("request"), str) and configurations.get("request") in SUPPORTED_REQUESTS:
         request_fn = SUPPORTED_REQUESTS[configurations.get("request")]
