@@ -2,6 +2,7 @@ from automation.vllm import VLLMServer
 
 import asyncio
 from openai import AsyncOpenAI
+from tqdm import tqdm
 
 # Import the FLEURS dataset script
 from automation.datasets import load_fleurs_dataset
@@ -57,11 +58,25 @@ def fleurs_main(
         wer_metric(sample["transcription"], response.text)
 
     async def process_samples():
-        tasks = [process_sample(sample) for sample in fleurs_samples]
+        # Create a progress bar
+        pbar = tqdm(total=len(fleurs_samples), desc="Processing FLEURS samples")
+        
+        # Process samples with progress tracking
+        async def process_sample_with_progress(sample: dict):
+            result = await process_sample(sample)
+            pbar.update(1)
+            return result
+        
+        tasks = [process_sample_with_progress(sample) for sample in fleurs_samples]
         await asyncio.gather(*tasks)
+        
+        # Close the progress bar
+        pbar.close()
 
     asyncio.run(process_samples())
+    vllm_server.stop()
 
     print(f"WER mean: {wer_metric.mean()}")
     print(f"WER std: {wer_metric.std()}")
-    vllm_server.stop()
+
+    return wer_metric
