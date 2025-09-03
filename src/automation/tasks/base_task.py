@@ -5,6 +5,13 @@ from automation.standards import STANDARD_CONFIGS
 import yaml
 import os
 
+try:
+    from clearml import Task
+    clearml_available = True
+except ImportError:
+    print("ClearML is not installed.")
+    clearml_available = False
+
 class BaseTask():
 
     def __init__(
@@ -70,8 +77,11 @@ class BaseTask():
 
     def set_arguments(self):
         args = self.get_arguments()
-        for args_name, args_dict in args.items():
-            self.task.connect(args_dict, args_name)
+        if clearml_available:
+            for args_name, args_dict in args.items():
+                self.task.connect(args_dict, args_name)
+        
+        return args
 
 
     def get_configurations(self):
@@ -80,8 +90,10 @@ class BaseTask():
 
     def set_configurations(self):
         configurations = self.get_configurations()
-        for name, config in configurations.items():
-            self.task.connect_configuration(config, name=name)
+        if clearml_available:
+            for name, config in configurations.items():
+                self.task.connect_configuration(config, name=name)
+        
         return configurations
 
 
@@ -120,17 +132,22 @@ class BaseTask():
 
 
     def execute_locally(self):
-        if self.task is not None:
-            raise Exception("Can only execute locally if task is not yet created.")
+        if clearml_available:
+            if self.task is not None:
+                raise Exception("Can only execute locally if task is not yet created.")
 
-        self.task = Task.init(
-            project_name=self.project_name, 
-            task_name=self.task_name, 
-            task_type=self.task_type,
-            auto_connect_arg_parser=False,
-        )
-        self.set_arguments()
-        configurations = self.set_configurations()
-        self.script(configurations)
-        self.task.close()
+            self.task = Task.init(
+                project_name=self.project_name, 
+                task_name=self.task_name, 
+                task_type=self.task_type,
+                auto_connect_arg_parser=False,
+            )
+            args = self.set_arguments()
+            configurations = self.set_configurations()
+            self.script(configurations, args)
+            self.task.close()
+        else:
+            args = self.set_arguments()
+            configurations = self.set_configurations()
+            self.script(configurations, args)
 

@@ -93,14 +93,14 @@ def fleurs_main(
     return wer_metric
 
 
-def main(configurations):
+def main(configurations, args):
 
     if clearml_available:
         task = Task.current_task()
     else:
         task = None
 
-    if task is not None:
+    if task is not None and args is None:
         args = task.get_parameters_as_dict(cast=True)
     
     if task is not None and configurations is None:
