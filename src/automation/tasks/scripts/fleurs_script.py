@@ -1,5 +1,8 @@
 from automation.vllm import VLLMServer
 
+import json
+from datetime import datetime
+
 import asyncio
 from openai import AsyncOpenAI
 from tqdm import tqdm
@@ -125,7 +128,6 @@ def main(configurations, args):
 
     # Resolve model_id
     model_id = resolve_model_id(model_id, clearml_model, force_download)
-    print
 
     if isinstance(configurations.get("request"), str) and configurations.get("request") in SUPPORTED_REQUESTS:
         request_fn = SUPPORTED_REQUESTS[configurations.get("request")]
@@ -143,8 +145,22 @@ def main(configurations, args):
 
     if task is not None:
         task.upload_artifact(name="results", artifact_object=results)
+
+    # Generate filename with project name, task name, date and time
+    if task is not None:
+        project_name = task.get_project_name()
+        task_name = task.get_name()
+    else:
+        project_name = "automation"
+        task_name = "fleurs_evaluation"
+    
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{project_name}_{task_name}_{timestamp}.json"
+    
+    # Dump results to JSON file
+    with open(filename, "w") as f:
+        json.dump(results, f, indent=2, default=str)
+    
+    print(f"Results saved to: {filename}")
+    
     return results
-
-
-if __name__ == "__main__":
-    main()
