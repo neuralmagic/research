@@ -1,4 +1,3 @@
-from clearml import Task
 from typing import Sequence, Optional
 from automation.configs import DEFAULT_OUTPUT_URI, DEFAULT_RESEARCH_BRANCH
 from automation.standards import STANDARD_CONFIGS
