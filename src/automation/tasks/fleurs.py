@@ -27,6 +27,7 @@ class FluersTask(BaseTask):
         config: Optional[str]=None,
         request: Union[Callable, str]="mistral_transcript_request",
         vllm_args: Optional[dict]=None,
+        target="http://localhost:8000/v1",
         server_wait_time=120,
         **kwargs,
     ):
@@ -77,6 +78,8 @@ class FluersTask(BaseTask):
         configs = {
             "fleurs_args": self.fleurs_args,
             "vllm_args": self.vllm_args,
+            "target": self.target,
+            "server_wait_time": self.server_wait_time,
         }
         if isinstance(self.request, str):
             if self.request in SUPPORTED_REQUESTS:
