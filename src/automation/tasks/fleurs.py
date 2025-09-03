@@ -85,7 +85,7 @@ class FleursTask(BaseTask):
         }
         if isinstance(self.request, str):
             if self.request in SUPPORTED_REQUESTS:
-                configs["request"] = SUPPORTED_REQUESTS[self.request]
+                configs["request"] = self.request
             else:
                 raise ValueError(f"Request {self.request} not supported")
         elif callable(self.request):
