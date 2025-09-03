@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 # Import the FLEURS dataset script
 from automation.datasets import load_fleurs_dataset
-from automation.datasets.fleurs import _FLEURS_LANG_TO_ID
+from automation.datasets.fleurs import _FLEURS_LANG_TO_ID, _FLEURS_LANG_SHORT_TO_LONG, _FLEURS_LONG_TO_LANG
 from automation.requests import SUPPORTED_REQUESTS
 from automation.metrics import WERMetric
 from automation.requests.mistral.transcript import transcript_request
@@ -33,7 +33,7 @@ def fleurs_main(
 ):
 
     # Load the dataset
-    fleurs_samples = load_fleurs_dataset(name="en_us", split="test")
+    fleurs_samples = load_fleurs_dataset(name=_FLEURS_LONG_TO_LANG[_FLEURS_LANG_SHORT_TO_LONG[language]], split="test")
 
     # Start vLLM server
     vllm_server = VLLMServer(
