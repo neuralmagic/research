@@ -33,3 +33,13 @@ class WERMetric:
     def std(self):
         return numpy.std(self.values)
 
+    def to_dict(self):
+        return {
+            "language": self.language,
+            "values": self.values,
+            "results": {
+                "mean": self.mean().item(),
+                "std": self.std().item(),
+            },
+        }
+
