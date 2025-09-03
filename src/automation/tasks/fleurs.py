@@ -11,7 +11,6 @@ class FleursTask(BaseTask):
         "vllm",
         "jiwer",
         "more_itertools",
-        "torchdecoder",
     ]
 
     def __init__(
