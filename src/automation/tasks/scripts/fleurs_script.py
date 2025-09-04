@@ -69,7 +69,7 @@ def fleurs_main(
                 language=_FLEURS_LANG_TO_ID[sample["language"]],
             )
             response = await client.audio.transcriptions.create(**request)
-        wer_metric(sample["transcription"], response.text)
+        wer_metric(sample["transcription"], response.text, metadata={"id": sample["id"]})
 
     async def process_samples():
         # Create a progress bar
