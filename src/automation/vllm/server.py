@@ -7,6 +7,7 @@ import torch
 from urllib.parse import urlparse
 from automation.utils import kill_process_tree
 from datetime import datetime
+import random
 
 SERVER_LOG_PREFIX = "vllm_server_log"
 
@@ -45,9 +46,10 @@ class VLLMServer:
                     server_command.extend([f"--{k}", str(v)])
                     
 
+        random_integer = random.randint(1, 9999)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-        self.server_log_file_name = f"{SERVER_LOG_PREFIX}_{timestamp}.txt"
+        self.server_log_file_name = f"{SERVER_LOG_PREFIX}_{timestamp}_{random_integer:04d}.txt"
         self.server_log_file = open(self.server_log_file_name, "w")
         self.server_process = subprocess.Popen(server_command, stdout=self.server_log_file, stderr=self.server_log_file, shell=False, env=subprocess_env)
 
