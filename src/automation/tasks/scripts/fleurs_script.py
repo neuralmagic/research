@@ -142,6 +142,8 @@ def main(configurations, args):
         **fleurs_args,
     )
 
+    report = {"report": results.to_dict()}
+
     if task is not None:
         task.upload_artifact(name="results", artifact_object=results)
 
