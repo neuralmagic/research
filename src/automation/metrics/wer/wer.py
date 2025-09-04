@@ -20,11 +20,14 @@ class WERMetric:
         else:
             self.normalizer = normalization_map[language]
         self.values = []
+        self.metadata = []
 
-    def __call__(self, reference, hypothesis, accumulate=True):
+    def __call__(self, reference, hypothesis, metadata=None, accumulate=True):
         wer_value = wer(reference, hypothesis, reference_transform=self.normalizer, hypothesis_transform=self.normalizer)
         if accumulate:
             self.values.append(wer_value)
+        if metadata is not None:
+            self.metadata.append(metadata)
         return wer_value
 
     def mean(self):
@@ -34,12 +37,21 @@ class WERMetric:
         return numpy.std(self.values)
 
     def to_dict(self):
+        if len(self.metadata) > 0:
+            values = []
+            for value, metadata in zip(self.values, self.metadata):
+                value_dict = metadata.copy()
+                value_dict["value"] = value
+                values.append(value_dict)
+        else:
+            values = self.values
+        
         return {
             "language": self.language,
-            "values": self.values,
-            "results": {
+            "wer": {
                 "mean": self.mean().item(),
                 "std": self.std().item(),
+                "values": values,
             },
         }
 
