@@ -8,6 +8,7 @@ try:
     from clearml import Task
     clearml_available = True
 except ImportError:
+    print("ClearML not available. Will run tasks locally and not report to ClearML.")
     clearml_available = False
 
 class BaseTask():

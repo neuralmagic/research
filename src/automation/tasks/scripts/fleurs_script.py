@@ -20,7 +20,6 @@ try:
     from clearml import Task
     clearml_available = True
 except ImportError:
-    print("ClearML is not installed.")
     clearml_available = False
 
 
