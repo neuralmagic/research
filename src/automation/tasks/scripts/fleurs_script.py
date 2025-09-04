@@ -161,7 +161,7 @@ def main(configurations, args):
     
     # Dump results to JSON file
     with open(filename, "w") as f:
-        json.dump(results, f, indent=2, default=str)
+        json.dump(report, f, indent=2, default=str)
     
     print(f"Results saved to: {filename}")
     
