@@ -117,7 +117,6 @@ def main(configurations, args):
         target = configurations.get("target")
         server_wait_time = configurations.get("server_wait_time", 120)
 
-
     model_id = args["Args"]["model_id"]
     clearml_model = args["Args"]["clearml_model"]
     if isinstance(clearml_model, str):
@@ -154,8 +153,9 @@ def main(configurations, args):
         project_name = "automation"
         task_name = "fleurs_evaluation"
     
+    language = fleurs_args.get("language")
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{project_name}_{task_name}_{timestamp}.json"
+    filename = f"{project_name}_{task_name}_{language}_{timestamp}.json"
     
     # Dump results to JSON file
     with open(filename, "w") as f:
