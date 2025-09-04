@@ -6,7 +6,7 @@ import os
 import torch
 from urllib.parse import urlparse
 from automation.utils import kill_process_tree
-#from clearml import Task
+from datetime import datetime
 
 SERVER_LOG_PREFIX = "vllm_server_log"
 
@@ -18,8 +18,6 @@ class VLLMServer:
         self.server_wait_time = server_wait_time
         
     def start(self):
-        #task = Task.current_task()
-
         executable_path = os.path.dirname(sys.executable)
         vllm_path = os.path.join(executable_path, "vllm")
 
@@ -47,10 +45,10 @@ class VLLMServer:
                     server_command.extend([f"--{k}", str(v)])
                     
 
-        #server_log_file_name = f"{SERVER_LOG_PREFIX}_{task.id}.txt"
-        self.server_log_file_name = f"{SERVER_LOG_PREFIX}.txt"
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        self.server_log_file_name = f"{SERVER_LOG_PREFIX}_{timestamp}.txt"
         self.server_log_file = open(self.server_log_file_name, "w")
-        #server_process = subprocess.Popen(server_command, shell=False, env=subprocess_env)
         self.server_process = subprocess.Popen(server_command, stdout=self.server_log_file, stderr=self.server_log_file, shell=False, env=subprocess_env)
 
         delay = 5
