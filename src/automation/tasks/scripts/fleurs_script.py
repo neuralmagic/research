@@ -152,11 +152,11 @@ def main(configurations, args):
         task_name = task.get_name()
     else:
         project_name = "automation"
-        task_name = "fleurs_evaluation"
+        task_name = f"fleurs_evaluation_{model_id.replace('/', '_')}_{language}"
     
     language = fleurs_args.get("language")
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{project_name}_{task_name}_{language}_{timestamp}.json"
+    filename = f"{project_name}_{task_name}_{timestamp}.json"
     
     # Dump results to JSON file
     with open(filename, "w") as f:
