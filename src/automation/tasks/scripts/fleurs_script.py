@@ -165,3 +165,6 @@ def main(configurations, args):
     print(f"Results saved to: {filename}")
     
     return results
+
+if __name__ == "__main__":
+    main()
