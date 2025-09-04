@@ -146,15 +146,15 @@ def main(configurations, args):
     if task is not None:
         task.upload_artifact(name="results", artifact_object=results)
 
-    # Generate filename with project name, task name, date and time
+    # Generate filename with project name, task name, date and time    
     if task is not None:
         project_name = task.get_project_name()
         task_name = task.get_name()
     else:
         project_name = "automation"
+        language = fleurs_args.get("language")
         task_name = f"fleurs_evaluation_{model_id.replace('/', '_')}_{language}"
     
-    language = fleurs_args.get("language")
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{project_name}_{task_name}_{timestamp}.json"
     
