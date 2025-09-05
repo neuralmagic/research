@@ -1,6 +1,7 @@
 import torch
 from automation.utils import resolve_model_id, cast_args
 import lm_eval
+from lm_eval.tasks import TaskManager
 import numpy
 import json
 from pyhocon import ConfigFactory
@@ -73,7 +74,7 @@ def lmeval_main(
     lm_eval_args["write_out"] = True
 
     # Run lm_eval
-    task_manager = lm_eval.tasks.TaskManager()
+    task_manager = TaskManager()
     lm_eval_args = cast_args(lm_eval_args, lm_eval.simple_evaluate)
     results = lm_eval.simple_evaluate( # call simple_evaluate
         task_manager=task_manager,
