@@ -99,13 +99,11 @@ def main(configurations, args):
 
     if clearml_available:
         task = Task.current_task()
-    else:
-        task = None
 
-    if task is not None and args is None:
+    if clearml_available and args is None:
         args = task.get_parameters_as_dict(cast=True)
     
-    if task is not None and configurations is None:
+    if clearml_available and configurations is None:
         fleurs_args = ConfigFactory.parse_string(task.get_configuration_object("fleurs_args"))
         vllm_args = ConfigFactory.parse_string(task.get_configuration_object("vllm_args"))
         target = task.get_configuration_object("target")
@@ -144,11 +142,11 @@ def main(configurations, args):
     report = {"report": results.to_dict()}
     report["report"]["model_id"] = model_name
 
-    if task is not None:
+    if clearml_available:
         task.upload_artifact(name="results", artifact_object=results)
 
     # Generate filename with project name, task name, date and time    
-    if task is not None:
+    if clearml_available:
         project_name = task.get_project_name()
         task_name = task.get_name()
     else:
