@@ -1,4 +1,3 @@
-from clearml import Task
 import torch
 from automation.utils import resolve_model_id, cast_args, to_plain_dict
 from lighteval.main_vllm import vllm as lighteval_vllm
@@ -6,7 +5,13 @@ from lighteval.logging.evaluation_tracker import EnhancedJSONEncoder
 import yaml
 from pyhocon import ConfigFactory
 import json
+from datetime import datetime
 
+try:
+    from clearml import Task
+    clearml_available = True
+except ImportError:
+    clearml_available = False
 
 def lighteval_main(
     model_id: str,
@@ -39,15 +44,17 @@ def lighteval_main(
     return results
 
 
-def main(configurations=None):
-    task = Task.current_task()
+def main(configurations=None, args=None):
+    if clearml_available:
+        task = Task.current_task()
+        args = task.get_parameters_as_dict(cast=True)
 
-    args = task.get_parameters_as_dict(cast=True)
-    if configurations is None:
+    if clearml_available and configurations is None:
         lighteval_args = ConfigFactory.parse_string(task.get_configuration_object("lighteval_args"))
     else:
         lighteval_args = configurations.get("lighteval_args", {})
-    model_id = args["Args"]["model_id"]
+    
+    model_name = args["Args"]["model_id"]
     clearml_model = args["Args"]["clearml_model"]
     if isinstance(clearml_model, str):
         clearml_model = clearml_model.lower() == "true"
@@ -56,7 +63,7 @@ def main(configurations=None):
         force_download = force_download.lower() == "true"
 
     # Resolve model_id
-    model_id = resolve_model_id(model_id, clearml_model, force_download)
+    model_id = resolve_model_id(model_name, clearml_model, force_download)
 
     results = lighteval_main(
         model_id=model_id,
@@ -69,7 +76,25 @@ def main(configurations=None):
 
     dumped = json.dumps(results, cls=EnhancedJSONEncoder, indent=2, ensure_ascii=False)
 
-    task.upload_artifact(name="results", artifact_object=dumped)
+    if clearml_available:
+        task.upload_artifact(name="results", artifact_object=dumped)
+
+    # Generate filename with project name, task name, date and time    
+    if clearml_available:
+        project_name = task.get_project_name()
+        task_name = task.get_name()
+    else:
+        project_name = "automation"
+        lighteval_tasks = lighteval_args.get("tasks").replace(",", "_").replace(" ", "").replace("|", "_")
+        task_name = f"lighteval_{model_name.replace('/', '_')}_{lighteval_tasks}"
+    
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{project_name}_{task_name}_{timestamp}.json"
+
+
+    with open(filename, "w") as f:
+        json.dump(dumped, f)
+
 
     return results
 
