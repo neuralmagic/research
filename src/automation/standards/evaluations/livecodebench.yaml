@@ -1,0 +1,2 @@
+tasks: "extended|lcb:codegeneration"
+use_chat_template: true
