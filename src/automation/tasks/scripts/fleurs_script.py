@@ -142,6 +142,7 @@ def main(configurations, args):
     )
 
     report = {"report": results.to_dict()}
+    report["report"]["model_id"] = model_name
 
     if task is not None:
         task.upload_artifact(name="results", artifact_object=results)
