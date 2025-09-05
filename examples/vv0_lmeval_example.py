@@ -55,18 +55,22 @@ model_queue_list_dict = [
 ]
 
 versions = ["v1"]
+#versions = ["v1", "v2"]
 
 def run_task(version, model_queue_dict):
     model, queue =  model_queue_dict.popitem()
     config = "openllm" if version == "v1" else "leaderboard"
     task = LMEvalTask(
-        project_name="jira_1827_debug",
-        task_name=f"lmeval_task_{config}_{model.lower()}",
+        project_name="simple_debug",
+        task_name=f"1_ablation_test_lmeval_task_{config}_{model.lower()}",
         model_id=f"{model}",
         config=f"{config}",
         model_args="gpu_memory_utilization=0.6,enable_chunked_prefill=True",
+        #tasks=["gsm8k","mmlu"],
+        #model_args="add_bos_token=True,gpu_memory_utilization=0.4,enable_chunked_prefill=True,max_model_len=4096",
         batch_size="auto",
         branch="lmeval_update",
+        limit=10,
     )
     
     task.execute_remotely(queue)
