@@ -116,7 +116,7 @@ def main(configurations, args):
         target = configurations.get("target")
         server_wait_time = configurations.get("server_wait_time", 120)
 
-    model_id = args["Args"]["model_id"]
+    model_name = args["Args"]["model_id"]
     clearml_model = args["Args"]["clearml_model"]
     if isinstance(clearml_model, str):
         clearml_model = clearml_model.lower() == "true"
@@ -125,7 +125,7 @@ def main(configurations, args):
         force_download = force_download.lower() == "true"
 
     # Resolve model_id
-    model_id = resolve_model_id(model_id, clearml_model, force_download)
+    model_id = resolve_model_id(model_name, clearml_model, force_download)
 
     if isinstance(configurations.get("request"), str) and configurations.get("request") in SUPPORTED_REQUESTS:
         request_fn = SUPPORTED_REQUESTS[configurations.get("request")]
@@ -153,7 +153,7 @@ def main(configurations, args):
     else:
         project_name = "automation"
         language = fleurs_args.get("language")
-        task_name = f"fleurs_evaluation_{model_id.replace('/', '_')}_{language}"
+        task_name = f"fleurs_evaluation_{model_name.replace('/', '_')}_{language}"
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{project_name}_{task_name}_{timestamp}.json"
