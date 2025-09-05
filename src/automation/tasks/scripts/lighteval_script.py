@@ -44,7 +44,7 @@ def lighteval_main(
     return results
 
 
-def main(configurations=None):
+def main(configurations=None, args=None):
     if clearml_available:
         task = Task.current_task()
         args = task.get_parameters_as_dict(cast=True)
@@ -53,7 +53,7 @@ def main(configurations=None):
         lighteval_args = ConfigFactory.parse_string(task.get_configuration_object("lighteval_args"))
     else:
         lighteval_args = configurations.get("lighteval_args", {})
-
+    
     model_name = args["Args"]["model_id"]
     clearml_model = args["Args"]["clearml_model"]
     if isinstance(clearml_model, str):
@@ -94,7 +94,6 @@ def main(configurations=None):
 
     with open(filename, "w") as f:
         f.write(dumped)
-
     return results
 
 
