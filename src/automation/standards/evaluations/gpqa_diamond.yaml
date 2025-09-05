@@ -1,0 +1,2 @@
+tasks: "lighteval|gpqa:diamond|0|0"
+use_chat_template: true
