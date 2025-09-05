@@ -8,6 +8,7 @@ tasks: leaderboard
 model_args: "add_bos_token=False,max_model_len=15000"
 apply_chat_template: "true"
 fewshot_as_multiturn: "true"
+enable_thinking: "false"
 groups:
   leaderboard:
     math_lvl5:
