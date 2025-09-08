@@ -16,7 +16,7 @@ except ImportError:
 def lighteval_main(
     model_id: str,
     lighteval_args: dict,
-):
+):    
     # Determine number of gpus
     num_gpus = torch.cuda.device_count()
 
@@ -71,8 +71,10 @@ def main(configurations=None, args=None):
     )
 
     config_general = results.pop("config_general")
-    config_general.pop("config")
-    results["config"] = config_general
+    print(config_general.keys())
+    #config_general.pop("config")
+    #results["config"] = config_general
+    print(results.keys())
 
     dumped = json.dumps(results, cls=EnhancedJSONEncoder, indent=2, ensure_ascii=False)
 
