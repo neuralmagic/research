@@ -70,12 +70,6 @@ def main(configurations=None, args=None):
         lighteval_args=lighteval_args,
     )
 
-    config_general = results.pop("config_general")
-    print(config_general.keys())
-    #config_general.pop("config")
-    #results["config"] = config_general
-    print(results.keys())
-
     dumped = json.dumps(results, cls=EnhancedJSONEncoder, indent=2, ensure_ascii=False)
 
     if clearml_available:
@@ -95,7 +89,7 @@ def main(configurations=None, args=None):
 
 
     with open(filename, "w") as f:
-        json.dump(dumped, f)
+        f.write(dumped)
 
 
     return results

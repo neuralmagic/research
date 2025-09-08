@@ -172,7 +172,7 @@ def main(configurations=None, args=None):
 
 
     with open(filename, "w") as f:
-        json.dump(dumped, f)
+        f.write(dumped)
 
     return results
 
