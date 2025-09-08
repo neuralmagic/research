@@ -1,2 +1,5 @@
 tasks: "lighteval|gpqa:diamond|0|0"
-use_chat_template: true
+model_args:
+  max_model_length: 40960
+  generation_parameters:
+    max_new_tokens: 32768
