@@ -1,6 +1,6 @@
 from automation.tasks.base_task import BaseTask
 from automation.configs import DEFAULT_DOCKER_IMAGE
-from automation.utils import is_yaml_content
+from automation.utils import is_yaml_content, merge_dicts
 from typing import Optional, Sequence
 import yaml
 import os
@@ -96,11 +96,7 @@ class LightEvalTask(BaseTask):
             else:
                 config_model_args = config_kwargs.get("model_args")
 
-            for key in model_args.keys():
-                if key in config_model_args:
-                    raise ValueError(f"{key} already defined in config. It can't be defined again in task instantiation.")
-
-            model_args.update(config_model_args)
+            model_args = merge_dicts(model_args, config_model_args)
 
         # Set default dtype and enable_chunked_prefill
         if "dtype" not in model_args:

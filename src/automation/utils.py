@@ -167,3 +167,14 @@ def to_plain_dict(obj):
     elif hasattr(obj, "as_plain_ordered_dict"):
         return to_plain_dict(obj.as_plain_ordered_dict())
     return obj
+
+
+def merge_dicts(d1, d2):
+    for key in d2:
+        if key in d1:
+            if isinstance(d1[key], dict) and isinstance(d2[key], dict):
+                d1[key] = merge_dicts(d1[key], d2[key])
+            else:
+                raise ValueError(f"{key} already defined. It can't be defined again.")
+    d1.update(d2)
+    return d1
