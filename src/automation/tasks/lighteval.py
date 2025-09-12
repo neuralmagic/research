@@ -8,8 +8,11 @@ import os
 class LightEvalTask(BaseTask):
 
     lihghteval_packages = [
-        "vllm",
-        "git+https://github.com/neuralmagic/lighteval.git@reasoning",
+        "huggingface-hub==0.34.3",
+        "triton==3.3.1",
+        "vllm==0.10.1.1",
+        "lighteval",
+        #"git+https://github.com/neuralmagic/lighteval.git@reasoning",
         "math-verify==0.5.2",
         "more_itertools",
         "latex2sympy2_extended",
@@ -22,6 +25,7 @@ class LightEvalTask(BaseTask):
         self,
         project_name: str,
         task_name: str,
+        branch: str= "ablation-lighteval_standards",
         model_id: str,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
