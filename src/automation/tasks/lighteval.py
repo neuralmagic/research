@@ -128,6 +128,8 @@ class LightEvalTask(BaseTask):
         nltk_dir = "/home/nltk"
         os.mkdir(nltk_dir)
         os.environ["NLTK_DATA"] = nltk_dir
+        import nltk
+        print(f"The ntlk is {nltk.data.path}")
 
         from automation.tasks.scripts.lighteval_script import main
         main(configurations, args)
