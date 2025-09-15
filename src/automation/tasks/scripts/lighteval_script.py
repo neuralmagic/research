@@ -45,6 +45,12 @@ def lighteval_main(
 
 
 def main(configurations=None, args=None):
+
+    import os
+    nltk_dir = "/home/nltk"
+    os.mkdir(nltk_dir)
+    os.environ["NLTK_DATA"] = nltk_dir
+
     if clearml_available:
         task = Task.current_task()
         args = task.get_parameters_as_dict(cast=True)
