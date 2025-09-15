@@ -1,8 +1,3 @@
-import os
-nltk_dir = "/home/nltk"
-os.mkdir(nltk_dir)
-os.environ["NLTK_DATA"] = nltk_dir
-
 import torch
 from automation.utils import resolve_model_id, cast_args, to_plain_dict
 from lighteval.main_vllm import vllm as lighteval_vllm
