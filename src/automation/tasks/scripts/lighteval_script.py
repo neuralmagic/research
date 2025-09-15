@@ -46,6 +46,8 @@ def lighteval_main(
 
 def main(configurations=None, args=None):
 
+    import nltk
+    nltk.data.path.append("/home")
 
     if clearml_available:
         task = Task.current_task()
