@@ -64,6 +64,8 @@ def main():
     if isinstance(force_download, str):
         force_download = force_download.lower() == "true"
 
+    bench_name = arenahard_generate_args["bench_name"]
+
     # Resolve model_id
     model_id = resolve_model_id(args["Args"]["judgement_model"], clearml_model, force_download)
 
@@ -73,8 +75,8 @@ def main():
     template_apiconfig_file = "api_config.yaml.j2"
     tmp_judge_endpoint_file='tmp_api_config.yaml'
 
-    template_arenahard_file = "arena-hard-v2.0.yaml.j2"
-    tmp_arenahard_file = 'tmp_arena-hard-v2.0.yaml'
+    template_arenahard_file = f"{bench_name}.yaml.j2"
+    tmp_arenahard_file = 'tmp_{bench_name}.yaml'
     
     render_yaml({"judge_model": get_lowercase_model(model_name), "max_tokens": arenahard_judgement_args["max_tokens"] }, STANDARDS_PATH , template_arenahard_file, tmp_arenahard_file)
 
@@ -113,7 +115,7 @@ def main():
 
 
     try:
-        arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0"))
+        arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, bench_name ))
         answer_dir = os.path.join(arenahard_dir, "model_answer")
         from arenahard.utils.completion import make_config
         configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, tmp_arenahard_file))
