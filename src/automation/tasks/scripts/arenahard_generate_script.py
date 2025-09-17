@@ -64,7 +64,7 @@ def main():
     if isinstance(force_download, str):
         force_download = force_download.lower() == "true"
 
-    bench_name = args["Args"]["bench_name"]
+    bench_name = arenahard_generate_args["bench_name"]
     arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, bench_name))
     if arenahard_generate_args.get("question_size","") == "small" :
         shutil.copy(os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
