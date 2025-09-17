@@ -64,7 +64,7 @@ def main():
     if isinstance(force_download, str):
         force_download = force_download.lower() == "true"
 
-    bench_name = arenahard_generate_args["bench_name"]
+    bench_name = arenahard_judgement_args["bench_name"]
 
     # Resolve model_id
     model_id = resolve_model_id(args["Args"]["judgement_model"], clearml_model, force_download)
