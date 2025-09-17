@@ -1,0 +1,17 @@
+judge_model: {{ judge_model }}
+
+bench_name: arena-hard-v0.1
+
+reference: null
+
+temperature: 0.0
+max_tokens: {{ max_tokens }}
+
+regex_patterns:
+  - \[\[([AB<>=]+)\]\]
+  - \[([AB<>=]+)\]
+
+prompt_template: "<|User Prompt|>\n{QUESTION}\n\n<|The Start of Assistant A's Answer|>\n{ANSWER_A}\n<|The End of Assistant A's Answer|>\n\n<|The Start of Assistant B's Answer|>\n{ANSWER_B}\n<|The End of Assistant B's Answer|>"
+
+model_list:
+  - {{ judge_model }}

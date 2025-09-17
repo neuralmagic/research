@@ -64,7 +64,8 @@ def main():
     if isinstance(force_download, str):
         force_download = force_download.lower() == "true"
 
-    arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0"))
+    bench_name = args["Args"]["bench_name"]
+    arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, bench_name))
     if arenahard_generate_args.get("question_size","") == "small" :
         shutil.copy(os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
 
@@ -78,14 +79,14 @@ def main():
     tmp_gen_config_file='tmp_gen_answer_config.yaml'
     template_apiconfig_file = "api_config.yaml.j2"
     tmp_gen_endpoint_file='tmp_api_config.yaml'
-    template_arenahard_file = "arena-hard-v2.0.yaml.j2"
-    tmp_arenahard_file = 'tmp_arena-hard-v2.0.yaml'
+    template_arenahard_file = f"{bench_name}.yaml.j2"
+    tmp_arenahard_file = 'tmp_{bench_name}.yaml'
     
     render_yaml({"judge_model": get_lowercase_model(model_name), "max_tokens": arenahard_generate_args["max_tokens"] }, STANDARDS_PATH , template_arenahard_file, tmp_arenahard_file)
     
     render_yaml({"model_name": model_name, "lower_case_model": get_lowercase_model(model_name), "max_tokens": arenahard_generate_args["max_tokens"] }, STANDARDS_PATH , template_apiconfig_file, tmp_gen_endpoint_file )
     
-    render_yaml({"lower_case_model": get_lowercase_model(model_name)}, STANDARDS_PATH , template_gen_answer_config_file, tmp_gen_config_file)
+    render_yaml({"lower_case_model": get_lowercase_model(model_name), "bench_name": bench_name}, STANDARDS_PATH , template_gen_answer_config_file, tmp_gen_config_file)
 
     # verify that the input file paths exist
     api_config_path = os.path.join( ARENAHARD_CONFIG_PATH, tmp_gen_endpoint_file)
@@ -132,7 +133,7 @@ def main():
         from arenahard.utils.completion import load_model_answers
         from pathlib import Path
         model_name = configs["model_list"][0]
-        output_file_path = os.path.join(ARENAHARD_CONFIG_PATH, "arena-hard-v2.0" , "model_answer", f"{model_name}.jsonl")
+        output_file_path = os.path.join(ARENAHARD_CONFIG_PATH, bench_name, "model_answer", f"{model_name}.jsonl")
         arenahard_generate_args["output_path"] = str(output_file_path)
         task.upload_artifact(name="arenahard model answer", artifact_object=output_file_path)
         task.upload_artifact(name="vLLM server log", artifact_object=server_log)
