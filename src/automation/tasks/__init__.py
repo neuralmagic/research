@@ -4,3 +4,5 @@ from automation.tasks.lmeval import LMEvalTask
 from automation.tasks.lighteval import LightEvalTask
 from automation.tasks.guidellm import GuideLLMTask
 from automation.tasks.debug_task import DebugTask
+from automation.tasks.arenahard_generate import ArenaHardGenerateTask
+from automation.tasks.arenahard_judgement import ArenaHardJudgeTask

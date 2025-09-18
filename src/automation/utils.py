@@ -5,6 +5,10 @@ import typing
 import psutil
 from pyhocon import ConfigFactory
 import yaml
+import os
+from os.path import isfile, join
+from typing import Dict
+from jinja2 import Environment, FileSystemLoader
 
 
 def parse_argument(argument, argument_type):
@@ -162,3 +166,32 @@ def to_plain_dict(obj):
     elif hasattr(obj, "as_plain_ordered_dict"):
         return to_plain_dict(obj.as_plain_ordered_dict())
     return obj
+
+
+def render_yaml(
+    yaml_data: Dict,
+    base_dir: str,
+    template_filename: str,
+    save_filename: str = None,
+) -> None:
+    """
+    Utility method to render a yaml from a provided Jinja template
+    :param yaml_data: A Dictionary for all the template values
+    :param base_dir: Directory where the Jinja templates are stored
+    :param template_filename: Directory where the Jinja templates are stored
+    :param save_filename: Filename for storing the yaml file
+    """
+
+    env = Environment(
+        loader=FileSystemLoader(join(base_dir, "templates" )), trim_blocks=True, lstrip_blocks=True
+    )
+    template = env.get_template(template_filename)
+    render_yaml_output = template.render(yaml_data)
+    
+    print(render_yaml_output)
+    yaml_path = join(base_dir, "arenahard", save_filename)
+    print(f"Saving to: {yaml_path}")
+
+    with open(yaml_path, "w") as f:
+        f.write(render_yaml_output)
+
