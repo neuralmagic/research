@@ -1,8 +1,8 @@
 import os
 import sys
 from clearml import Task
-from automation.utils import resolve_model_id, cast_args, kill_process_tree
-from automation.vllm import start_vllm_server
+from automation.utils import resolve_model_id, kill_process_tree
+from automation.vllm import VLLMServer
 from pyhocon import ConfigFactory
 
 def main(configurations=None):
@@ -41,17 +41,13 @@ def main(configurations=None):
     model_id = resolve_model_id(args["Args"]["model"], clearml_model, force_download)
 
     # Start vLLM server
-    server_process, server_initialized, server_log = start_vllm_server(
+    vllm_server = VLLMServer(
         vllm_args,
         model_id,
         guidellm_args["target"],
         args["Args"]["server_wait_time"],
     )
-
-    if not server_initialized:
-        kill_process_tree(server_process.pid)
-        task.upload_artifact(name="vLLM server log", artifact_object=server_log)
-        raise AssertionError("Server failed to initialize")
+    vllm_server.start()
 
     # Parse through environment variables
     for k, v in environment_args.items():
@@ -102,8 +98,8 @@ def main(configurations=None):
 
     finally:
         task.upload_artifact(name="guidellm guidance report", artifact_object=output_path)
-        task.upload_artifact(name="vLLM server log", artifact_object=server_log)
-        kill_process_tree(server_process.pid)
+        task.upload_artifact(name="vLLM server log", artifact_object=vllm_server.get_log_file_name())
+        vllm_server.stop()
 
 if __name__ == '__main__':
     main()
