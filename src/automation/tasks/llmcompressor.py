@@ -6,7 +6,7 @@ import os
 import yaml
 
 class LLMCompressorTask(BaseTask):
-    llmcompressor_packages = [
+    task_packages = [
         "git+https://github.com/vllm-project/llm-compressor.git",
         "torchvision",
         "hf_xet",
@@ -46,9 +46,9 @@ class LLMCompressorTask(BaseTask):
         # Set packages, taking into account default packages
         # for the LMEvalTask and packages set in the config
         if packages is not None:
-            packages = list(set(packages + self.llmcompressor_packages))
+            packages = list(set(packages + self.task_packages))
         else:
-            packages = self.llmcompressor_packages
+            packages = self.task_packages
 
         if "packages" in config_kwargs:
             packages = list(set(packages + config_kwargs.pop("packages")))
@@ -111,9 +111,9 @@ class LLMCompressorTask(BaseTask):
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "llmcompressor_script.py")
 
 
-    def script(self, configurations):
+    def script(self, configurations, args):
         from automation.tasks.scripts.llmcompressor_script import main
-        main(configurations)
+        main(configurations, args)
         
 
     def get_configurations(self):

@@ -149,4 +149,4 @@ class BaseTask():
             args = self.set_arguments()
             configurations = self.set_configurations()
             self.script(configurations, args)
-
+            

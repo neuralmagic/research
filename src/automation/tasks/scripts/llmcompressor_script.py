@@ -8,10 +8,15 @@ from llmcompressor.transformers.compression.helpers import (
 from llmcompressor import oneshot
 import transformers
 from transformers import AutoProcessor
-from clearml import OutputModel, Task
 import torch
 from automation.utils import resolve_model_id, parse_argument, load_callable_configuration
 from llmcompressor.transformers import tracing
+
+try:
+    from clearml import OutputModel, Task
+    clearml_available = True
+except ImportError:
+    clearml_available = False
 
 
 def llmcompressor_main(
@@ -136,11 +141,12 @@ def llmcompressor_main(
     return recipe
 
 
-def main(configurations=None):
-    task = Task.current_task()
+def main(configurations=None, args=None):
+    if clearml_available:
+        task = Task.current_task()
+        args = task.get_parameters_as_dict(cast=True)["Args"]
 
     # Parse arguments
-    args = task.get_parameters_as_dict(cast=True)["Args"]
     clearml_model = parse_argument(args["clearml_model"], bool)
     force_download = parse_argument(args["force_download"], bool)
     trust_remote_code = parse_argument(args["trust_remote_code"], bool)
@@ -182,17 +188,17 @@ def main(configurations=None):
         data_collator_fn,
     )
 
-    if task is not None:
+    if clearml_available:
         task.upload_artifact("recipe", recipe)
 
-    # Upload model to ClearML
-    clearml_model_object = OutputModel(
-        task=task, 
-        name=task.name,
-        framework="PyTorch", 
-        tags=[tags] if isinstance(tags, str) else tags or []
-    )
-    clearml_model_object.update_weights(weights_filename=save_directory, auto_delete_file=False)
+        # Upload model to ClearML
+        clearml_model_object = OutputModel(
+            task=task, 
+            name=task.name,
+            framework="PyTorch", 
+           tags=[tags] if isinstance(tags, str) else tags or []
+        )
+        clearml_model_object.update_weights(weights_filename=save_directory, auto_delete_file=False)
 
 
 if __name__ == '__main__':
