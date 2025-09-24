@@ -120,9 +120,9 @@ class LightEvalTask(BaseTask):
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "lighteval_script.py")
 
 
-    def script(self, configurations):
+    def script(self, configurations, args):
         from automation.tasks.scripts.lighteval_script import main
-        main(configurations)
+        main(configurations, args)
 
 
     def get_configurations(self):
