@@ -1,6 +1,6 @@
 import os
 import sys
-from automation.utils import resolve_model_id, kill_process_tree
+from automation.utils import resolve_model_id
 from automation.vllm import VLLMServer
 from pyhocon import ConfigFactory
 
