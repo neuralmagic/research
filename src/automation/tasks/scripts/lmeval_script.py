@@ -1,18 +1,26 @@
-from clearml import Task
 import torch
 from automation.utils import resolve_model_id, cast_args
 import lm_eval
+from lm_eval.tasks import TaskManager
 import numpy
 import json
 from pyhocon import ConfigFactory
+from datetime import datetime
+
+try:
+    from clearml import Task
+    clearml_available = True
+except ImportError:
+    clearml_available = False
 
 
 def average_groups(results:dict, groups:dict):
-    task = Task.current_task()
-    if len(task.get_models()["input"]) == 1:
-        clearml_model_handle = task.get_models()["input"][0]
-    else:
-        clearml_model_handle = None
+    if clearml_available:
+        task = Task.current_task()
+        if len(task.get_models()["input"]) == 1:
+            clearml_model_handle = task.get_models()["input"][0]
+        else:
+            clearml_model_handle = None
 
     def compute_average(metric_name: str, metric_config: dict):
         if metric_name in results["results"] and "series" in metric_config:
@@ -30,11 +38,12 @@ def average_groups(results:dict, groups:dict):
                 scores.append(compute_average(_metric_name, _options))
             average_score = numpy.mean(scores).item()
 
-            task.get_logger().report_single_value(name=metric_name, value=average_score)
-            task.get_logger().report_scalar(title=metric_name, series="average", iteration=0, value=average_score)
+            if clearml_available:
+                task.get_logger().report_single_value(name=metric_name, value=average_score)
+                task.get_logger().report_scalar(title=metric_name, series="average", iteration=0, value=average_score)
 
-            if clearml_model_handle is not None:
-                clearml_model_handle.report_single_value(name=metric_name, value=average_score)
+                if clearml_model_handle is not None:
+                    clearml_model_handle.report_single_value(name=metric_name, value=average_score)
 
             results["results"][metric_name] = {"average": average_score}
 
@@ -65,7 +74,7 @@ def lmeval_main(
     lm_eval_args["write_out"] = True
 
     # Run lm_eval
-    task_manager = lm_eval.tasks.TaskManager()
+    task_manager = TaskManager()
     lm_eval_args = cast_args(lm_eval_args, lm_eval.simple_evaluate)
     results = lm_eval.simple_evaluate( # call simple_evaluate
         task_manager=task_manager,
@@ -87,15 +96,17 @@ def lmeval_main(
     return results
 
 
-def main(configurations=None):
-    task = Task.current_task()
-
-    args = task.get_parameters_as_dict(cast=True)
-    if configurations is None:
+def main(configurations=None, args=None):
+    if clearml_available:
+        task = Task.current_task()
+        args = task.get_parameters_as_dict(cast=True)
+    
+    if clearml_available and configurations is None:
         lm_eval_args = ConfigFactory.parse_string(task.get_configuration_object("lm_eval"))
     else:
         lm_eval_args = configurations.get("lm_eval", {})
-    model_id = args["Args"]["model_id"]
+
+    model_name = args["Args"]["model_id"]
     clearml_model = args["Args"]["clearml_model"]
     if isinstance(clearml_model, str):
         clearml_model = clearml_model.lower() == "true"
@@ -105,7 +116,7 @@ def main(configurations=None):
     groups = lm_eval_args.pop("groups", None)
 
     # Resolve model_id
-    model_id = resolve_model_id(model_id, clearml_model, force_download)
+    model_id = resolve_model_id(model_name, clearml_model, force_download)
 
     results = lmeval_main(
         model_id=model_id,
@@ -113,30 +124,6 @@ def main(configurations=None):
         groups=groups,
     )
 
-    # Upload results to ClearML
-    if len(task.get_models()["input"]) == 1:
-        clearml_model_handle = task.get_models()["input"][0]
-    else:
-        clearml_model_handle = None
-
-    for lm_eval_task in results["results"]:
-        if "configs" in results and lm_eval_task in results["configs"] and "num_fewshot" in results["configs"][lm_eval_task]:
-            num_fewshot = results["configs"][lm_eval_task]["num_fewshot"]
-        else:
-            num_fewshot = None
-        for metric in results["results"][lm_eval_task]:
-            value = results["results"][lm_eval_task][metric]
-            if not isinstance(value, str):
-                if num_fewshot is None:
-                    name = lm_eval_task + "/" + metric
-                else:
-                    name = lm_eval_task + "/" + f"{num_fewshot:d}" + "shot/" + metric
-                task.get_logger().report_single_value(name=name, value=value)
-                task.get_logger().report_scalar(title=lm_eval_task, series=metric, iteration=0, value=value)
-
-                if clearml_model_handle is not None:
-                    clearml_model_handle.report_single_value(name=name, value=value)
-                           
     dumped = json.dumps(
         results,
         indent=2,
@@ -144,7 +131,48 @@ def main(configurations=None):
         ensure_ascii=False,
     )
 
-    task.upload_artifact(name="results", artifact_object=dumped)
+
+    # Upload results to ClearML
+    if clearml_available:
+        task.upload_artifact(name="results", artifact_object=dumped)
+        if len(task.get_models()["input"]) == 1:
+            clearml_model_handle = task.get_models()["input"][0]
+        else:
+            clearml_model_handle = None
+
+        for lm_eval_task in results["results"]:
+            if "configs" in results and lm_eval_task in results["configs"] and "num_fewshot" in results["configs"][lm_eval_task]:
+                num_fewshot = results["configs"][lm_eval_task]["num_fewshot"]
+            else:
+                num_fewshot = None
+            for metric in results["results"][lm_eval_task]:
+                value = results["results"][lm_eval_task][metric]
+                if not isinstance(value, str):
+                    if num_fewshot is None:
+                        name = lm_eval_task + "/" + metric
+                    else:
+                        name = lm_eval_task + "/" + f"{num_fewshot:d}" + "shot/" + metric
+                    task.get_logger().report_single_value(name=name, value=value)
+                    task.get_logger().report_scalar(title=lm_eval_task, series=metric, iteration=0, value=value)
+
+                    if clearml_model_handle is not None:
+                        clearml_model_handle.report_single_value(name=name, value=value)
+
+    # Generate filename with project name, task name, date and time    
+    if clearml_available:
+        project_name = task.get_project_name()
+        task_name = task.get_name()
+    else:
+        project_name = "automation"
+        lmeval_tasks = lm_eval_args.get("tasks").replace(",", "_").replace(" ", "")
+        task_name = f"lmeval_{model_name.replace('/', '_')}_{lmeval_tasks}"
+    
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{project_name}_{task_name}_{timestamp}.json"
+
+
+    with open(filename, "w") as f:
+        f.write(dumped)
 
     return results
 
