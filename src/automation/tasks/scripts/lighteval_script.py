@@ -16,7 +16,7 @@ except ImportError:
 def lighteval_main(
     model_id: str,
     lighteval_args: dict,
-):
+):    
     # Determine number of gpus
     num_gpus = torch.cuda.device_count()
 
@@ -44,7 +44,7 @@ def lighteval_main(
     return results
 
 
-def main(configurations=None):
+def main(configurations=None, args=None):
     if clearml_available:
         task = Task.current_task()
         args = task.get_parameters_as_dict(cast=True)
@@ -53,7 +53,7 @@ def main(configurations=None):
         lighteval_args = ConfigFactory.parse_string(task.get_configuration_object("lighteval_args"))
     else:
         lighteval_args = configurations.get("lighteval_args", {})
-
+    
     model_name = args["Args"]["model_id"]
     clearml_model = args["Args"]["clearml_model"]
     if isinstance(clearml_model, str):
@@ -69,10 +69,6 @@ def main(configurations=None):
         model_id=model_id,
         lighteval_args=lighteval_args,
     )
-
-    config_general = results.pop("config_general")
-    config_general.pop("config")
-    results["config"] = config_general
 
     dumped = json.dumps(results, cls=EnhancedJSONEncoder, indent=2, ensure_ascii=False)
 
@@ -94,6 +90,7 @@ def main(configurations=None):
 
     with open(filename, "w") as f:
         f.write(dumped)
+
 
     return results
 

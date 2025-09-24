@@ -25,18 +25,20 @@ Allowed model_args:
 
 model_args="""
 model_parameters:
-  dtype: auto
-  max_model_length: 8192
-  gpu_memory_utilization: 0.9
+  max_model_length: 40960
   generation_parameters:
-    temperature: 0.0
+    max_new_tokens: 32768
+    temperature: 0.6
+    top_k: 20
+    min_p: 0.0
+    top_p: 0.95
 """
 
 task = LightEvalTask(
     project_name="alexandre_debug",
-    task_name="test_lighteval_task",
+    task_name="test_aime2024_task",
     model_id="meta-llama/Llama-3.2-1B-Instruct",
-    tasks="leaderboard|gsm8k|5|0",
+    config="aime2024",
     model_args=model_args,
 )
 

@@ -1,5 +1,6 @@
 from automation.tasks.base_task import BaseTask
 from automation.configs import DEFAULT_DOCKER_IMAGE
+from automation.utils import merge_dicts
 from typing import Optional, Sequence
 import os
 
@@ -80,12 +81,7 @@ class LMEvalTask(BaseTask):
 
         if "model_args" in config_kwargs:
             config_model_args = dict(item.split("=") for item in config_kwargs.pop("model_args").split(","))
-
-            for key in model_args.keys():
-                if key in config_model_args:
-                    raise ValueError(f"{key} already defined in config. It can't be defined again in task instantiation.")
-
-            model_args.update(config_model_args)
+            model_args = merge_dicts(model_args, config_model_args)
 
         # Set default dtype and enable_chunked_prefill
         if "dtype" not in model_args:
