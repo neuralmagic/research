@@ -1,11 +1,16 @@
 import os
 import sys
-from clearml import Task
 from automation.utils import resolve_model_id, kill_process_tree
 from automation.vllm import VLLMServer
 from pyhocon import ConfigFactory
 
-def main(configurations=None):
+try:
+    from clearml import Task
+    clearml_available = True
+except ImportError:
+    clearml_available = False
+
+def main(configurations=None, args=None):
     task = Task.current_task()
 
     args = task.get_parameters_as_dict(cast=True)
