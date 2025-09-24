@@ -7,7 +7,7 @@ import os
 
 class LightEvalTask(BaseTask):
 
-    lihghteval_packages = [
+    task_packages = [
         "vllm",
         "git+https://github.com/neuralmagic/lighteval.git@reasoning",
         "math-verify==0.5.2",
@@ -38,9 +38,9 @@ class LightEvalTask(BaseTask):
         # Set packages, taking into account default packages
         # for the LightEvalTask and packages set in the config
         if packages is not None:
-            packages = list(set(packages + self.lihghteval_packages))
+            packages = list(set(packages + self.task_packages))
         else:
-            packages = self.lihghteval_packages
+            packages = self.task_packages
 
         if "packages" in config_kwargs:
             packages = list(set(packages + config_kwargs.pop("packages")))
@@ -120,9 +120,9 @@ class LightEvalTask(BaseTask):
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "lighteval_script.py")
 
 
-    def script(self, configurations):
+    def script(self, configurations, args):
         from automation.tasks.scripts.lighteval_script import main
-        main(configurations)
+        main(configurations, args)
 
 
     def get_configurations(self):

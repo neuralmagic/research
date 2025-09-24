@@ -8,7 +8,7 @@ GUIDELLM_PACKAGE = "git+https://github.com/neuralmagic/guidellm.git"
 
 class GuideLLMTask(BaseTask):
 
-    guidellm_packages = [
+    task_packages = [
         "vllm",
         GUIDELLM_PACKAGE,
         "hf_xet",
@@ -39,9 +39,9 @@ class GuideLLMTask(BaseTask):
         # Set packages, taking into account default packages
         # for the LMEvalTask and packages set in the config
         if packages is not None:
-            packages = list(set(packages + self.guidellm_packages))
+            packages = list(set(packages + self.task_packages))
         else:
-            packages = self.guidellm_packages
+            packages = self.task_packages
 
         if "packages" in config_kwargs:
             packages = list(set(packages + config_kwargs.pop("packages")))
@@ -86,9 +86,9 @@ class GuideLLMTask(BaseTask):
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "guidellm_script.py")
 
 
-    def script(self, configurations):
+    def script(self, configurations, args):
         from automation.tasks.scripts.guidellm_script import main
-        main(configurations)
+        main(configurations, args)
 
 
     def get_configurations(self):
