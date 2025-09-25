@@ -1,16 +1,10 @@
 import os
 from automation.datasets import SUPPORTED_DATASETS
 from automation.standards.compression.smoothquant_mappings import MAPPINGS_PER_MODEL_CONFIG
-from llmcompressor.transformers.compression.helpers import (
-    calculate_offload_device_map,
-    custom_offload_device_map,
-)
 from llmcompressor import oneshot
 import transformers
 from transformers import AutoProcessor
-import torch
 from automation.utils import resolve_model_id, parse_argument, load_callable_configuration
-from llmcompressor.transformers import tracing
 
 try:
     from clearml import OutputModel, Task
@@ -22,8 +16,6 @@ except ImportError:
 def llmcompressor_main(
     model_id,
     model_class,
-    max_memory_per_gpu,
-    tracing_class,
     trust_remote_code,
     recipe,
     recipe_args,
@@ -36,38 +28,11 @@ def llmcompressor_main(
     save_directory,
     data_collator,
 ):
-    # Set dtype
     dtype = "auto"
-
-    # Set device map
-    if max_memory_per_gpu == "auto":
-        device_map = "auto"
-    else:
-        # Determine number of gpus
-        num_gpus = torch.cuda.device_count()
-        
-        if max_memory_per_gpu == "hessian":
-            device_map = calculate_offload_device_map(
-                model_id, 
-                reserve_for_hessians=True, 
-                num_gpus=num_gpus, 
-                torch_dtype=dtype,
-                trust_remote_code=trust_remote_code,
-            )
-        else:
-            device_map = custom_offload_device_map(
-                model_id, 
-                max_memory_per_gpu=max_memory_per_gpu + "GB",
-                num_gpus=num_gpus, 
-                torch_dtype=dtype,
-                trust_remote_code=trust_remote_code,
-            )
+    device_map = "auto"
 
     # Load model
-    if tracing_class is None:
-        model_class = getattr(transformers, model_class)
-    else:
-        model_class = getattr(tracing, tracing_class)
+    model_class = getattr(transformers, model_class)
 
     model = model_class.from_pretrained(
         model_id, 
@@ -153,9 +118,7 @@ def main(configurations=None, args=None):
     model_id = parse_argument(args["model_id"], str)
     model_class = parse_argument(args["model_class"], str)
     dataset_name = parse_argument(args["dataset_name"], str)
-    tracing_class = parse_argument(args["tracing_class"], str)
     save_directory = parse_argument(args["save_directory"], str)
-    max_memory_per_gpu = parse_argument(args["max_memory_per_gpu"], str)
     max_seq_len = parse_argument(args["max_seq_len"], int)
     text_samples = parse_argument(args["text_samples"], int)
     vision_samples = parse_argument(args["vision_samples"], int)
@@ -173,8 +136,6 @@ def main(configurations=None, args=None):
     recipe = llmcompressor_main(
         model_id,
         model_class,
-        max_memory_per_gpu,
-        tracing_class,
         trust_remote_code,
         recipe,
         recipe_args,
