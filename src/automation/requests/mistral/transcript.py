@@ -9,6 +9,7 @@ def transcript_request(
     model_id:str,
     temperature: float=0.0,
     language: str="en",
+    max_tokens: int=None,
 ):
     audio_base64, audio_format = audio_to_base64(sample["audio"])
     audio = RawAudio(data=audio_base64, format=audio_format.lower())
@@ -16,4 +17,5 @@ def transcript_request(
         model=model_id, 
         audio=audio, 
         language=language, 
-        temperature=temperature).to_openai(exclude=("top_p", "seed"))
+        temperature=temperature,
+        max_tokens=max_tokens).to_openai(exclude=("top_p", "seed"))
