@@ -80,7 +80,7 @@ def main():
     template_apiconfig_file = "api_config.yaml.j2"
     tmp_gen_endpoint_file='tmp_api_config.yaml'
     template_arenahard_file = f"{bench_name}.yaml.j2"
-    tmp_arenahard_file = 'tmp_{bench_name}.yaml'
+    tmp_arenahard_file = f'tmp_{bench_name}.yaml'
     
     render_yaml({"judge_model": get_lowercase_model(model_name), "max_tokens": arenahard_generate_args["max_tokens"] }, STANDARDS_PATH , template_arenahard_file, tmp_arenahard_file)
     
