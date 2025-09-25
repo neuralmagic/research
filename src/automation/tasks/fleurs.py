@@ -27,6 +27,7 @@ class FleursTask(BaseTask):
         force_download: bool=False,
         config: Optional[str]=None,
         request: Union[Callable, str]="mistral_transcript_request",
+        request_kwargs={},
         vllm_args: Optional[dict]=None,
         target="http://localhost:8000/v1",
         server_wait_time=120,
@@ -66,6 +67,7 @@ class FleursTask(BaseTask):
         self.fleurs_args = kwargs
         self.force_download = force_download
         self.request = request
+        self.request_kwargs = request_kwargs
         self.vllm_args = vllm_args
         self.target = target
         self.server_wait_time = server_wait_time
@@ -83,6 +85,7 @@ class FleursTask(BaseTask):
             "vllm_args": self.vllm_args,
             "target": self.target,
             "server_wait_time": self.server_wait_time,
+            "request_kwargs": self.request_kwargs,
         }
         if isinstance(self.request, str):
             if self.request in SUPPORTED_REQUESTS:
