@@ -110,6 +110,8 @@ def main(configurations=None, args=None):
     if clearml_available:
         task = Task.current_task()
         args = task.get_parameters_as_dict(cast=True)["Args"]
+    else:
+        args = args["Args"]
 
     # Parse arguments
     clearml_model = parse_argument(args["clearml_model"], bool)
