@@ -46,7 +46,7 @@ class LMEvalTask(BaseTask):
                     self.task_packages.pop("git+https://github.com/EleutherAI/lm-evaluation-harness.git")
             packages = list(set(packages + self.task_packages))
         else:
-            packages = self.lmeval_packages
+            packages = self.task_packages
 
         if "packages" in config_kwargs:
             packages = list(set(packages + config_kwargs.pop("packages")))
