@@ -78,7 +78,7 @@ def main(configurations=None, args=None):
     # Generate filename with project name, task name, date and time    
     if clearml_available:
         project_name = task.get_project_name()
-        task_name = task.get_name()
+        task_name = task.name
     else:
         project_name = "automation"
         lighteval_tasks = lighteval_args.get("tasks").replace(",", "_").replace(" ", "").replace("|", "_")
