@@ -69,6 +69,9 @@ def lmeval_main(
     print("-----------------------------------Downloading model---------------------------")
     snapshot_download(repo_id=f"{model_id}")
    
+    if lm_eval_args["tasks"] == "humaneval_64_instruct":
+        import os
+        os.environ["HF_ALLOW_CODE_EVAL"] = 1
 
     # Run lm_eval
     #task_manager = lm_eval.tasks.TaskManager()
@@ -119,6 +122,10 @@ def main(configurations=None):
     if isinstance(force_download, str):
         force_download = force_download.lower() == "true"
     groups = lm_eval_args.pop("groups", None)
+
+    if lm_eval_args["tasks"] == "humaneval_64_instruct":
+        import os
+        os.environ["HF_ALLOW_CODE_EVAL"] = 1
 
     # Resolve model_id
     model_id = resolve_model_id(model_id, clearml_model, force_download)

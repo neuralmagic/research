@@ -1,0 +1,4 @@
+tasks: humaneval_64_instruct
+model_args: "add_bos_token=False,max_model_len=8192,gpu_memory_utilization=0.5"
+apply_chat_template: "true"
+confirm_run_unsafe_code: "true"
