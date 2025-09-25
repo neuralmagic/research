@@ -70,6 +70,7 @@ def lmeval_main(
     snapshot_download(repo_id=f"{model_id}")
    
     if lm_eval_args["tasks"] == "humaneval_64_instruct":
+        print("Setting HF_ALLOW_CODE_EVAL to 1")
         import os
         os.environ["HF_ALLOW_CODE_EVAL"] = "1"
 
@@ -124,6 +125,7 @@ def main(configurations=None):
     groups = lm_eval_args.pop("groups", None)
 
     if lm_eval_args["tasks"] == "humaneval_64_instruct":
+        print("Setting HF_ALLOW_CODE_EVAL to 1")
         import os
         os.environ["HF_ALLOW_CODE_EVAL"] = "1"
 
