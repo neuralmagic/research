@@ -11,7 +11,7 @@ class FleursTask(BaseTask):
         "vllm",
         "jiwer",
         "more_itertools",
-        "torchcodec==0.5",
+        "torchcodec",
         "soundfile",
     ]
 
