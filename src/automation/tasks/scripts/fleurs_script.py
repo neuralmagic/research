@@ -32,6 +32,7 @@ def fleurs_main(
     transcript_request_fn=transcript_request,
     temperature=0.0,
     max_concurrent_requests=64,
+    max_tokens=None,
 ):
 
     # Load the dataset
@@ -66,6 +67,7 @@ def fleurs_main(
                 model_id=model_id, 
                 temperature=temperature, 
                 language=_FLEURS_LANG_TO_ID[sample["language"]],
+                max_tokens=max_tokens,
             )
             response = await client.audio.transcriptions.create(**request)
         wer_metric(sample["transcription"], response.text, metadata={"id": sample["id"]})
