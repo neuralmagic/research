@@ -15,8 +15,6 @@
 
 import os
 from collections import OrderedDict
-import soundfile as sf
-
 import datasets
 
 logger = datasets.logging.get_logger(__name__)
