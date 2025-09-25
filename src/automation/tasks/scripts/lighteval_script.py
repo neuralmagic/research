@@ -73,7 +73,7 @@ def main(configurations=None, args=None):
     dumped = json.dumps(results, cls=EnhancedJSONEncoder, indent=2, ensure_ascii=False)
 
     if clearml_available:
-        task.upload_artifact(name="results", artifact_object=dumped)
+        task.upload_artifact(name="results", artifact_object=results)
 
     # Generate filename with project name, task name, date and time    
     if clearml_available:
