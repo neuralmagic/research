@@ -71,7 +71,7 @@ def lmeval_main(
    
     if lm_eval_args["tasks"] == "humaneval_64_instruct":
         import os
-        os.environ["HF_ALLOW_CODE_EVAL"] = 1
+        os.environ["HF_ALLOW_CODE_EVAL"] = "1"
 
     # Run lm_eval
     #task_manager = lm_eval.tasks.TaskManager()
@@ -125,7 +125,7 @@ def main(configurations=None):
 
     if lm_eval_args["tasks"] == "humaneval_64_instruct":
         import os
-        os.environ["HF_ALLOW_CODE_EVAL"] = 1
+        os.environ["HF_ALLOW_CODE_EVAL"] = "1"
 
     # Resolve model_id
     model_id = resolve_model_id(model_id, clearml_model, force_download)
