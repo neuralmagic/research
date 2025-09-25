@@ -134,7 +134,7 @@ def main(configurations=None, args=None):
 
     # Upload results to ClearML
     if clearml_available:
-        task.upload_artifact(name="results", artifact_object=dumped)
+        task.upload_artifact(name="results", artifact_object=results)
         if len(task.get_models()["input"]) == 1:
             clearml_model_handle = task.get_models()["input"][0]
         else:
