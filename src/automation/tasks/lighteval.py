@@ -8,9 +8,9 @@ import os
 class LightEvalTask(BaseTask):
 
     lihghteval_packages = [
-        "torch==2.7.1", 
-        "torchaudio==2.7.1",
-        "torchvision==0.22.1",
+        #"torch==2.7.1", 
+        #"torchaudio==2.7.1",
+        #"torchvision==0.22.1",
         "huggingface-hub==0.34.3",
         "triton==3.3.1",
         "vllm==0.10.1.1",
@@ -19,7 +19,7 @@ class LightEvalTask(BaseTask):
         "more-itertools==8.10.0",
         "latex2sympy2_extended==1.10.2",
         "langdetect==1.0.9",
-        "openai==1.107.2",
+        "openai==1.107.3",
         "hf-xet==1.1.5",
         "flashinfer-python==0.3.1.post1",
     ]
