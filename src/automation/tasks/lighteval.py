@@ -14,14 +14,13 @@ class LightEvalTask(BaseTask):
         "huggingface-hub==0.34.3",
         "triton==3.3.1",
         "vllm==0.10.1.1",
-        "lighteval",
-        #"git+https://github.com/neuralmagic/lighteval.git@reasoning",
+        "lighteval==0.10.0",
         "math-verify==0.5.2",
-        "more_itertools",
-        "latex2sympy2_extended",
-        "langdetect",
-        "openai",
-        "hf_xet",
+        "more-itertools==8.10.0",
+        "latex2sympy2_extended==1.10.2",
+        "langdetect==1.0.9",
+        "openai==1.107.2",
+        "hf-xet==1.1.5",
     ]
 
     def __init__(
