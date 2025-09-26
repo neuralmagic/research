@@ -22,6 +22,7 @@ class LightEvalTask(BaseTask):
         "openai==1.107.3",
         "hf-xet==1.1.5",
         "flashinfer-python==0.3.1.post1",
+        "ninja==1.13.0",
     ]
 
     def __init__(
