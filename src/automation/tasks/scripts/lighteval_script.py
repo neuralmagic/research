@@ -29,6 +29,9 @@ def lighteval_main(
     if "metric_options" in lighteval_args:
         config["metric_options"] = lighteval_args.pop("metric_options")
 
+    import nltk
+    nltk.download("punkt")
+
     config = to_plain_dict(config)
     
     yaml.dump(config, open("lighteval_config.yaml", "w"))
