@@ -11,6 +11,7 @@ class LightEvalTask(BaseTask):
         #"torch==2.7.1", 
         #"torchaudio==2.7.1",
         #"torchvision==0.22.1",
+        "transformers==4.56.1",
         "huggingface-hub==0.34.3",
         "triton==3.3.1",
         "vllm==0.10.1.1",
