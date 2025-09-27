@@ -39,7 +39,10 @@ def lighteval_main(
     lighteval_args["save_details"] = True
     # Run lighteval
     lighteval_args = cast_args(lighteval_args, lighteval_vllm)
+    print(f"The config is: {config}")
+    print(f"The light eval args are: {lighteval_args}")
     results = lighteval_vllm(model_args="lighteval_config.yaml", **lighteval_args)
+    print(f"The results are: {results}")
 
     if results is None:
         raise Exception("Evaluation failed.")
