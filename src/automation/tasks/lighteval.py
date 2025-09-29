@@ -1,5 +1,5 @@
 from automation.tasks.base_task import BaseTask
-from automation.configs import DEFAULT_DOCKER_IMAGE
+from automation.configs import DEFAULT_DOCKER_IMAGE, DEFAULT_RESEARCH_BRANCH
 from automation.utils import is_yaml_content, merge_dicts
 from typing import Optional, Sequence
 import yaml
@@ -34,7 +34,7 @@ class LightEvalTask(BaseTask):
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
         clearml_model: bool=False,
-        branch: str= "ablation-lighteval_standards",
+        branch: str= DEFAULT_RESEARCH_BRANCH,
         task_type: str="training",
         force_download: bool=False,
         config: Optional[str]=None,
@@ -61,6 +61,7 @@ class LightEvalTask(BaseTask):
             docker_image=docker_image,
             packages=packages,
             task_type=task_type,
+            branch=branch,
         )
 
         # Check for conflicts in configs and constructor arguments
