@@ -29,8 +29,8 @@ def lighteval_main(
     if "metric_options" in lighteval_args:
         config["metric_options"] = lighteval_args.pop("metric_options")
 
-    import nltk
-    nltk.download("punkt")
+    #import nltk
+    #nltk.download("punkt")
 
     config = to_plain_dict(config)
     
@@ -55,9 +55,7 @@ def lighteval_main(
 def main(configurations=None, args=None):
 
     #import nltk
-    #nltk.data.path.append("/home")
-    import nltk
-    nltk.download("punkt")
+    #nltk.download("punkt")
 
     if clearml_available:
         task = Task.current_task()
