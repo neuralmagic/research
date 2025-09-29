@@ -24,7 +24,6 @@ class LightEvalTask(BaseTask):
         "hf-xet==1.1.10",
         "emoji==2.15.0",
         "immutabledict==4.2.1",
-        "flashinfer-python==0.3.1.post1",
     ]
 
     def __init__(
