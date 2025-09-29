@@ -43,6 +43,8 @@ def lighteval_main(
     print(f"The light eval args are: {lighteval_args}")
     results = lighteval_vllm(model_args="lighteval_config.yaml", **lighteval_args)
     print(f"The results are: {results}")
+    print(f"The type of results is: {type(results)}")
+    print("\n")
 
     if results is None:
         raise Exception("Evaluation failed.")
