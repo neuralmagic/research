@@ -24,8 +24,7 @@ class LightEvalTask(BaseTask):
         "hf-xet==1.1.10",
         "emoji==2.15.0",
         "immutabledict==4.2.1",
-        #"ninja==1.13.0",
-        #"flashinfer-python==0.3.1.post1",
+        "flashinfer-python==0.3.1.post1",
     ]
 
     def __init__(
@@ -129,15 +128,6 @@ class LightEvalTask(BaseTask):
 
 
     def script(self, configurations, args):
-        """
-        import os
-        nltk_dir = "/home/nltk"
-        os.mkdir(nltk_dir)
-        os.environ["NLTK_DATA"] = nltk_dir
-        import nltk
-        print(f"The ntlk is {nltk.data.path}")
-        """
-
         from automation.tasks.scripts.lighteval_script import main
         main(configurations, args)
 
