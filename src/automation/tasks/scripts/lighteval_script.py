@@ -29,9 +29,6 @@ def lighteval_main(
     if "metric_options" in lighteval_args:
         config["metric_options"] = lighteval_args.pop("metric_options")
 
-    #import nltk
-    #nltk.download("punkt")
-
     config = to_plain_dict(config)
     
     yaml.dump(config, open("lighteval_config.yaml", "w"))
@@ -39,12 +36,7 @@ def lighteval_main(
     lighteval_args["save_details"] = True
     # Run lighteval
     lighteval_args = cast_args(lighteval_args, lighteval_vllm)
-    print(f"The config is: {config}")
-    print(f"The light eval args are: {lighteval_args}")
     results = lighteval_vllm(model_args="lighteval_config.yaml", **lighteval_args)
-    print(f"The results are: {results}")
-    print(f"The type of results is: {type(results)}")
-    print("\n")
 
     if results is None:
         raise Exception("Evaluation failed.")
@@ -53,9 +45,6 @@ def lighteval_main(
 
 
 def main(configurations=None, args=None):
-
-    #import nltk
-    #nltk.download("punkt")
 
     if clearml_available:
         task = Task.current_task()
@@ -82,8 +71,6 @@ def main(configurations=None, args=None):
         lighteval_args=lighteval_args,
     )
 
-    print(f"The results is: {results}")
-    print(f"The type of results is : {type(results)}")
     dumped = json.dumps(results, cls=EnhancedJSONEncoder, indent=2, ensure_ascii=False)
 
     if clearml_available:
@@ -91,8 +78,6 @@ def main(configurations=None, args=None):
 
     # Generate filename with project name, task name, date and time    
     if clearml_available:
-        #project_name = task.get_project_name()
-        #task_name = task.get_name()
         project_name = task.project
         task_name = task.name
     else:
