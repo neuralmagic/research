@@ -83,6 +83,7 @@ def main(configurations=None, args=None):
     )
 
     print(f"The results is: {results}")
+    print(f"The type of results is : {type(results)}")
     dumped = json.dumps(results, cls=EnhancedJSONEncoder, indent=2, ensure_ascii=False)
 
     if clearml_available:
