@@ -56,7 +56,6 @@ model_queue_list_dict = [
 
 model_args="""
 model_parameters:
-  use_chat_template: True
   max_model_length: 40960
   generation_parameters:
     max_new_tokens: 32000
@@ -73,7 +72,7 @@ def run_task(model, queue, config, model_args ):
     model_name = model.lower().split("/")[1]
 
     task = LightEvalTask(
-        project_name=f"jira_lighteval_full/{model_name}",
+        project_name=f"jira_1827_lighteval/{model_name}",
         task_name=f"{model_name}_{config}_task",
         model_id=f"{model}",
         config=f"{config}",
