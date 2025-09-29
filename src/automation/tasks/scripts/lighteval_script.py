@@ -82,6 +82,7 @@ def main(configurations=None, args=None):
         lighteval_args=lighteval_args,
     )
 
+    print(f"The results is: {results}")
     dumped = json.dumps(results, cls=EnhancedJSONEncoder, indent=2, ensure_ascii=False)
 
     if clearml_available:
