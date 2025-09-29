@@ -22,6 +22,8 @@ class LightEvalTask(BaseTask):
         "langdetect==1.0.9",
         "openai==1.109.1",
         "hf-xet==1.1.10",
+        "emoji==2.15.0",
+        "immutabledict==4.2.1",
         #"ninja==1.13.0",
         #"flashinfer-python==0.3.1.post1",
     ]
