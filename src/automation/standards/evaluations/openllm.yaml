@@ -1,7 +1,6 @@
 tasks: openllm
-model_args: "max_model_len=4096,add_bos_token=True"
+model_args: "max_model_len=4096,add_bos_token=True,enable_thinking=False"
 apply_chat_template: false
-enable_thinking: false
 groups:
   openllm:
     arc_challenge:
