@@ -52,6 +52,7 @@ class LightEvalTask(BaseTask):
             docker_image=docker_image,
             packages=packages,
             task_type=task_type,
+            branch = branch,
         )
 
         # Check for conflicts in configs and constructor arguments
