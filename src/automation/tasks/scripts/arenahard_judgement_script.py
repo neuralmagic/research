@@ -80,7 +80,7 @@ def main():
     
     render_yaml({"judge_model": get_lowercase_model(model_name), "max_tokens": arenahard_judgement_args["max_tokens"] }, STANDARDS_PATH , template_arenahard_file, tmp_arenahard_file)
 
-    render_yaml({"model_name": model_name, "lower_case_model": get_lowercase_model(model_name), "max_tokens": arenahard_judgement_args["max_tokens"], "api_base": arenahard_generate_args["target"], "api_key": arenahard_generate_args.get("api_key", "'-'")}, STANDARDS_PATH , template_apiconfig_file, tmp_judge_endpoint_file )
+    render_yaml({"model_name": model_name, "lower_case_model": get_lowercase_model(model_name), "max_tokens": arenahard_judgement_args["max_tokens"], "api_base": f"'{arenahard_judgement_args['target']}'", "api_key": arenahard_judgement_args.get("api_key", "'-'")}, STANDARDS_PATH , template_apiconfig_file, tmp_judge_endpoint_file )
 
     # verify that the input file paths exist
     api_config_path = os.path.join( ARENAHARD_CONFIG_PATH , tmp_judge_endpoint_file )
