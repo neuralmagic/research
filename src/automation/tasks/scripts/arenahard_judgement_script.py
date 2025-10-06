@@ -88,18 +88,19 @@ def main():
     gen_judgement_config_path = os.path.join(ARENAHARD_CONFIG_PATH , tmp_arenahard_file )
     assert os.path.exists(gen_judgement_config_path), f"{gen_judgement_config_path} does not exist"
 
-    # Start vLLM server
-    server_process, server_initialized, server_log = start_vllm_server(
-        vllm_args,
-        model_id,
-        arenahard_judgement_args["target"],
-        args["Args"]["server_wait_time"]
-    )
-
-    if not server_initialized:
-        kill_process_tree(server_process.pid)
-        task.upload_artifact(name="vLLM server log", artifact_object=server_log)
-        raise AssertionError("Server failed to initialize")
+    if "google" not in model_name:
+        # Start vLLM server
+        server_process, server_initialized, server_log = start_vllm_server(
+            vllm_args,
+            model_id,
+            arenahard_judgement_args["target"],
+            args["Args"]["server_wait_time"]
+        )
+    
+        if not server_initialized:
+            kill_process_tree(server_process.pid)
+            task.upload_artifact(name="vLLM server log", artifact_object=server_log)
+            raise AssertionError("Server failed to initialize")
 
     # Parse through environment variables
     for k, v in environment_args.items():
