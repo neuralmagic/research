@@ -131,16 +131,18 @@ def main():
         configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, tmp_arenahard_file))
         model_name = configs["model_list"][0]
         default_answers = False
-        if arenahard_judgement_args.get("answer_task_name","") :
+        #if arenahard_judgement_args.get("answer_task_name","") :
+        if True:
             from pathlib import Path
             import shutil
             import os
             from clearml.storage import StorageManager
+            answer_task = Task.get_task("ecfb8ff0c7f54854bd12bf5c3e40f4b3")
 
-            answer_task = Task.query_tasks(project_name=arenahard_judgement_args.get("answer_project_name", task.get_project_name() ),task_name=arenahard_judgement_args["answer_task_name"], task_filter={'order_by': ['-last_update'], 'status': ['completed'] })
-            answer_task = Task.get_task(answer_task[0])
+            #answer_task = Task.query_tasks(project_name=arenahard_judgement_args.get("answer_project_name", task.get_project_name() ),task_name=arenahard_judgement_args["answer_task_name"], task_filter={'order_by': ['-last_update'], 'status': ['completed'] })
+            #answer_task = Task.get_task(answer_task[0])
             artifact_obj = answer_task.artifacts['arenahard model answer'].get_local_copy()
-            shutil.move(artifact_obj,os.path.join(answer_dir, f"{model_name}.jsonl"))
+            shutil.copy(artifact_obj,os.path.join(answer_dir, f"{model_name}.jsonl"))
         else:
             # use default 03-mini answers
             default_answers = True
