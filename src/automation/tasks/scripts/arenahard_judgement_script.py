@@ -72,6 +72,8 @@ def main():
     model_name = args["Args"]["judgement_model"]
     get_lowercase_model = lambda model: model.split("/")[1].lower()
 
+    if arenahard_judgement_args.get("api_key", "'-'") == "'-'":
+        model_name = get_lowercase_model(model_name)
     template_apiconfig_file = "api_config.yaml.j2"
     tmp_judge_endpoint_file='tmp_api_config.yaml'
 
@@ -80,9 +82,9 @@ def main():
 
     os.environ["GEMINI_API_KEY"] = arenahard_judgement_args.get("api_key", "'-'")
     
-    render_yaml({"judge_model": get_lowercase_model(model_name), "max_tokens": arenahard_judgement_args["max_tokens"] }, STANDARDS_PATH , template_arenahard_file, tmp_arenahard_file)
+    render_yaml({"judge_model": model_name, "max_tokens": arenahard_judgement_args["max_tokens"] }, STANDARDS_PATH , template_arenahard_file, tmp_arenahard_file)
 
-    render_yaml({"model_name": model_name, "lower_case_model": get_lowercase_model(model_name), "max_tokens": arenahard_judgement_args["max_tokens"], "api_base": f"'{arenahard_judgement_args['target']}'", "api_key": arenahard_judgement_args.get("api_key", "'-'"), "api_type": arenahard_judgement_args.get("api_type", "openai")}, STANDARDS_PATH , template_apiconfig_file, tmp_judge_endpoint_file )
+    render_yaml({"model_name": model_name, "lower_case_model": model_name, "max_tokens": arenahard_judgement_args["max_tokens"], "api_base": f"'{arenahard_judgement_args['target']}'", "api_key": arenahard_judgement_args.get("api_key", "'-'"), "api_type": arenahard_judgement_args.get("api_type", "openai")}, STANDARDS_PATH , template_apiconfig_file, tmp_judge_endpoint_file )
 
     # verify that the input file paths exist
     api_config_path = os.path.join( ARENAHARD_CONFIG_PATH , tmp_judge_endpoint_file )
