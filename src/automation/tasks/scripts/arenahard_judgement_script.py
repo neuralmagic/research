@@ -90,7 +90,7 @@ def main():
     gen_judgement_config_path = os.path.join(ARENAHARD_CONFIG_PATH , tmp_arenahard_file )
     assert os.path.exists(gen_judgement_config_path), f"{gen_judgement_config_path} does not exist"
 
-    if "google" not in model_name:
+    if arenahard_judgement_args.get("api_key", "'-'") == "'-'":
         # Start vLLM server
         server_process, server_initialized, server_log = start_vllm_server(
             vllm_args,
@@ -152,9 +152,9 @@ def main():
         arenahard_judgement_args["output_path"] = str(output_path)
         task.upload_artifact(name="arenahard judgement report", artifact_object=output_path)
 
-        #if "google" not in model_name:
-        #    task.upload_artifact(name="vLLM server log", artifact_object=server_log)
-        kill_process_tree(server_process.pid)
+        if arenahard_judgement_args.get("api_key", "'-'") == "'-'":
+            task.upload_artifact(name="vLLM server log", artifact_object=server_log)
+            kill_process_tree(server_process.pid)
 
 
 if __name__ == '__main__':
