@@ -137,7 +137,6 @@ def main():
             from pathlib import Path
             import shutil
             import os
-            from clearml.storage import StorageManager
             answer_task = Task.get_task("ecfb8ff0c7f54854bd12bf5c3e40f4b3")
 
             #answer_task = Task.query_tasks(project_name=arenahard_judgement_args.get("answer_project_name", task.get_project_name() ),task_name=arenahard_judgement_args["answer_task_name"], task_filter={'order_by': ['-last_update'], 'status': ['completed'] })
@@ -160,7 +159,8 @@ def main():
         time.sleep(150)
 
     finally:
-        output_path = os.path.join(judgement_dir, f"{model_name}.jsonl")
+        from clearml.storage import StorageManager
+        output_path = StorageManager.get_local_copy(os.path.join(judgement_dir, f"{model_name}.jsonl"))
         arenahard_judgement_args["output_path"] = str(output_path)
 
         if default_answers:
