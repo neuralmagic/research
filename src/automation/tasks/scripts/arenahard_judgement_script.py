@@ -151,6 +151,7 @@ def main():
         output_path = os.path.join(answer_dir, f"{model_name}.jsonl")
         arenahard_judgement_args["output_path"] = str(output_path)
         task.upload_artifact(name="arenahard judgement report", artifact_object=output_path)
+
         if "google" not in model_name:
             task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         kill_process_tree(server_process.pid)
