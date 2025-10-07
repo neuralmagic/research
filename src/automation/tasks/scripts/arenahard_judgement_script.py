@@ -120,6 +120,10 @@ def main():
 
     print(f"Project name:{arenahard_judgement_args.get('answer_project_name', task.get_project_name() )}, task_name={arenahard_judgement_args['answer_task_name']}")
 
+
+    assert arenahard_judgement_args.get('answer_project_name', task.get_project_name() ) == "jira_arenahard_generation"
+    assert arenahard_judgement_args['answer_task_name'] == "generate_task_qwen/qwen3-1.7b"
+
     try:
         arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, bench_name ))
         answer_dir = os.path.join(arenahard_dir, "model_answer")
