@@ -118,6 +118,7 @@ def main():
     print("[DEBUG] Calling arena hard generate with:")
     print(json.dumps(arenahard_judgement_args, indent=2))
 
+    print(f"Project name:{arenahard_judgement_args.get('answer_project_name', task.get_project_name() )}, task_name={arenahard_judgement_args['answer_task_name']}")
 
     try:
         arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, bench_name ))
