@@ -77,6 +77,8 @@ def main():
 
     template_arenahard_file = f"{bench_name}.yaml.j2"
     tmp_arenahard_file = f'tmp_{bench_name}.yaml'
+
+    os.environ["GEMINI_API_KEY"] = arenahard_judgement_args.get("api_key", "'-'")
     
     render_yaml({"judge_model": get_lowercase_model(model_name), "max_tokens": arenahard_judgement_args["max_tokens"] }, STANDARDS_PATH , template_arenahard_file, tmp_arenahard_file)
 
@@ -148,8 +150,9 @@ def main():
     finally:
         output_path = os.path.join(answer_dir, f"{model_name}.jsonl")
         arenahard_judgement_args["output_path"] = str(output_path)
-        #task.upload_artifact(name="arenahard judgement report", artifact_object=output_path)
-        task.upload_artifact(name="vLLM server log", artifact_object=server_log)
+        task.upload_artifact(name="arenahard judgement report", artifact_object=output_path)
+        if "google" not in model_name:
+            task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         kill_process_tree(server_process.pid)
 
 
