@@ -125,6 +125,7 @@ def main():
         from arenahard.utils.completion import make_config
         configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, tmp_arenahard_file))
         model_name = configs["model_list"][0]
+        default_answers = False
         if arenahard_judgement_args.get("answer_task_name","") :
             from pathlib import Path
             import shutil
@@ -137,6 +138,7 @@ def main():
             shutil.move(artifact_obj,os.path.join(answer_dir, f"{model_name}.jsonl"))
         else:
             # use default 03-mini answers
+            default_answers = True
             shutil.copy( os.path.join(answer_dir,"o3-mini-2025-01-31.jsonl"),os.path.join(answer_dir, f"{model_name}.jsonl"))
 
         if arenahard_judgement_args.get("question_size","") == "small" :
@@ -153,7 +155,7 @@ def main():
         output_path = os.path.join(answer_dir, f"{model_name}.jsonl")
         arenahard_judgement_args["output_path"] = str(output_path)
 
-        if arenahard_judgement_args.get("answer_task_name","") :
+        if default_answers:
             task.upload_artifact(name="arenahard judgement report", artifact_object=output_path)
         else:
             task.upload_artifact(name="arenahard o3 mini judgement report", artifact_object=output_path)
