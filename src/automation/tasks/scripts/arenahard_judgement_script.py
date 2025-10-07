@@ -127,6 +127,7 @@ def main():
     try:
         arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, bench_name ))
         answer_dir = os.path.join(arenahard_dir, "model_answer")
+        judgement_dir = os.path.join(arenahard_dir, "model_judgment")
         from arenahard.utils.completion import make_config
         configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, tmp_arenahard_file))
         model_name = configs["model_list"][0]
@@ -159,13 +160,13 @@ def main():
         time.sleep(150)
 
     finally:
-        output_path = os.path.join(answer_dir, f"{model_name}.jsonl")
+        output_path = os.path.join(judgement_dir, f"{model_name}.jsonl")
         arenahard_judgement_args["output_path"] = str(output_path)
 
         if default_answers:
-            task.upload_artifact(name="arenahard judgement report", artifact_object=output_path)
+            task.upload_artifact(name="arenahard default judgement report", artifact_object=output_path)
         else:
-            task.upload_artifact(name="arenahard o3 mini judgement report", artifact_object=output_path)
+            task.upload_artifact(name="arenahard judgement report", artifact_object=output_path)
 
         if arenahard_judgement_args.get("api_key", "'-'") == "'-'":
             task.upload_artifact(name="vLLM server log", artifact_object=server_log)
