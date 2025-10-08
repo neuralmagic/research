@@ -112,7 +112,7 @@ def main():
         raise ValueError("running default")
         #shutil.copy( os.path.join(answer_dir,"o3-mini-2025-01-31.jsonl"),os.path.join(answer_dir, f"{model_name}.jsonl"))
 
-    assert os.path.exists(os.path.join(answer_dir, answer_model)), f"{answer model path} does not exist"
+    assert os.path.exists(os.path.join(answer_dir, answer_model)), "answer model path does not exist"
     if arenahard_judgement_args.get("question_size","") == "small" :
         shutil.copy( os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
     render_yaml({"judge_model": lowercase_model, "max_tokens": arenahard_judgement_args["max_tokens"], "answer_model": arenahard_judgement_args["answer_model"]}, STANDARDS_PATH , template_arenahard_file, tmp_arenahard_file)
