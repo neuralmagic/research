@@ -85,7 +85,7 @@ def main():
 
     os.environ["GEMINI_API_KEY"] = arenahard_judgement_args.get("api_key", "'-'")
     
-    render_yaml({"judge_model": model_name, "max_tokens": arenahard_judgement_args["max_tokens"] }, STANDARDS_PATH , template_arenahard_file, tmp_arenahard_file)
+    render_yaml({"judge_model": lowercase_model, "max_tokens": arenahard_judgement_args["max_tokens"] }, STANDARDS_PATH , template_arenahard_file, tmp_arenahard_file)
 
     render_yaml({"model_name": model_name, "lower_case_model": lowercase_model, "max_tokens": arenahard_judgement_args["max_tokens"], "api_base": f"'{arenahard_judgement_args['target']}'", "api_key": arenahard_judgement_args.get("api_key", "'-'"), "api_type": arenahard_judgement_args.get("api_type", "openai")}, STANDARDS_PATH , template_apiconfig_file, tmp_judge_endpoint_file )
 
