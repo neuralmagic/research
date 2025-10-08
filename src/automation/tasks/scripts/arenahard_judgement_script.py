@@ -74,7 +74,7 @@ def main():
 
     if arenahard_judgement_args.get("api_key", "'-'") == "'-'":
         lowercase_model = get_lowercase_model(model_name)
-    else
+    else:
         lowercase_model = model_name.lower()
     
     template_apiconfig_file = "api_config.yaml.j2"
