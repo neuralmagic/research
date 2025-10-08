@@ -141,7 +141,8 @@ def main():
             #answer_task = Task.query_tasks(project_name=arenahard_judgement_args.get("answer_project_name", task.get_project_name() ),task_name=arenahard_judgement_args["answer_task_name"], task_filter={'order_by': ['-last_update'], 'status': ['completed'] })
             #answer_task = Task.get_task(answer_task[0])
             artifact_obj = answer_task.artifacts['arenahard model answer'].get_local_copy()
-            shutil.copy(artifact_obj,os.path.join(answer_dir, f"{model_name}.jsonl"))
+            shutil.copy(artifact_obj,os.path.join(answer_dir, "Qwen/Qwen2-7B-Instruct.jsonl"))
+            #shutil.copy(artifact_obj,os.path.join(answer_dir, f"{model_name}.jsonl"))
         else:
             # use default 03-mini answers
             default_answers = True
