@@ -116,6 +116,7 @@ def main():
         print(f"The artifact obj is: {artifact_obj}")
         print(os.path.join(answer_dir, f"{answer_model}.jsonl"))
         os.makedirs(answer_dir, exist_ok=True)
+        os.makedirs(judgement_dir, exist_ok=True)
         shutil.copy(artifact_obj,os.path.join(answer_dir, f"{answer_model}.jsonl"))
         #model_base_dir = os.path.join(answer_dir, "Qwen")
         #shutil.copy(artifact_obj,os.path.join(model_base_dir, "Qwen2-7B-Instruct.jsonl"))
@@ -127,8 +128,8 @@ def main():
         #shutil.copy( os.path.join(answer_dir,"o3-mini-2025-01-31.jsonl"),os.path.join(answer_dir, f"{model_name}.jsonl"))
 
     #assert os.path.exists(os.path.join(answer_dir, answer_model)), "answer model path does not exist"
-    if arenahard_judgement_args.get("question_size","") == "small" :
-        shutil.copy( os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
+    #if arenahard_judgement_args.get("question_size","") == "small" :
+    #    shutil.copy( os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
 
     if arenahard_judgement_args.get("api_key", "'-'") == "'-'":
         # Start vLLM server
