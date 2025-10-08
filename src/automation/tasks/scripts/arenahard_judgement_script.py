@@ -145,7 +145,8 @@ def main():
         else:
             # use default 03-mini answers
             default_answers = True
-            shutil.copy( os.path.join(answer_dir,"o3-mini-2025-01-31.jsonl"),os.path.join(answer_dir, f"{model_name}.jsonl"))
+            raise ValueError("running default")
+            #shutil.copy( os.path.join(answer_dir,"o3-mini-2025-01-31.jsonl"),os.path.join(answer_dir, f"{model_name}.jsonl"))
 
         if arenahard_judgement_args.get("question_size","") == "small" :
             shutil.copy( os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
