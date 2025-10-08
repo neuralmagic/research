@@ -142,7 +142,7 @@ def main():
             #answer_task = Task.get_task(answer_task[0])
             artifact_obj = answer_task.artifacts['arenahard model answer'].get_local_copy()
             model_base_dir = os.path.join(answer_dir, "Qwen")
-            os.mkdirs(model_base_dir)
+            os.makedirs(model_base_dir)
             shutil.copy(artifact_obj,os.path.join(model_base_dir, "Qwen2-7B-Instruct.jsonl"))
             #shutil.copy(artifact_obj,os.path.join(answer_dir, f"{model_name}.jsonl"))
         else:
