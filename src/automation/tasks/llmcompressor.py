@@ -5,10 +5,13 @@ from typing import Union, List, Optional, Sequence, Any, Callable
 import os
 import yaml
 
+
 class LLMCompressorTask(BaseTask):
     task_packages = [
         "git+https://github.com/vllm-project/llm-compressor.git",
-        "torchvision",
+        "torch==2.8.0",
+        "torchvision==0.23.0",
+        "huggingface-hub>=0.34.0,<1.0",
         "hf_xet",
     ]
 
@@ -17,25 +20,25 @@ class LLMCompressorTask(BaseTask):
         project_name: str,
         task_name: str,
         model_id: str,
-        recipe: Optional[Any]=None,
-        recipe_args: Optional[dict]=None,
-        docker_image: str=DEFAULT_DOCKER_IMAGE,
-        packages: Optional[Sequence[str]]=None,
-        model_class: str="AutoModelForCausalLM",
-        dataset_name: Optional[str]="calibration",
-        dataset_loader: Optional[Callable]=None,
-        data_collator: Optional[Callable]=None,
-        clearml_model: bool=False,
-        force_download: bool=False,
-        save_directory: str="output",
-        text_samples: Optional[int]=None,
-        vision_samples: Optional[int]=None,
-        max_seq_len: int=8192,
-        trust_remote_code: bool=False,
+        recipe: Optional[Any] = None,
+        recipe_args: Optional[dict] = None,
+        docker_image: str = DEFAULT_DOCKER_IMAGE,
+        packages: Optional[Sequence[str]] = None,
+        model_class: str = "AutoModelForCausalLM",
+        dataset_name: Optional[str] = "calibration",
+        dataset_loader: Optional[Callable] = None,
+        data_collator: Optional[Callable] = None,
+        clearml_model: bool = False,
+        force_download: bool = False,
+        save_directory: str = "output",
+        text_samples: Optional[int] = None,
+        vision_samples: Optional[int] = None,
+        max_seq_len: int = 8192,
+        trust_remote_code: bool = False,
         skip_sparsity_compression_stats=True,
-        tags: Union[str, List[str]]=None,
-        task_type: str="training",
-        config: Optional[str]=None,
+        tags: Union[str, List[str]] = None,
+        task_type: str = "training",
+        config: Optional[str] = None,
     ):
 
         # Process config
@@ -62,8 +65,10 @@ class LLMCompressorTask(BaseTask):
 
         # Store class attributes that may be part of config
         if "recipe" in config_kwargs and recipe is not None:
-            raise ValueError("Recipe is already provided in config. It can't be provided in task instantiation.")
-        
+            raise ValueError(
+                "Recipe is already provided in config. It can't be provided in task instantiation."
+            )
+
         recipe = config_kwargs.pop("recipe", recipe)
         if recipe is None:
             raise ValueError("Recipe must be provided.")
@@ -72,6 +77,7 @@ class LLMCompressorTask(BaseTask):
             recipe = yaml.dump(recipe, default_flow_style=False, sort_keys=False)
         elif not isinstance(recipe, str):
             from llmcompressor.recipe import Recipe
+
             recipe = Recipe.from_modifiers(recipe).yaml()
 
         self.recipe = recipe
@@ -87,7 +93,9 @@ class LLMCompressorTask(BaseTask):
         self.text_samples = config_kwargs.pop("text_samples", text_samples)
         self.vision_samples = config_kwargs.pop("vision_samples", vision_samples)
         self.max_seq_len = config_kwargs.pop("max_seq_len", max_seq_len)
-        self.trust_remote_code = config_kwargs.pop("trust_remote_code", trust_remote_code)
+        self.trust_remote_code = config_kwargs.pop(
+            "trust_remote_code", trust_remote_code
+        )
         self.model_class = model_class
         self.dataset_loader = dataset_loader
         self.data_collator = data_collator
@@ -104,13 +112,14 @@ class LLMCompressorTask(BaseTask):
         self.clearml_model = clearml_model
         self.force_download = force_download
         self.save_directory = save_directory
-        self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "llmcompressor_script.py")
-
+        self.script_path = os.path.join(
+            ".", "src", "automation", "tasks", "scripts", "llmcompressor_script.py"
+        )
 
     def script(self, configurations, args):
         from automation.tasks.scripts.llmcompressor_script import main
+
         main(configurations, args)
-        
 
     def get_configurations(self):
         configs = {}
@@ -119,7 +128,6 @@ class LLMCompressorTask(BaseTask):
         if self.data_collator is not None:
             configs["data collator"] = serialize_callable(self.data_collator)
         return configs
-
 
     def get_arguments(self):
         return {
@@ -140,5 +148,3 @@ class LLMCompressorTask(BaseTask):
                 "tags": self.tags,
             },
         }
-
-
