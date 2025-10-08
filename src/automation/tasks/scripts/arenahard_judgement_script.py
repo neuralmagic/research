@@ -113,6 +113,7 @@ def main():
         #answer_task = Task.query_tasks(project_name=arenahard_judgement_args.get("answer_project_name", task.get_project_name() ),task_name=arenahard_judgement_args["answer_task_name"], task_filter={'order_by': ['-last_update'], 'status': ['completed'] })
         #answer_task = Task.get_task(answer_task[0])
         artifact_obj = answer_task.artifacts['arenahard model answer'].get_local_copy()
+        print(f"The artifact obj is: {artifact_obj}")
         shutil.copy(artifact_obj,os.path.join(answer_dir, f"{answer_model}.jsonl"))
         #model_base_dir = os.path.join(answer_dir, "Qwen")
         #os.makedirs(model_base_dir)
@@ -124,7 +125,7 @@ def main():
         raise ValueError("running default")
         #shutil.copy( os.path.join(answer_dir,"o3-mini-2025-01-31.jsonl"),os.path.join(answer_dir, f"{model_name}.jsonl"))
 
-    assert os.path.exists(os.path.join(answer_dir, answer_model)), "answer model path does not exist"
+    #assert os.path.exists(os.path.join(answer_dir, answer_model)), "answer model path does not exist"
     if arenahard_judgement_args.get("question_size","") == "small" :
         shutil.copy( os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
 
