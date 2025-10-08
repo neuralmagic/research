@@ -66,8 +66,8 @@ def main():
 
     bench_name = arenahard_generate_args["bench_name"]
     arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, bench_name))
-    if arenahard_generate_args.get("question_size","") == "small" :
-        shutil.copy(os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
+    #if arenahard_generate_args.get("question_size","") == "small" :
+    #    shutil.copy(os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
 
     # Resolve model_id
     model_id = resolve_model_id(args["Args"]["generate_model"], clearml_model, force_download)
