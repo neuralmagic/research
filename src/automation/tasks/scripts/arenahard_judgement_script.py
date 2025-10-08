@@ -84,8 +84,37 @@ def main():
     tmp_arenahard_file = f'tmp_{bench_name}.yaml'
 
     os.environ["GEMINI_API_KEY"] = arenahard_judgement_args.get("api_key", "'-'")
+    arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, bench_name ))
+    answer_dir = os.path.join(arenahard_dir, "model_answer")
+    judgement_dir = os.path.join(arenahard_dir, "model_judgment")
+    from arenahard.utils.completion import make_config
+    configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, tmp_arenahard_file))
+    model_name = configs["model_list"][0]
+    default_answers = False
+    #if arenahard_judgement_args.get("answer_task_name","") :
+    if True:
+        from pathlib import Path
+        import shutil
+        import os
+        answer_task = Task.get_task("f1c18409cd704723a3615c9e243752cd")
 
-    
+        #answer_task = Task.query_tasks(project_name=arenahard_judgement_args.get("answer_project_name", task.get_project_name() ),task_name=arenahard_judgement_args["answer_task_name"], task_filter={'order_by': ['-last_update'], 'status': ['completed'] })
+        #answer_task = Task.get_task(answer_task[0])
+        artifact_obj = answer_task.artifacts['arenahard model answer'].get_local_copy()
+        shutil.copy(artifact_obj,os.path.join(answer_dir, answer_model) )
+        #model_base_dir = os.path.join(answer_dir, "Qwen")
+        #os.makedirs(model_base_dir)
+        #shutil.copy(artifact_obj,os.path.join(model_base_dir, "Qwen2-7B-Instruct.jsonl"))
+        #shutil.copy(artifact_obj,os.path.join(answer_dir, f"{model_name}.jsonl"))
+    else:
+        # use default 03-mini answers
+        default_answers = True
+        raise ValueError("running default")
+        #shutil.copy( os.path.join(answer_dir,"o3-mini-2025-01-31.jsonl"),os.path.join(answer_dir, f"{model_name}.jsonl"))
+
+    assert os.path.exists(os.path.join(answer_dir, answer_model)), f"{answer model path} does not exist"
+    if arenahard_judgement_args.get("question_size","") == "small" :
+        shutil.copy( os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
     render_yaml({"judge_model": lowercase_model, "max_tokens": arenahard_judgement_args["max_tokens"], "answer_model": arenahard_judgement_args["answer_model"]}, STANDARDS_PATH , template_arenahard_file, tmp_arenahard_file)
 
     render_yaml({"model_name": model_name, "lower_case_model": lowercase_model, "max_tokens": arenahard_judgement_args["max_tokens"], "api_base": f"'{arenahard_judgement_args['target']}'", "api_key": arenahard_judgement_args.get("api_key", "'-'"), "api_type": arenahard_judgement_args.get("api_type", "openai")}, STANDARDS_PATH , template_apiconfig_file, tmp_judge_endpoint_file )
@@ -125,36 +154,6 @@ def main():
     print(f"Project name:{arenahard_judgement_args.get('answer_project_name', task.get_project_name() )}, task_name={arenahard_judgement_args['answer_task_name']}")
 
     try:
-        arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, bench_name ))
-        answer_dir = os.path.join(arenahard_dir, "model_answer")
-        judgement_dir = os.path.join(arenahard_dir, "model_judgment")
-        from arenahard.utils.completion import make_config
-        configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, tmp_arenahard_file))
-        model_name = configs["model_list"][0]
-        default_answers = False
-        #if arenahard_judgement_args.get("answer_task_name","") :
-        if True:
-            from pathlib import Path
-            import shutil
-            import os
-            answer_task = Task.get_task("f1c18409cd704723a3615c9e243752cd")
-
-            #answer_task = Task.query_tasks(project_name=arenahard_judgement_args.get("answer_project_name", task.get_project_name() ),task_name=arenahard_judgement_args["answer_task_name"], task_filter={'order_by': ['-last_update'], 'status': ['completed'] })
-            #answer_task = Task.get_task(answer_task[0])
-            artifact_obj = answer_task.artifacts['arenahard model answer'].get_local_copy()
-            shutil.copy(artifact_obj,os.path.join(answer_dir, answer_model) )
-            #model_base_dir = os.path.join(answer_dir, "Qwen")
-            #os.makedirs(model_base_dir)
-            #shutil.copy(artifact_obj,os.path.join(model_base_dir, "Qwen2-7B-Instruct.jsonl"))
-            #shutil.copy(artifact_obj,os.path.join(answer_dir, f"{model_name}.jsonl"))
-        else:
-            # use default 03-mini answers
-            default_answers = True
-            raise ValueError("running default")
-            #shutil.copy( os.path.join(answer_dir,"o3-mini-2025-01-31.jsonl"),os.path.join(answer_dir, f"{model_name}.jsonl"))
-
-        if arenahard_judgement_args.get("question_size","") == "small" :
-            shutil.copy( os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
     
         print ("Running arena hard generate")
         from arenahard.gen_judgment import run
