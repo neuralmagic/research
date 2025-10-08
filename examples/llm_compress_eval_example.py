@@ -1,12 +1,17 @@
+from typing import Literal
 from automation.pipelines import Pipeline
 from automation.tasks import LMEvalTask, LLMCompressorTask
 
 
-def get_quip_modifier(transform_block_size: int | None):
+def get_quip_modifier(
+    transform_block_size: int | None, rotations: list[Literal["u", "v"]] = ["u", "v"]
+):
     from llmcompressor.modifiers.transform import QuIPModifier
 
     return QuIPModifier(
-        transform_type="hadamard", transform_block_size=transform_block_size
+        transform_type="hadamard",
+        transform_block_size=transform_block_size,
+        rotations=rotations,
     )
 
 
@@ -61,10 +66,21 @@ def get_gptq_modifier(group_size: int = 128):
 recipes = {
     "RTN_W4A16G128": get_rtn_modifier(128),
     "GPTQ_W4A16G128": get_gptq_modifier(128),
-    "QUIP_B128_RTN_W4A16G128": [get_quip_modifier(128), get_rtn_modifier(128)],
-    "QUIP_B128_GPTQ_W4A16G128": [get_quip_modifier(128), get_gptq_modifier(128)],
-    "QUIP_B64_RTN_W4A16G64": [get_quip_modifier(64), get_rtn_modifier(64)],
-    "QUIP_B64_GPTQ_W4A16G64": [get_quip_modifier(64), get_gptq_modifier(64)],
+    "QUIPv_B128_RTN_W4A16G128": [get_quip_modifier(128, ["v"]), get_rtn_modifier(128)],
+    "QUIPv_B128_GPTQ_W4A16G128": [
+        get_quip_modifier(128, ["v"]),
+        get_gptq_modifier(128),
+    ],
+    "QUIPv_B64_RTN_W4A16G64": [get_quip_modifier(64, ["v"]), get_rtn_modifier(64)],
+    "QUIPv_B64_GPTQ_W4A16G64": [
+        get_quip_modifier(64, ["v"]),
+        get_gptq_modifier(64),
+    ],
+    # TODO: Quip U rotations broken in vllm only in clearml env, cannot reproduce locally
+    # "QUIPu_B128_RTN_W4A16G128": [get_quip_modifier(128, ["u"]), get_rtn_modifier(128)],
+    # "QUIPu_B128_GPTQ_W4A16G128": [get_quip_modifier(128, ["u"]), get_gptq_modifier(128)],
+    # "QUIP_B64_RTN_W4A16G64": [get_quip_modifier(64), get_rtn_modifier(64)],
+    # "QUIP_B64_GPTQ_W4A16G64": [get_quip_modifier(64), get_gptq_modifier(64)],
 }
 
 
@@ -90,13 +106,14 @@ if __name__ == "__main__":
 
     for model_id in [
         "meta-llama/Llama-3.2-3B-Instruct",
-        # "meta-llama/Llama-3.1-8B-Instruct",
+        "meta-llama/Llama-3.1-8B-Instruct",
     ]:
+        model_name = model_id.split("/")[-1].replace(".", "")
         for recipe_id, recipe_modifiers in recipes.items():
             # NOTE: passing recipe in as a list of modifiers results in parsing
             # errors. Use `Recipe.from_modifiers(recipe).model_dump_json()` instead
             recipe = Recipe.from_modifiers(recipe_modifiers)
-            compress_step_name = f"compress-{recipe_id}"
+            compress_step_name = f"compress-{model_name}-{recipe_id}"
             compress_step = LLMCompressorTask(
                 project_name="brian_transforms",
                 task_name=compress_step_name,
@@ -108,12 +125,17 @@ if __name__ == "__main__":
 
             eval_step = LMEvalTask(
                 project_name="brian_transforms",
-                task_name=f"eval-{recipe_id}",
+                task_name=f"eval-{model_name}-{recipe_id}",
                 model_id="dummuy",  # overridden
                 clearml_model=True,
-                tasks=["gsm8k", "winogrande"],
+                tasks=[
+                    "gsm8k",
+                    "winogrande",
+                    # TODO: PPL based metrics broken in lm_eval+vllm
+                    # https://github.com/EleutherAI/lm-evaluation-harness/issues/3134
+                    # "wikitext"
+                ],
                 num_fewshot=5,
-                # limit=10,
             )
             eval_step.create_task()
 
@@ -128,7 +150,7 @@ if __name__ == "__main__":
             )
 
             pipeline.add_step(
-                name=f"eval-{recipe_id}",
+                name=f"eval-{model_name}-{recipe_id}",
                 base_task_id=eval_step.id,
                 parents=[compress_step_name],
                 execution_queue="oneshot-a100x1",
