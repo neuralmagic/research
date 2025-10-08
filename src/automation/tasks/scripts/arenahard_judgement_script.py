@@ -98,7 +98,6 @@ def main():
     os.environ["GEMINI_API_KEY"] = arenahard_judgement_args.get("api_key", "'-'")
     arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, bench_name ))
     answer_dir = os.path.join(arenahard_dir, "model_answer")
-    judgement_dir = os.path.join(arenahard_dir, "model_judgment")
     from arenahard.utils.completion import make_config
     configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, tmp_arenahard_file))
     model_name = configs["model_list"][0]
@@ -116,7 +115,6 @@ def main():
         print(f"The artifact obj is: {artifact_obj}")
         print(os.path.join(answer_dir, f"{answer_model}.jsonl"))
         os.makedirs(answer_dir, exist_ok=True)
-        os.makedirs(judgement_dir, exist_ok=True)
         shutil.copy(artifact_obj,os.path.join(answer_dir, f"{answer_model}.jsonl"))
         #model_base_dir = os.path.join(answer_dir, "Qwen")
         #shutil.copy(artifact_obj,os.path.join(model_base_dir, "Qwen2-7B-Instruct.jsonl"))
@@ -170,7 +168,10 @@ def main():
 
     finally:
         from clearml.storage import StorageManager
-        output_path = StorageManager.get_local_copy(os.path.join(judgement_dir, f"{model_name}.jsonl"))
+        judgement_dir = os.path.join(arenahard_dir, "model_judgment", lowercase_model)
+        os.makedirs(judgement_dir, exist_ok=True)
+        #output_path = StorageManager.get_local_copy(os.path.join(judgement_dir, f"{model_name}.jsonl"))
+        output_path = os.path.join(judgement_dir, f"{answer_model}.jsonl")
         arenahard_judgement_args["output_path"] = str(output_path)
 
         if default_answers:
