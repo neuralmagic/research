@@ -83,6 +83,16 @@ def main():
     template_arenahard_file = f"{bench_name}.yaml.j2"
     tmp_arenahard_file = f'tmp_{bench_name}.yaml'
 
+    render_yaml({"judge_model": lowercase_model, "max_tokens": arenahard_judgement_args["max_tokens"], "answer_model": arenahard_judgement_args["answer_model"]}, STANDARDS_PATH , template_arenahard_file, tmp_arenahard_file)
+
+    render_yaml({"model_name": model_name, "lower_case_model": lowercase_model, "max_tokens": arenahard_judgement_args["max_tokens"], "api_base": f"'{arenahard_judgement_args['target']}'", "api_key": arenahard_judgement_args.get("api_key", "'-'"), "api_type": arenahard_judgement_args.get("api_type", "openai")}, STANDARDS_PATH , template_apiconfig_file, tmp_judge_endpoint_file )
+
+    # verify that the input file paths exist
+    api_config_path = os.path.join( ARENAHARD_CONFIG_PATH , tmp_judge_endpoint_file )
+    assert os.path.exists(api_config_path), f"{api_config_path} does not exist"
+    gen_judgement_config_path = os.path.join(ARENAHARD_CONFIG_PATH , tmp_arenahard_file )
+    assert os.path.exists(gen_judgement_config_path), f"{gen_judgement_config_path} does not exist"
+
     os.environ["GEMINI_API_KEY"] = arenahard_judgement_args.get("api_key", "'-'")
     arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, bench_name ))
     answer_dir = os.path.join(arenahard_dir, "model_answer")
@@ -115,15 +125,6 @@ def main():
     assert os.path.exists(os.path.join(answer_dir, answer_model)), "answer model path does not exist"
     if arenahard_judgement_args.get("question_size","") == "small" :
         shutil.copy( os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
-    render_yaml({"judge_model": lowercase_model, "max_tokens": arenahard_judgement_args["max_tokens"], "answer_model": arenahard_judgement_args["answer_model"]}, STANDARDS_PATH , template_arenahard_file, tmp_arenahard_file)
-
-    render_yaml({"model_name": model_name, "lower_case_model": lowercase_model, "max_tokens": arenahard_judgement_args["max_tokens"], "api_base": f"'{arenahard_judgement_args['target']}'", "api_key": arenahard_judgement_args.get("api_key", "'-'"), "api_type": arenahard_judgement_args.get("api_type", "openai")}, STANDARDS_PATH , template_apiconfig_file, tmp_judge_endpoint_file )
-
-    # verify that the input file paths exist
-    api_config_path = os.path.join( ARENAHARD_CONFIG_PATH , tmp_judge_endpoint_file )
-    assert os.path.exists(api_config_path), f"{api_config_path} does not exist"
-    gen_judgement_config_path = os.path.join(ARENAHARD_CONFIG_PATH , tmp_arenahard_file )
-    assert os.path.exists(gen_judgement_config_path), f"{gen_judgement_config_path} does not exist"
 
     if arenahard_judgement_args.get("api_key", "'-'") == "'-'":
         # Start vLLM server
