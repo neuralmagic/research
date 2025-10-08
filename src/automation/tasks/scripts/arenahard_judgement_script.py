@@ -136,7 +136,7 @@ def main():
             from pathlib import Path
             import shutil
             import os
-            answer_task = Task.get_task("ecfb8ff0c7f54854bd12bf5c3e40f4b3")
+            answer_task = Task.get_task("f1c18409cd704723a3615c9e243752cd")
 
             #answer_task = Task.query_tasks(project_name=arenahard_judgement_args.get("answer_project_name", task.get_project_name() ),task_name=arenahard_judgement_args["answer_task_name"], task_filter={'order_by': ['-last_update'], 'status': ['completed'] })
             #answer_task = Task.get_task(answer_task[0])
