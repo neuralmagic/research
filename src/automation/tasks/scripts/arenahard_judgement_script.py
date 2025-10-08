@@ -170,7 +170,8 @@ def main():
         from clearml.storage import StorageManager
         judgement_dir = os.path.join(arenahard_dir, "model_judgment", lowercase_model)
         os.makedirs(judgement_dir, exist_ok=True)
-        arenahard_judgement_args["output_path"] = str(os.path.join(judgement_dir, f"{answer_model}.jsonl"))
+        output_path = os.path.join(judgement_dir, f"{answer_model}.jsonl") 
+        arenahard_judgement_args["output_path"] = str(output_path)
 
         if default_answers:
             task.upload_artifact(name="arenahard default judgement report", artifact_object=output_path)
