@@ -102,14 +102,14 @@ def main():
     configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, tmp_arenahard_file))
     model_name = configs["model_list"][0]
     default_answers = False
-    #if arenahard_judgement_args.get("answer_task_name","") :
-    if True:
+    if arenahard_judgement_args.get("answer_task_name","") :
+    #if True:
         from pathlib import Path
         import shutil
         import os
-        answer_task = Task.get_task("f1c18409cd704723a3615c9e243752cd")
+        #answer_task = Task.get_task("f1c18409cd704723a3615c9e243752cd")
 
-        #answer_task = Task.query_tasks(project_name=arenahard_judgement_args.get("answer_project_name", task.get_project_name() ),task_name=arenahard_judgement_args["answer_task_name"], task_filter={'order_by': ['-last_update'], 'status': ['completed'] })
+        answer_task = Task.query_tasks(project_name=arenahard_judgement_args.get("answer_project_name", task.get_project_name() ),task_name=arenahard_judgement_args["answer_task_name"], task_filter={'order_by': ['-last_update'], 'status': ['completed'] })
         #answer_task = Task.get_task(answer_task[0])
         artifact_obj = answer_task.artifacts['arenahard model answer'].get_local_copy()
         print(f"The artifact obj is: {artifact_obj}")
