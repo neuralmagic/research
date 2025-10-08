@@ -6,6 +6,6 @@
     api_type: {{ api_type }}
     max_tokens: {{ max_tokens }}
     parallel: 50
-{% if api_key == "'-'" %}
-temperature: 0.0
-{% endif %}
+    {% if api_key == "'-'" %}
+    temperature: 0.0
+    {% endif %}
