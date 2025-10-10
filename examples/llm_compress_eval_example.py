@@ -1,6 +1,12 @@
 from typing import Literal
+from clearml import Task
+
+# TODO: cannot use PipelineController, fails to clone github.com:neuralmagic/research
+# from clearml import PipelineController
 from automation.pipelines import Pipeline
 from automation.tasks import LMEvalTask, LLMCompressorTask
+
+PROJECT_NAME = "brian_transforms_v1"
 
 
 def get_quip_modifier(
@@ -71,10 +77,19 @@ recipes = {
         get_quip_modifier(128, ["v"]),
         get_gptq_modifier(128),
     ],
+    "RTN_W4A16G64": get_rtn_modifier(64),
+    "GPTQ_W4A16G64": get_gptq_modifier(64),
     "QUIPv_B64_RTN_W4A16G64": [get_quip_modifier(64, ["v"]), get_rtn_modifier(64)],
     "QUIPv_B64_GPTQ_W4A16G64": [
         get_quip_modifier(64, ["v"]),
         get_gptq_modifier(64),
+    ],
+    "RTN_W4A16G32": get_rtn_modifier(32),
+    "GPTQ_W4A16G32": get_gptq_modifier(32),
+    "QUIPv_B32_RTN_W4A16G32": [get_quip_modifier(32, ["v"]), get_rtn_modifier(32)],
+    "QUIPv_B32_GPTQ_W4A16G32": [
+        get_quip_modifier(32, ["v"]),
+        get_gptq_modifier(32),
     ],
     # TODO: Quip U rotations broken in vllm only in clearml env, cannot reproduce locally
     # "QUIPu_B128_RTN_W4A16G128": [get_quip_modifier(128, ["u"]), get_rtn_modifier(128)],
@@ -84,38 +99,26 @@ recipes = {
 }
 
 
-def average_scores(task):
-    gsm8k_score = task.get_reported_scalars()["gsm8k"]["exact_match,strict-match"]["y"][
-        0
-    ]
-    winogrande_score = task.get_reported_scalars()["winogrande"]["acc,none"]["y"][0]
-    average_score = (gsm8k_score + winogrande_score) / 2.0
-    task.get_logger().report_scalar(
-        title="score", series="average", iteration=0, value=average_score
-    )
-
-
 if __name__ == "__main__":
     from llmcompressor.recipe import Recipe
 
     pipeline = Pipeline(
-        project_name="brian_transforms",
-        pipeline_name="transforms_benchmark",
-        job_end_callback=average_scores,
+        project_name=PROJECT_NAME,
+        pipeline_name=f"{PROJECT_NAME}_pipeline",
     )
 
     for model_id in [
         "meta-llama/Llama-3.2-3B-Instruct",
         "meta-llama/Llama-3.1-8B-Instruct",
     ]:
-        model_name = model_id.split("/")[-1].replace(".", "")
+        model_name = model_id.split("/")[-1].replace(".", "_").replace("-", "_")
         for recipe_id, recipe_modifiers in recipes.items():
             # NOTE: passing recipe in as a list of modifiers results in parsing
             # errors. Use `Recipe.from_modifiers(recipe).model_dump_json()` instead
             recipe = Recipe.from_modifiers(recipe_modifiers)
-            compress_step_name = f"compress-{model_name}-{recipe_id}"
+            compress_step_name = f"compress--{model_name}--{recipe_id}"
             compress_step = LLMCompressorTask(
-                project_name="brian_transforms",
+                project_name=PROJECT_NAME,
                 task_name=compress_step_name,
                 model_id=model_id,
                 text_samples=512,
@@ -123,19 +126,38 @@ if __name__ == "__main__":
             )
             compress_step.create_task()
 
+            # NOTE: lm_eval settings set to match those found in
+            # src/automation/standards/evaluations/openllm.yaml
+            # apply_chat_template set to False
+            # anmarques: "We notice that apply_chat_template tends to mess up
+            # loglikelihood-based evals, which are most of the openllm benchmarks
+            # (the model tends to blab before predicting the answer)""
             eval_step = LMEvalTask(
-                project_name="brian_transforms",
-                task_name=f"eval-{model_name}-{recipe_id}",
+                project_name=PROJECT_NAME,
+                task_name=f"eval--{model_name}--{recipe_id}",
                 model_id="dummuy",  # overridden
                 clearml_model=True,
                 tasks=[
+                    # openllm tasks + llama variants
+                    "arc_challenge",
                     "gsm8k",
+                    "hellaswag",
+                    "mmlu",
                     "winogrande",
+                    "truthfulqa_mc2",
+                    "arc_challenge_llama",
+                    "gsm8k_llama",
                     # TODO: PPL based metrics broken in lm_eval+vllm
                     # https://github.com/EleutherAI/lm-evaluation-harness/issues/3134
                     # "wikitext"
                 ],
                 num_fewshot=5,
+                apply_chat_template=False,
+                model_args=(
+                    "gpu_memory_utilization=0.4,dtype=auto,max_model_len=4096,"
+                    "add_bos_token=True,enable_chunked_prefill=True"
+                ),
+                batch_size="auto",
             )
             eval_step.create_task()
 
@@ -163,5 +185,5 @@ if __name__ == "__main__":
                 ],
             )
 
-    pipeline.start()
+    pipeline.execute_remotely()
     # pipeline.execute_locally()
