@@ -4,12 +4,14 @@ from automation.utils import merge_dicts
 from typing import Optional, Sequence
 import os
 
+
 class LMEvalTask(BaseTask):
 
     task_packages = [
         "vllm",
         "git+https://github.com/EleutherAI/lm-evaluation-harness.git",
         "numpy==2.1",
+        "huggingface-hub>=0.34.0,<1.0",
         "hf_xet",
         "rouge-score",
         "bert-score",
@@ -21,13 +23,13 @@ class LMEvalTask(BaseTask):
         project_name: str,
         task_name: str,
         model_id: str,
-        docker_image: str=DEFAULT_DOCKER_IMAGE,
-        packages: Optional[Sequence[str]]=None,
-        clearml_model: bool=False,
-        task_type: str="training",
-        force_download: bool=False,
-        config: Optional[str]=None,
-        model: str="vllm",
+        docker_image: str = DEFAULT_DOCKER_IMAGE,
+        packages: Optional[Sequence[str]] = None,
+        clearml_model: bool = False,
+        task_type: str = "training",
+        force_download: bool = False,
+        config: Optional[str] = None,
+        model: str = "vllm",
         **kwargs,
     ):
 
@@ -43,7 +45,9 @@ class LMEvalTask(BaseTask):
                 if "vllm" in package:
                     self.task_packages.pop("vllm")
                 if "lm-evaluation-harness" in package:
-                    self.task_packages.pop("git+https://github.com/EleutherAI/lm-evaluation-harness.git")
+                    self.task_packages.pop(
+                        "git+https://github.com/EleutherAI/lm-evaluation-harness.git"
+                    )
             packages = list(set(packages + self.task_packages))
         else:
             packages = self.task_packages
@@ -67,7 +71,9 @@ class LMEvalTask(BaseTask):
                 continue
 
             if key in kwargs:
-                raise ValueError(f"{key} already defined in config's model_args. It can't be defined again in task instantiation.")
+                raise ValueError(
+                    f"{key} already defined in config's model_args. It can't be defined again in task instantiation."
+                )
             elif key == "model":
                 model = config_kwargs.pop(key)
 
@@ -75,12 +81,16 @@ class LMEvalTask(BaseTask):
         # in both the config and in the constructor, assuming
         # the keys used in model_args are complementary
         if "model_args" in kwargs:
-            model_args = dict(item.split("=") for item in kwargs.pop("model_args").split(","))
+            model_args = dict(
+                item.split("=") for item in kwargs.pop("model_args").split(",")
+            )
         else:
             model_args = {}
 
         if "model_args" in config_kwargs:
-            config_model_args = dict(item.split("=") for item in config_kwargs.pop("model_args").split(","))
+            config_model_args = dict(
+                item.split("=") for item in config_kwargs.pop("model_args").split(",")
+            )
             model_args = merge_dicts(model_args, config_model_args)
 
         # Set default dtype and enable_chunked_prefill
@@ -94,7 +104,7 @@ class LMEvalTask(BaseTask):
             model_args["enforce_eager"] = True
 
         kwargs["model_args"] = ",".join(f"{k}={v}" for k, v in model_args.items())
-        
+
         kwargs.update(config_kwargs)
         kwargs["model"] = model
 
@@ -103,19 +113,19 @@ class LMEvalTask(BaseTask):
         self.clearml_model = clearml_model
         self.lm_eval = kwargs
         self.force_download = force_download
-        self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "lmeval_script.py")
-
+        self.script_path = os.path.join(
+            ".", "src", "automation", "tasks", "scripts", "lmeval_script.py"
+        )
 
     def script(self, configurations, args):
         from automation.tasks.scripts.lmeval_script import main
-        main(configurations, args)
 
+        main(configurations, args)
 
     def get_configurations(self):
         return {
             "lm_eval": self.lm_eval,
         }
-
 
     def get_arguments(self):
         return {
