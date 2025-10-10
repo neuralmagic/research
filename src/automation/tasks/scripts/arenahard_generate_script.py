@@ -74,7 +74,7 @@ def main():
 
     model_name = args["Args"]["generate_model"]
     get_lowercase_model = lambda model: model.split("/")[1].lower()
-    if arenahard_judgement_args.get("api_key", "'-'") == "'-'":
+    if arenahard_generate_args.get("api_key", "'-'") == "'-'":
         lowercase_model = get_lowercase_model(model_name)
     else:
         lowercase_model = model_name.lower()
