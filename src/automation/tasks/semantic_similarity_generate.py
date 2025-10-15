@@ -8,12 +8,12 @@ import yaml
 class SemanticSimilarityGenerateTask(BaseTask):
     task_packages = [
         "vllm==0.10.1.1",
-        "datasets",
-        "rouge_score",
-        "bert-score",
-        "sentence-transformers",
-        "pyzmq",
         "hf_xet",
+        "pyzmq",
+        #"datasets",
+        #"rouge_score",
+        #"bert-score",
+        #"sentence-transformers",
         #"vllm==0.10.1.1",
         #"datasets==4.2.0",
         #"rouge_score==0.1.2",
