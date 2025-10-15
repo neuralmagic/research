@@ -5,7 +5,7 @@ from datasets import load_dataset
 from vllm import LLM, SamplingParams
 from transformers import AutoTokenizer
 
-from automation.utils import resolve_reference_model_id, parse_argument, load_callable_configuration
+from automation.utils import parse_argument
 
 try:
     from clearml import OutputModel, Task
@@ -15,10 +15,6 @@ except ImportError:
 
 
 OUTPUT_DIR = os.path.join(os.getcwd(), "outputs")
-
-def parse_argument(a,b):
-    return a
-
 
 def make_alpaca_platypus_prompt(sample):
     print("Using Alpaca / Platypus style prompt")
