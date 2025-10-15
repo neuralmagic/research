@@ -8,11 +8,18 @@ import yaml
 class SemanticSimilarityGenerateTask(BaseTask):
     task_packages = [
         "vllm==0.10.1.1",
-        "datasets==4.2.0",
-        "rouge_score==0.1.2",
-        "bert-score==0.3.13",
-        "sentence-transformers==5.1.1",
-        "pyzmq==27.1.0",
+        "datasets",
+        "rouge_score",
+        "bert-score",
+        "sentence-transformers",
+        "pyzmq",
+        "hf_xet",
+        #"vllm==0.10.1.1",
+        #"datasets==4.2.0",
+        #"rouge_score==0.1.2",
+        #"bert-score==0.3.13",
+        #"sentence-transformers==5.1.1",
+        #"pyzmq==27.1.0",
     ]
 
     def __init__(
@@ -114,7 +121,6 @@ class SemanticSimilarityGenerateTask(BaseTask):
                 "max_new_tokens": self.max_new_tokens,
                 "max_model_len": self.max_model_len,
                 "trust_remote_code": self.trust_remote_code,
-                "skip_sparsity_compression_stats": self.skip_sparsity_compression_stats,
                 "tags": self.tags,
             },
         }
