@@ -49,7 +49,7 @@ def make_default_prompt(sample):
 
 
 def semantic_similarity_generate_main(
-    reference_model_id,
+    model_id,
     trust_remote_code,
     dataset_args,
     max_model_len,
@@ -85,11 +85,11 @@ def semantic_similarity_generate_main(
     TEMPERATURE = 0.0
 
     print(">>> Loading tokenizer...")
-    tokenizer = AutoTokenizer.from_pretrained(reference_model_id, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
 
     print(">>> Initializing vLLM...")
     llm = LLM(
-        model=reference_model_id,
+        model=model_id,
         dtype="auto",
         trust_remote_code=True,
         tensor_parallel_size=8,
@@ -120,9 +120,7 @@ def main(configurations=None, args=None):
     clearml_model = parse_argument(args["clearml_model"], bool)
     force_download = parse_argument(args["force_download"], bool)
     trust_remote_code = parse_argument(args["trust_remote_code"], bool)
-    reference_model_id = parse_argument(args["reference_model_id"], str)
-    candidate_model_id= parse_argument(args["candidate_model_id"], str)
-    dataset_name = parse_argument(args["dataset_name"], str)
+    model_id = parse_argument(args["model_id"], str)
     save_directory = parse_argument(args["save_directory"], str)
     max_model_len = parse_argument(args["max_model_len"], int)
     num_samples = parse_argument(args["num_samples"], int)
@@ -131,7 +129,7 @@ def main(configurations=None, args=None):
     tags = args.get("tags", None)
 
     all_prompts, outputs = semantic_similarity_generate_main(
-        reference_model_id,
+        model_id,
         trust_remote_code,
         dataset_args,
         max_model_len,
@@ -140,7 +138,7 @@ def main(configurations=None, args=None):
         save_directory,
     )
 
-    OUTPUT_FILE = os.path.join(OUTPUT_DIR,f"{reference_model_id.replace('/', '_')}.jsonl")
+    OUTPUT_FILE = os.path.join(OUTPUT_DIR,f"{model_id.replace('/', '_')}.jsonl")
     print(">>> Writing outputs to file...")
     with open(OUTPUT_FILE, "w") as fout:
         for idx, (prompt, output) in enumerate(zip(all_prompts, outputs)):

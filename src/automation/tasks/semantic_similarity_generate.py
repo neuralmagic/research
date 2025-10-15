@@ -1,6 +1,5 @@
 from automation.tasks.base_task import BaseTask
 from automation.configs import DEFAULT_DOCKER_IMAGE
-#from automation.utils import serialize_callable
 from typing import Union, List, Optional, Sequence, Any, Callable
 import os
 import yaml
@@ -26,10 +25,8 @@ class SemanticSimilarityGenerateTask(BaseTask):
         self,
         project_name: str,
         task_name: str,
-        reference_model_id: str,
+        model_id: str,
         branch: str,
-        candidate_model_id: str,
-        sts_model_id: str,
         dataset_args: Optional[dict]=None,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
@@ -80,7 +77,6 @@ class SemanticSimilarityGenerateTask(BaseTask):
         self.max_new_tokens = config_kwargs.pop("max_new_tokens", max_new_tokens)
         self.max_model_len = config_kwargs.pop("max_model_len", max_model_len)
         self.trust_remote_code = config_kwargs.pop("trust_remote_code", trust_remote_code)
-        self.sts_model_id = sts_model_id
 
         if tags is not None:
             tags = list(set(config_kwargs.pop("tags", []).extend(tags)))
@@ -89,8 +85,7 @@ class SemanticSimilarityGenerateTask(BaseTask):
         self.tags = tags
 
         # Store class attributes
-        self.reference_model_id = reference_model_id
-        self.candidate_model_id = candidate_model_id
+        self.model_id = model_id
         self.clearml_model = clearml_model
         self.force_download = force_download
         self.save_directory = save_directory
@@ -110,10 +105,8 @@ class SemanticSimilarityGenerateTask(BaseTask):
     def get_arguments(self):
         return {
             "Args": {
-                "reference_model_id": self.reference_model_id,
-                "candidate_model_id": self.candidate_model_id,
+                "model_id": self.model_id,
                 "dataset_args": self.dataset_args,
-                "sts_model_id": self.sts_model_id,
                 "clearml_model": self.clearml_model,
                 "force_download": self.force_download,
                 "save_directory": self.save_directory,
