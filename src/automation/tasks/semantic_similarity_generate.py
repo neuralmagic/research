@@ -31,6 +31,7 @@ class SemanticSimilarityGenerateTask(BaseTask):
         max_model_len: int,
         num_samples: Optional[int],
         dataset_args: Optional[dict]=None,
+        semantic_similarity_args: Optional[dict]=None,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
         clearml_model: bool=False,
@@ -73,6 +74,13 @@ class SemanticSimilarityGenerateTask(BaseTask):
             config_dataset_args.update(dataset_args)
             self.dataset_args = config_dataset_args
 
+        if semantic_similarity_args is None:
+            self.semantic_similarity_args = config_kwargs.pop("semantic_similarity_args", None)
+        else:
+            config_semantic_similarity_args = config_kwargs.pop("semantic_similarity_args", {})
+            config_semantic_similarity_args.update(semantic_similarity_args)
+            self.semantic_similarity_args = config_semantic_similarity_args
+
         self.num_samples = config_kwargs.pop("num_samples", num_samples)
         self.max_new_tokens = config_kwargs.pop("max_new_tokens", max_new_tokens)
         self.max_model_len = config_kwargs.pop("max_model_len", max_model_len)
@@ -107,6 +115,7 @@ class SemanticSimilarityGenerateTask(BaseTask):
             "Args": {
                 "model_id": self.model_id,
                 "dataset_args": self.dataset_args,
+                "semantic_similarity_args": self.semantic_similarity_args,
                 "clearml_model": self.clearml_model,
                 "force_download": self.force_download,
                 "save_directory": self.save_directory,

@@ -88,7 +88,7 @@ def semantic_similarity_generate_main(
     print(">>> Initializing vLLM...")
     llm = LLM(
         model=model_id,
-        dtype="auto",
+        dtype=dtype,
         trust_remote_code=trust_remote_code,
         tensor_parallel_size=device_count(),
         enforce_eager=True,
@@ -124,7 +124,11 @@ def main(configurations=None, args=None):
     num_samples = parse_argument(args["num_samples"], int)
     max_new_tokens = parse_argument(args["max_new_tokens"], int)
     dataset_args = args.get("dataset_args", None)
+    semantic_similarity_args= args.get("semantic_similarity_args", None)
     tags = args.get("tags", None)
+
+    print(semantic_similarity_args)
+    """
 
     all_prompts, outputs = semantic_similarity_generate_main(
         model_id,
@@ -151,17 +155,7 @@ def main(configurations=None, args=None):
 
     if clearml_available:
         task.upload_artifact("jsonl_output", OUTPUT_FILE)
-
-        """
-        # Upload model to ClearML
-        clearml_model_object = OutputModel(
-            task=task, 
-            name=task.name,
-            framework="PyTorch", 
-           tags=[tags] if isinstance(tags, str) else tags or []
-        )
-        clearml_model_object.update_weights(weights_filename=save_directory, auto_delete_file=False)
-        """
+    """
 
 if __name__ == '__main__':
     main()
