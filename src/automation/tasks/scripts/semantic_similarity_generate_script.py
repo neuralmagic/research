@@ -17,7 +17,6 @@ except ImportError:
 OUTPUT_DIR = os.path.join(os.getcwd(), "outputs")
 
 def make_alpaca_platypus_prompt(sample):
-    print("Using Alpaca / Platypus style prompt")
     instruction = sample["instruction"].strip()
     input_text = sample.get("input", "").strip()
     prompt = (
@@ -30,7 +29,6 @@ def make_alpaca_platypus_prompt(sample):
 
 
 def make_tulu_prompt(sample):
-    print("Using Tulu / OASST style prompt")
     msgs = []
     for m in sample["messages"]:
         role = m.get("role", "user")
@@ -43,7 +41,6 @@ def make_tulu_prompt(sample):
 
 
 def make_default_prompt(sample):
-    print("Using default prompt")
     prompt = f"### Input:\n{json.dumps(sample)}\n\n### Response:\n"
     return prompt
 
@@ -59,6 +56,7 @@ def semantic_similarity_generate_main(
 ):
     dtype = "auto"
     device_map = "auto"
+    TEMPERATURE = 0.0
 
     from collections import defaultdict
     all_prompts = []
@@ -82,16 +80,15 @@ def semantic_similarity_generate_main(
                 prompt = make_default_prompt(sample)
             all_prompts.append(prompt)
 
-    TEMPERATURE = 0.0
 
     print(">>> Loading tokenizer...")
-    tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code= trust_remote_code)
 
     print(">>> Initializing vLLM...")
     llm = LLM(
         model=model_id,
         dtype="auto",
-        trust_remote_code=True,
+        trust_remote_code=trust_remote_code,
         tensor_parallel_size=8,
         enforce_eager=True,
         enable_chunked_prefill=True,
