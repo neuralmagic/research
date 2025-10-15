@@ -1,5 +1,6 @@
 import json
 import os
+from torch.cuda import device_count
 from tqdm import tqdm
 from datasets import load_dataset
 from vllm import LLM, SamplingParams
@@ -89,7 +90,7 @@ def semantic_similarity_generate_main(
         model=model_id,
         dtype="auto",
         trust_remote_code=trust_remote_code,
-        tensor_parallel_size=8,
+        tensor_parallel_size=device_count(),
         enforce_eager=True,
         enable_chunked_prefill=True,
         max_model_len=max_model_len
