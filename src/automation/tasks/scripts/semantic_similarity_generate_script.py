@@ -7,6 +7,7 @@ from datasets import load_dataset
 from vllm import LLM, SamplingParams
 from transformers import AutoTokenizer
 
+from automation.vllm import start_vllm_server
 from automation.utils import parse_argument
 
 try:
@@ -80,19 +81,18 @@ def semantic_similarity_generate_main(
             all_prompts.append(prompt)
 
 
-    #print(">>> Loading tokenizer...")
-    #tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code= trust_remote_code)
 
-
-    # Start vLLM server
-    vllm_server = VLLMServer(
+    server_process, server_initialized, server_log = start_vllm_server(
         {},
         model_id,
         "http://localhost:8000/v1",
         60,
     )
-    vllm_server.start()
 
+    if not server_initialized:
+        kill_process_tree(server_process.pid)
+        task.upload_artifact(name="vLLM server log", artifact_object=server_log)
+        raise AssertionError("Server failed to initialize")
 
     url = "http://localhost:8000/v1/completions"
     headers = {
@@ -111,6 +111,8 @@ def semantic_similarity_generate_main(
     """
     #from huggingface_hub import snapshot_download
     #snapshot_download(repo_id=model_id)
+    print(">>> Loading tokenizer...")
+    tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code= trust_remote_code)
 
     print(">>> Initializing vLLM...")
     llm = LLM(
