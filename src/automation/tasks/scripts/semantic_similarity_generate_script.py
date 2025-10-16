@@ -80,8 +80,7 @@ def semantic_similarity_generate_main(
                 prompt = make_default_prompt(sample)
             all_prompts.append(prompt)
 
-
-
+    """
     server_process, server_initialized, server_log = start_vllm_server(
         {},
         model_id,
@@ -109,6 +108,7 @@ def semantic_similarity_generate_main(
     print(outputs.json())
 
     """
+
     #from huggingface_hub import snapshot_download
     #snapshot_download(repo_id=model_id)
     print(">>> Loading tokenizer...")
@@ -136,7 +136,6 @@ def semantic_similarity_generate_main(
 
     print(">>> Running vLLM generation...")
     outputs = llm.generate(all_prompts, sampling_params)
-    """
 
     return all_prompts, outputs
 
