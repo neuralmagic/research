@@ -82,18 +82,18 @@ def semantic_similarity_generate_main(
     print(">>> Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code= trust_remote_code)
 
-    from huggingface_hub import snapshot_download
-    snapshot_download(repo_id=model_id)
+    #from huggingface_hub import snapshot_download
+    #snapshot_download(repo_id=model_id)
 
     print(">>> Initializing vLLM...")
     llm = LLM(
         model=model_id,
-        #dtype=semantic_similarity_args.get("dtype", "auto"),
-        #trust_remote_code=trust_remote_code,
+        dtype=semantic_similarity_args.get("dtype", "auto"),
+        trust_remote_code=trust_remote_code,
         tensor_parallel_size=device_count(),
-        #enforce_eager=semantic_similarity_args.get("enforce_eager", True),
-        #enable_chunked_prefill=semantic_similarity_args.get("enable_chunked_prefill", True),
-        #max_model_len=max_model_len
+        enforce_eager=semantic_similarity_args.get("enforce_eager", True),
+        enable_chunked_prefill=semantic_similarity_args.get("enable_chunked_prefill", True),
+        max_model_len=max_model_len
     )
 
     print("Completed the model initialization ")
