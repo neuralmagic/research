@@ -4,7 +4,7 @@ from typing import Union, List, Optional, Sequence, Any, Callable
 import os
 import yaml
 
-class SemanticSimilarityGenerateTask(BaseTask):
+class SemanticSimilarityScoreTask(BaseTask):
     task_packages = [
         "hf_xet",
         "pyzmq",
