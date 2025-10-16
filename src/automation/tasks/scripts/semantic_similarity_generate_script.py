@@ -1,5 +1,6 @@
 import json
 import os
+import requests
 from torch.cuda import device_count
 from tqdm import tqdm
 from datasets import load_dataset
@@ -79,8 +80,9 @@ def semantic_similarity_generate_main(
             all_prompts.append(prompt)
 
 
-    print(">>> Loading tokenizer...")
-    tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code= trust_remote_code)
+    #print(">>> Loading tokenizer...")
+    #tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code= trust_remote_code)
+
 
     # Start vLLM server
     vllm_server = VLLMServer(
@@ -90,6 +92,21 @@ def semantic_similarity_generate_main(
         60,
     )
     vllm_server.start()
+
+
+    url = "http://localhost:8000/v1/completions"
+    headers = {
+        "Content-Type": "application/json",
+    }
+    
+    data = {
+        "model": model_id,
+        "prompt": all_prompts[0],
+        "max_tokens": max_new_tokens
+    }
+    
+    outputs = requests.post(url, headers=headers, json=data)
+    print(outputs.json())
 
     """
     #from huggingface_hub import snapshot_download
