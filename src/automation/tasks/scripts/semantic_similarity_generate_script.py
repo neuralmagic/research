@@ -82,6 +82,16 @@ def semantic_similarity_generate_main(
     print(">>> Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code= trust_remote_code)
 
+    # Start vLLM server
+    vllm_server = VLLMServer(
+        {},
+        model_id,
+        "http://localhost:8000/v1",
+        60,
+    )
+    vllm_server.start()
+
+    """
     #from huggingface_hub import snapshot_download
     #snapshot_download(repo_id=model_id)
 
@@ -107,6 +117,7 @@ def semantic_similarity_generate_main(
 
     print(">>> Running vLLM generation...")
     outputs = llm.generate(all_prompts, sampling_params)
+    """
 
     return all_prompts, outputs
 
