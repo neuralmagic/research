@@ -82,6 +82,9 @@ def semantic_similarity_generate_main(
     print(">>> Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code= trust_remote_code)
 
+    from huggingface_hub import snapshot_download
+    snapshot_download(repo_id=model_id)
+
     print(">>> Initializing vLLM...")
     llm = LLM(
         model=model_id,
