@@ -11,7 +11,8 @@ try:
 except ImportError:
     clearml_available = False
 
-SCORING_DIR = os.path.join(os.getcwd(), "outputs")
+SCORING_DIR = os.path.join(os.getcwd(), "scoresdirectory")
+os.makedirs(SCORING_DIR, exist_ok=True)
 
 def semantic_similarity_score_main(
     reference_file,
