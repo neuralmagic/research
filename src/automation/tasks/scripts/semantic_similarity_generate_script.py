@@ -112,14 +112,21 @@ def semantic_similarity_generate_main(
     #from huggingface_hub import snapshot_download
     #snapshot_download(repo_id=model_id)
 
-    #print(">>> Loading tokenizer...")
-    #tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code= trust_remote_code)
-
-    print(">>> Initializing vLLM...")
-    os.environ["VLLM_LOGGING_LEVEL"]="DEBUG"
-    llm = LLM(
-        model=model_id,
+    print("Define sampling parameters")
+    sampling_params = SamplingParams(
+        temperature=semantic_similarity_args.get("temperature", 0.0),
+        max_tokens=max_new_tokens,
+        stop=["### Instruction:", "### Input:", "### Response:"],
     )
+
+    try:
+        print(">>> Initializing vLLM...")
+        os.environ["VLLM_LOGGING_LEVEL"]="DEBUG"
+        llm = LLM(
+            model=model_id,
+        )
+    except Exception as e:
+        print(f"Error initializing LLM: {e}")
 
     """
     llm = LLM(
@@ -135,12 +142,10 @@ def semantic_similarity_generate_main(
 
     print("Completed the model initialization ")
 
-    sampling_params = SamplingParams(
-        temperature=semantic_similarity_args.get("temperature", 0.0),
-        max_tokens=max_new_tokens,
-        stop=["### Instruction:", "### Input:", "### Response:"],
-    )
-    print("Define sampling parameters")
+
+
+
+
 
     print(">>> Running vLLM generation...")
     outputs = llm.generate(all_prompts, sampling_params)
