@@ -50,15 +50,12 @@ def semantic_similarity_generate_main(
     model_id,
     trust_remote_code,
     dataset_args,
+    semantic_similarity_args,
     max_model_len,
     max_new_tokens,
-    num_samples,
+    num_samples_per_dataset,
     save_directory,
 ):
-    dtype = "auto"
-    device_map = "auto"
-    TEMPERATURE = 0.0
-
     from collections import defaultdict
     all_prompts = []
     all_samples_dict = defaultdict(list)
@@ -66,7 +63,7 @@ def semantic_similarity_generate_main(
     print(">>> Loading dataset...")
     for dataset_name,dataset_path in dataset_args.items():
         print(f">>> Loading dataset {dataset_name}...")
-        dataset = load_dataset(dataset_path, split=f"train[:{num_samples}]")
+        dataset = load_dataset(dataset_path, split=f"train[:{num_samples_per_dataset}]")
         all_samples_dict[dataset_name].extend(dataset)
 
     for dataset_name,dataset_samples in all_samples_dict.items():
@@ -88,16 +85,16 @@ def semantic_similarity_generate_main(
     print(">>> Initializing vLLM...")
     llm = LLM(
         model=model_id,
-        dtype=dtype,
+        dtype=semantic_similarity_args.get("dtype", "auto"),
         trust_remote_code=trust_remote_code,
         tensor_parallel_size=device_count(),
-        enforce_eager=True,
-        enable_chunked_prefill=True,
+        enforce_eager=semantic_similarity_args.get("enforce_eager", True),
+        enable_chunked_prefill=semantic_similarity_args.get("enable_chunked_prefill", True),
         max_model_len=max_model_len
     )
 
     sampling_params = SamplingParams(
-        temperature=TEMPERATURE,
+        temperature=semantic_similarity_args.get("temperature", 0.0),
         max_tokens=max_new_tokens,
         stop=["### Instruction:", "### Input:", "### Response:"],
     )
@@ -121,22 +118,21 @@ def main(configurations=None, args=None):
     model_id = parse_argument(args["model_id"], str)
     save_directory = parse_argument(args["save_directory"], str)
     max_model_len = parse_argument(args["max_model_len"], int)
-    num_samples = parse_argument(args["num_samples"], int)
+    num_samples_per_dataset = parse_argument(args["num_samples"], int)
     max_new_tokens = parse_argument(args["max_new_tokens"], int)
     dataset_args = args.get("dataset_args", None)
     semantic_similarity_args= args.get("semantic_similarity_args", None)
     tags = args.get("tags", None)
 
     print(semantic_similarity_args)
-    """
-
     all_prompts, outputs = semantic_similarity_generate_main(
         model_id,
         trust_remote_code,
         dataset_args,
+        semantic_similarity_args,
         max_model_len,
         max_new_tokens,
-        num_samples,
+        num_samples_per_dataset,
         save_directory,
     )
 
@@ -155,7 +151,6 @@ def main(configurations=None, args=None):
 
     if clearml_available:
         task.upload_artifact("jsonl_output", OUTPUT_FILE)
-    """
 
 if __name__ == '__main__':
     main()
