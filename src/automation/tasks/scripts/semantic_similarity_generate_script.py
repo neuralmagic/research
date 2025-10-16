@@ -80,7 +80,6 @@ def semantic_similarity_generate_main(
                 prompt = make_default_prompt(sample)
             all_prompts.append(prompt)
 
-    """
     server_process, server_initialized, server_log = start_vllm_server(
         {},
         model_id,
@@ -128,7 +127,6 @@ def semantic_similarity_generate_main(
     except Exception as e:
         print(f"Error initializing LLM: {e}")
 
-    """
     llm = LLM(
         model=model_id,
         dtype=semantic_similarity_args.get("dtype", "auto"),
