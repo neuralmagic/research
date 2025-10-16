@@ -3,7 +3,7 @@ import os
 from torch.cuda import device_count
 from tqdm import tqdm
 from datasets import load_dataset
-from vllm import LLM, SamplingParams, logs
+from vllm import LLM, SamplingParams
 from transformers import AutoTokenizer
 
 from automation.utils import parse_argument
@@ -78,7 +78,6 @@ def semantic_similarity_generate_main(
                 prompt = make_default_prompt(sample)
             all_prompts.append(prompt)
 
-    logs.set_level("INFO")
 
     print(">>> Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code= trust_remote_code)
@@ -86,12 +85,12 @@ def semantic_similarity_generate_main(
     print(">>> Initializing vLLM...")
     llm = LLM(
         model=model_id,
-        dtype=semantic_similarity_args.get("dtype", "auto"),
-        trust_remote_code=trust_remote_code,
+        #dtype=semantic_similarity_args.get("dtype", "auto"),
+        #trust_remote_code=trust_remote_code,
         tensor_parallel_size=device_count(),
-        enforce_eager=semantic_similarity_args.get("enforce_eager", True),
-        enable_chunked_prefill=semantic_similarity_args.get("enable_chunked_prefill", True),
-        max_model_len=max_model_len
+        #enforce_eager=semantic_similarity_args.get("enforce_eager", True),
+        #enable_chunked_prefill=semantic_similarity_args.get("enable_chunked_prefill", True),
+        #max_model_len=max_model_len
     )
 
     print("Completed the model initialization ")
