@@ -3,7 +3,7 @@ import os
 from torch.cuda import device_count
 from tqdm import tqdm
 from datasets import load_dataset
-from vllm import LLM, SamplingParams
+from vllm import LLM, SamplingParams, logs
 from transformers import AutoTokenizer
 
 from automation.utils import parse_argument
@@ -78,6 +78,7 @@ def semantic_similarity_generate_main(
                 prompt = make_default_prompt(sample)
             all_prompts.append(prompt)
 
+    logs.set_level("INFO")
 
     print(">>> Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code= trust_remote_code)
@@ -93,11 +94,14 @@ def semantic_similarity_generate_main(
         max_model_len=max_model_len
     )
 
+    print("Completed the model initialization ")
+
     sampling_params = SamplingParams(
         temperature=semantic_similarity_args.get("temperature", 0.0),
         max_tokens=max_new_tokens,
         stop=["### Instruction:", "### Input:", "### Response:"],
     )
+    print("Define sampling parameters")
 
     print(">>> Running vLLM generation...")
     outputs = llm.generate(all_prompts, sampling_params)
