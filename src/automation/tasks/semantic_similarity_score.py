@@ -60,8 +60,8 @@ class SemanticSimilarityScoreTask(BaseTask):
         if rouge_scores is None:
             self.rouge_scores = config_kwargs.pop("rouge_scores", None)
         else:
-            config_rouge_scores = config_kwargs.pop("rouge_scores", {})
-            config_rouge_scores.update(rouge_scores)
+            config_rouge_scores = config_kwargs.pop("rouge_scores", [])
+            config_rouge_scores+= rouge_scores
             self.rouge_scores = config_rouge_scores
 
         if scoring_args is None:
