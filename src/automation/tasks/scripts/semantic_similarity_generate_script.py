@@ -115,6 +115,7 @@ def semantic_similarity_generate_main(
     tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code= trust_remote_code)
 
     print(">>> Initializing vLLM...")
+    os.environ["VLLM_LOGGING_LEVEL"]="DEBUG"
     llm = LLM(
         model=model_id,
         dtype=semantic_similarity_args.get("dtype", "auto"),
