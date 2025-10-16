@@ -152,7 +152,7 @@ def main(configurations=None, args=None):
     model_id = parse_argument(args["model_id"], str)
     save_directory = parse_argument(args["save_directory"], str)
     max_model_len = parse_argument(args["max_model_len"], int)
-    num_samples_per_dataset = parse_argument(args["num_samples"], int)
+    num_samples_per_dataset = parse_argument(args["num_samples_per_dataset"], int)
     max_new_tokens = parse_argument(args["max_new_tokens"], int)
     dataset_args = args.get("dataset_args", None)
     semantic_similarity_args= args.get("semantic_similarity_args", None)
