@@ -80,6 +80,10 @@ def semantic_similarity_generate_main(
                 prompt = make_default_prompt(sample)
             all_prompts.append(prompt)
 
+    from huggingface_hub import snapshot_download
+    snapshot_download(repo_id=model_id)
+
+    """
     server_process, server_initialized, server_log = start_vllm_server(
         {},
         model_id,
@@ -105,11 +109,6 @@ def semantic_similarity_generate_main(
     
     outputs = requests.post(url, headers=headers, json=data)
     print(outputs.json())
-
-    """
-
-    #from huggingface_hub import snapshot_download
-    #snapshot_download(repo_id=model_id)
 
     print("Define sampling parameters")
     sampling_params = SamplingParams(
