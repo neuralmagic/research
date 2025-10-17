@@ -17,6 +17,7 @@ setup(
         "google-cloud-storage>=1.13.2",
         "datasets",
         "pyhocon",
+        "Jinja2",
     ],
     python_requires=">=3.7",
 )
