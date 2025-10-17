@@ -8,7 +8,9 @@ import os
 class LMEvalTask(BaseTask):
 
     task_packages = [
-        "vllm",
+        # Use latest vllm release or install from main
+        # "vllm",
+        "git+https://github.com/vllm-project/vllm.git",
         "git+https://github.com/EleutherAI/lm-evaluation-harness.git",
         "numpy==2.1",
         "huggingface-hub>=0.34.0,<1.0",

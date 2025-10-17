@@ -112,6 +112,11 @@ class BaseTask():
             repo="https://github.com/neuralmagic/research.git",
             branch=self.branch,
         )
+        # To avoid precompiling VLLM when installing from main, add env var
+        self.task.set_base_docker(
+            docker_image=self.docker_image,
+            docker_arugments="-e VLLM_USE_PRECOMPILED=1",
+        )
         self.task.output_uri = DEFAULT_OUTPUT_URI
         self.set_arguments()
         self.set_configurations()
