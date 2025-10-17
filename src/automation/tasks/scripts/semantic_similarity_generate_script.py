@@ -80,10 +80,19 @@ def semantic_similarity_generate_main(
                 prompt = make_default_prompt(sample)
             all_prompts.append(prompt)
 
-    from huggingface_hub import snapshot_download
+    try:
+        print(">>> Initializing vLLM...")
+        os.environ["VLLM_LOGGING_LEVEL"]="DEBUG"
+        llm = LLM(
+            model=model_id,
+            download_dir="/model",
+        )
+    except Exception as e:
+        print(f"Error initializing LLM: {e}")
+    #from huggingface_hub import snapshot_download
     #snapshot_download(repo_id=model_id)
     #snapshot_download(repo_id=model_id, local_dir="/model")
-    snapshot_download(repo_id=model_id, download_dir="/model")
+    #snapshot_download(repo_id=model_id, download_dir="/model")
 
     """
     server_process, server_initialized, server_log = start_vllm_server(
