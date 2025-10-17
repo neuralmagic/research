@@ -56,7 +56,7 @@ def semantic_similarity_generate_main(
     max_model_len,
     max_new_tokens,
     num_samples_per_dataset,
-    save_directory,
+    clearml_available,
 ):
     from collections import defaultdict
     all_prompts = []
@@ -118,7 +118,8 @@ def semantic_similarity_generate_main(
 
     if not server_initialized:
         kill_process_tree(server_process.pid)
-        task.upload_artifact(name="vLLM server log", artifact_object=server_log)
+        if clearml_available:
+            task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         raise AssertionError("Server failed to initialize")
 
     url = "http://localhost:8000/v1/completions"
@@ -182,7 +183,6 @@ def main(configurations=None, args=None):
     force_download = parse_argument(args["force_download"], bool)
     trust_remote_code = parse_argument(args["trust_remote_code"], bool)
     model_id = parse_argument(args["model_id"], str)
-    save_directory = parse_argument(args["save_directory"], str)
     max_model_len = parse_argument(args["max_model_len"], int)
     num_samples_per_dataset = parse_argument(args["num_samples_per_dataset"], int)
     max_new_tokens = parse_argument(args["max_new_tokens"], int)
@@ -199,7 +199,7 @@ def main(configurations=None, args=None):
         max_model_len,
         max_new_tokens,
         num_samples_per_dataset,
-        save_directory,
+        clearml_available,
     )
 
     OUTPUT_FILE = os.path.join(OUTPUT_DIR,f"{model_id.replace('/', '_')}.jsonl")
