@@ -85,7 +85,8 @@ def semantic_similarity_generate_main(
         os.environ["VLLM_LOGGING_LEVEL"]="DEBUG"
         llm = LLM(
             model=model_id,
-            download_dir="/model",
+            dtype="auto",
+            #download_dir="/model",
         )
     except Exception as e:
         print(f"Error initializing LLM: {e}")
