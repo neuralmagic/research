@@ -86,7 +86,7 @@ def semantic_similarity_generate_main(
         llm = LLM(
             model=model_id,
             dtype="auto",
-            #download_dir="/model",
+            download_dir="/model",
         )
     except Exception as e:
         print(f"Error initializing LLM: {e}")
