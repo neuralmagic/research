@@ -47,14 +47,9 @@ def get_rtn_modifier(group_size: int = 128):
         QuantizationModifier,
     )
 
-    # TODO: issue in llm-compressor when loading QuantizationModifiers from generated
-    # yaml --> Please specify either `targets` or `config_groups`
-    # manually delete for now
-    modifier = QuantizationModifier(
+    return QuantizationModifier(
         config_groups={"group_0": get_w4a16_scheme(group_size)}, ignore=["lm_head"]
     )
-    modifier.targets = None
-    return modifier
 
 
 def get_gptq_modifier(group_size: int = 128):
@@ -62,40 +57,52 @@ def get_gptq_modifier(group_size: int = 128):
         GPTQModifier,
     )
 
-    modifier = GPTQModifier(
+    return GPTQModifier(
         config_groups={"group_0": get_w4a16_scheme(group_size)}, ignore=["lm_head"]
     )
-    modifier.targets = None
-    return modifier
 
 
 recipes = {
-    "RTN_W4A16G128": get_rtn_modifier(128),
-    "GPTQ_W4A16G128": get_gptq_modifier(128),
-    "QUIPv_B128_RTN_W4A16G128": [get_quip_modifier(128, ["v"]), get_rtn_modifier(128)],
-    "QUIPv_B128_GPTQ_W4A16G128": [
-        get_quip_modifier(128, ["v"]),
+    "DENSE": [],
+    # "RTN_W4A16G128": get_rtn_modifier(128),
+    # "GPTQ_W4A16G128": get_gptq_modifier(128),
+    # "QUIPv_B128_RTN_W4A16G128": [get_quip_modifier(128, ["v"]), get_rtn_modifier(128)],
+    # "QUIPv_B128_GPTQ_W4A16G128": [
+    #     get_quip_modifier(128, ["v"]),
+    #     get_gptq_modifier(128),
+    # ],
+    # "QUIPuv_B128_RTN_W4A16G128": [
+    #     get_quip_modifier(128, ["u", "v"]),
+    #     get_rtn_modifier(128),
+    # ],
+    "QUIPuv_B128_GPTQ_W4A16G128": [
+        get_quip_modifier(128, ["u", "v"]),
         get_gptq_modifier(128),
     ],
-    "RTN_W4A16G64": get_rtn_modifier(64),
-    "GPTQ_W4A16G64": get_gptq_modifier(64),
-    "QUIPv_B64_RTN_W4A16G64": [get_quip_modifier(64, ["v"]), get_rtn_modifier(64)],
-    "QUIPv_B64_GPTQ_W4A16G64": [
-        get_quip_modifier(64, ["v"]),
+    # "RTN_W4A16G64": get_rtn_modifier(64),
+    # "GPTQ_W4A16G64": get_gptq_modifier(64),
+    # "QUIPv_B64_RTN_W4A16G64": [get_quip_modifier(64, ["v"]), get_rtn_modifier(64)],
+    # "QUIPv_B64_GPTQ_W4A16G64": [
+    #     get_quip_modifier(64, ["v"]),
+    #     get_gptq_modifier(64),
+    # ],
+    # "QUIPuv_B64_RTN_W4A16G64": [get_quip_modifier(64, ["u", "v"]), get_rtn_modifier(64)],
+    "QUIPuv_B64_GPTQ_W4A16G64": [
+        get_quip_modifier(64, ["u", "v"]),
         get_gptq_modifier(64),
     ],
-    "RTN_W4A16G32": get_rtn_modifier(32),
-    "GPTQ_W4A16G32": get_gptq_modifier(32),
-    "QUIPv_B32_RTN_W4A16G32": [get_quip_modifier(32, ["v"]), get_rtn_modifier(32)],
-    "QUIPv_B32_GPTQ_W4A16G32": [
-        get_quip_modifier(32, ["v"]),
+    # "RTN_W4A16G32": get_rtn_modifier(32),
+    # "GPTQ_W4A16G32": get_gptq_modifier(32),
+    # "QUIPv_B32_RTN_W4A16G32": [get_quip_modifier(32, ["v"]), get_rtn_modifier(32)],
+    # "QUIPv_B32_GPTQ_W4A16G32": [
+    #     get_quip_modifier(32, ["v"]),
+    #     get_gptq_modifier(32),
+    # ],
+    # "QUIPuv_B32_RTN_W4A16G32": [get_quip_modifier(32, ["u", "v"]), get_rtn_modifier(32)],
+    "QUIPuv_B32_GPTQ_W4A16G32": [
+        get_quip_modifier(32, ["u", "v"]),
         get_gptq_modifier(32),
     ],
-    # TODO: Quip U rotations broken in vllm only in clearml env, cannot reproduce locally
-    # "QUIPu_B128_RTN_W4A16G128": [get_quip_modifier(128, ["u"]), get_rtn_modifier(128)],
-    # "QUIPu_B128_GPTQ_W4A16G128": [get_quip_modifier(128, ["u"]), get_gptq_modifier(128)],
-    # "QUIP_B64_RTN_W4A16G64": [get_quip_modifier(64), get_rtn_modifier(64)],
-    # "QUIP_B64_GPTQ_W4A16G64": [get_quip_modifier(64), get_gptq_modifier(64)],
 }
 
 
