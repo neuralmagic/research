@@ -87,9 +87,11 @@ def semantic_similarity_generate_main(
         stop=["### Instruction:", "### Input:", "### Response:"],
     )
 
+    print(">>> Downloading snapshot ...")
     from huggingface_hub import snapshot_download, hf_hub_download
     #hf_hub_download(model_id, "model.safetensors", local_dir="/models")
     snapshot_download(repo_id=model_id, local_dir="/models")
+    print(">>> trigger...")
 
     try:
         print(">>> Initializing vLLM...")
