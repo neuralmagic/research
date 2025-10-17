@@ -80,8 +80,17 @@ def semantic_similarity_generate_main(
                 prompt = make_default_prompt(sample)
             all_prompts.append(prompt)
 
+    print("Define sampling parameters")
+    sampling_params = SamplingParams(
+        temperature=semantic_similarity_args.get("temperature", 0.0),
+        max_tokens=max_new_tokens,
+        stop=["### Instruction:", "### Input:", "### Response:"],
+    )
+
     from huggingface_hub import snapshot_download, hf_hub_download
-    hf_hub_download(model_id, "model.safetensors", local_dir="/models")
+    #hf_hub_download(model_id, "model.safetensors", local_dir="/models")
+    snapshot_download(repo_id=model_id, local_dir="/models")
+
     try:
         print(">>> Initializing vLLM...")
         os.environ["VLLM_LOGGING_LEVEL"]="DEBUG"
@@ -91,6 +100,9 @@ def semantic_similarity_generate_main(
             download_dir="/models",
             trust_remote_code=True
         )
+        print("Completed the model initialization ")
+        print(">>> Running vLLM generation...")
+        outputs = llm.generate(all_prompts, sampling_params)
     except Exception as e:
         print(f"Error initializing LLM: {e}")
     #from huggingface_hub import snapshot_download
@@ -154,12 +166,6 @@ def semantic_similarity_generate_main(
     """
 
     print("Completed the model initialization ")
-
-
-
-
-
-
     print(">>> Running vLLM generation...")
     outputs = llm.generate(all_prompts, sampling_params)
 
