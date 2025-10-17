@@ -94,13 +94,15 @@ def semantic_similarity_generate_main(
     print(">>> trigger...")
 
     try:
-        print(">>> Initializing vLLM...")
+        print(f">>> Initializing vLLM: {model_id}...")
         os.environ["VLLM_LOGGING_LEVEL"]="DEBUG"
-        llm = LLM(
-            model=model_id,
-            dtype="auto",
-            download_dir="/models",
-        )
+        llm = LLM(model_id)
+     
+        #llm = LLM(
+        #    model=model_id,
+        #    dtype="auto",
+        #    download_dir="/models",
+        #)
         print("Completed the model initialization ")
         print(">>> Running vLLM generation...")
         outputs = llm.generate(all_prompts, sampling_params)
