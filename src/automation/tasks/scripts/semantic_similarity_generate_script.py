@@ -120,6 +120,7 @@ def semantic_similarity_generate_main(
         kill_process_tree(server_process.pid)
         if clearml_available:
             from clearml import Task
+            task = Task.current_task()
             task.upload_artifact(name="vLLM server log", artifact_object=server_log)
         raise AssertionError("Server failed to initialize")
 
