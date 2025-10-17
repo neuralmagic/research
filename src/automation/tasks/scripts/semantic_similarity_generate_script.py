@@ -81,7 +81,8 @@ def semantic_similarity_generate_main(
             all_prompts.append(prompt)
 
     from huggingface_hub import snapshot_download
-    snapshot_download(repo_id=model_id)
+    #snapshot_download(repo_id=model_id)
+    snapshot_download(repo_id=model_id, local_dir="/model")
 
     """
     server_process, server_initialized, server_log = start_vllm_server(
