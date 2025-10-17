@@ -13,6 +13,8 @@ class LLMCompressorTask(BaseTask):
         "torchvision==0.23.0",
         "huggingface-hub>=0.34.0,<1.0",
         "hf_xet",
+        # Will error out for networkx v3.5+, which has python-requires>=3.11
+        "networkx~=3.4.2",
     ]
 
     def __init__(
