@@ -8,7 +8,7 @@ from vllm import LLM, SamplingParams
 from transformers import AutoTokenizer
 
 from automation.vllm import start_vllm_server
-from automation.utils import parse_argument
+from automation.utils import kill_process_tree, parse_argument
 
 try:
     from clearml import OutputModel, Task

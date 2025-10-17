@@ -48,8 +48,8 @@ def start_vllm_server(
     server_log_file_name = f"{SERVER_LOG_PREFIX}_{task.id}.txt"
     server_log_file = open(server_log_file_name, "w")
 
-    #server_process = subprocess.Popen(server_command, shell=False, env=subprocess_env)
-    server_process = subprocess.Popen(server_command, stdout=server_log_file, stderr=server_log_file, shell=False, env=subprocess_env)
+    server_process = subprocess.Popen(server_command, shell=False, env=subprocess_env)
+    #server_process = subprocess.Popen(server_command, stdout=server_log_file, stderr=server_log_file, shell=False, env=subprocess_env)
 
     delay = 5
     server_initialized = False
