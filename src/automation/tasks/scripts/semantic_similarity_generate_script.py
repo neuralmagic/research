@@ -80,6 +80,7 @@ def semantic_similarity_generate_main(
                 prompt = make_default_prompt(sample)
             all_prompts.append(prompt)
 
+    """
     print("Define sampling parameters")
     sampling_params = SamplingParams(
         temperature=semantic_similarity_args.get("temperature", 0.0),
@@ -106,11 +107,6 @@ def semantic_similarity_generate_main(
         outputs = llm.generate(all_prompts, sampling_params)
     except Exception as e:
         print(f"Error initializing LLM: {e}")
-    #from huggingface_hub import snapshot_download
-    #hf_hub_download(model_id, "model.safetensors", local_dir="./models")
-    #snapshot_download(repo_id=model_id)
-    #snapshot_download(repo_id=model_id, local_dir="/model")
-    #snapshot_download(repo_id=model_id, download_dir="/model")
 
     """
     server_process, server_initialized, server_log = start_vllm_server(
@@ -139,6 +135,8 @@ def semantic_similarity_generate_main(
     outputs = requests.post(url, headers=headers, json=data)
     print(outputs.json())
 
+    """
+
     print("Define sampling parameters")
     sampling_params = SamplingParams(
         temperature=semantic_similarity_args.get("temperature", 0.0),
@@ -164,11 +162,11 @@ def semantic_similarity_generate_main(
         enable_chunked_prefill=semantic_similarity_args.get("enable_chunked_prefill", True),
         max_model_len=max_model_len
     )
-    """
 
     print("Completed the model initialization ")
     print(">>> Running vLLM generation...")
     outputs = llm.generate(all_prompts, sampling_params)
+    """
 
     return all_prompts, outputs
 
