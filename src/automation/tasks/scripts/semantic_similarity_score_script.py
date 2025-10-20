@@ -127,7 +127,7 @@ def main(configurations=None, args=None):
     out_filename = os.path.join(SCORING_DIR,out_filename)
     
     # Save results
-    with open(out_filename, "w") as file:
+    with open("data.json", "w") as file:
         json.dump(data, file, indent=4)
 
     print(f"\nSaved results to {out_filename}")
