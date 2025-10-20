@@ -116,7 +116,7 @@ def main(configurations=None, args=None):
     print("BERTScore F1 | ROUGE-1 F1 | ROUGE-L F1 | STS CosSim")
     print(f"{avg_bert:.3f} | {avg_rouge1:.3f} | {avg_rougeL:.3f} | {avg_sts:.3f}")
 
-    out_filename = f"scores_{ref_model_json.lower()}__vs__{cand_model_json.lower()}.txt"
+    out_filename = f"scores_{reference_file.lower()}__vs__{candidate_file.lower()}.txt"
     out_filename = os.path.join(SCORING_DIR,out_filename)
     # Save results
     with open(out_filename, "w") as f_out:
