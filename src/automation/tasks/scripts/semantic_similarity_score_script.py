@@ -132,7 +132,9 @@ def main(configurations=None, args=None):
 
     print(f"\nSaved results to {out_filename}")
     if clearml_available:
-        task.upload_artifact("scores", out_filename)
+        task.upload_artifact("scores", data)
+        task.upload_artifact("jsonscores", "data.json")
+        task.upload_artifact("outscores", out_filename)
         print("Pushing clearml artifact")
 
 
