@@ -123,7 +123,7 @@ def main(configurations=None, args=None):
         "STS CosSim": f"{avg_sts:.3f}",
     }
 
-    out_filename = f"scores_{ref_model_json.lower()}__vs__{cand_model_json.lower()}.txt"
+    out_filename = f"scores_{reference_file.lower()}__vs__{candidate_file.lower()}.txt"
     out_filename = os.path.join(SCORING_DIR,out_filename)
     
     # Save results
