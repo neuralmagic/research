@@ -116,13 +116,20 @@ def main(configurations=None, args=None):
     print("BERTScore F1 | ROUGE-1 F1 | ROUGE-L F1 | STS CosSim")
     print(f"{avg_bert:.3f} | {avg_rouge1:.3f} | {avg_rougeL:.3f} | {avg_sts:.3f}")
 
+    data = {
+        "BERTScore F1": f"{avg_bert:.3f}",
+        "ROUGE-1 F1": f"{avg_rouge1:.3f}",
+        "ROUGE-1 FL": f"{avg_rougeL:.3f}",
+        "STS CosSim": f"{avg_sts:.3f}",
+    }
+
     out_filename = f"scores_{ref_model_json.lower()}__vs__{cand_model_json.lower()}.txt"
     out_filename = os.path.join(SCORING_DIR,out_filename)
-    # Save results
-    with open(out_filename, "w") as f_out:
-        f_out.write("BERTScore F1 | ROUGE-1 F1 | ROUGE-L F1 | STS CosSim\n")
-        f_out.write(f"{avg_bert:.3f} | {avg_rouge1:.3f} | {avg_rougeL:.3f} | {avg_sts:.3f}\n\n")
     
+    # Save results
+    with open(out_filename, "w") as file:
+        json.dump(data, file, indent=4)
+
     print(f"\nSaved results to {out_filename}")
     if clearml_available:
         task.upload_artifact("scores", out_filename)
