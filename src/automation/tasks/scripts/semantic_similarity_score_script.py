@@ -93,11 +93,11 @@ def main(configurations=None, args=None):
         reference_model_task_name = parse_argument(args["reference_model_task_name"], str)
         reference_task = Task.query_tasks(project_name=reference_model_project_name,task_name= reference_model_task_name, task_filter={'order_by': ['-last_update'], 'status': ['completed'] })
         reference_task = Task.get_task(reference_task[0])
-        reference_file = reference_task.artifacts['jsonl model'].get_local_copy()
+        reference_file = reference_task.artifacts['reference_jsonl_output'].get_local_copy()
 
         candidate_task = Task.query_tasks(project_name=candidate_model_project_name,task_name= candidate_model_task_name, task_filter={'order_by': ['-last_update'], 'status': ['completed'] })
         candidate_task = Task.get_task(candidate_task[0])
-        candidate_file = candidate_task.artifacts['jsonl model'].get_local_copy()
+        candidate_file = candidate_task.artifacts['candidate_jsonl_output'].get_local_copy()
         # add task query to get jsonl
     else:
         ref_model_json = "Qwen_Qwen3-0.6B.jsonl"
