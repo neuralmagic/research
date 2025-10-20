@@ -18,6 +18,7 @@ class BaseTask():
         project_name: str,
         task_name: str,
         docker_image: str,
+        docker_args: str,
         branch: Optional[str] = DEFAULT_RESEARCH_BRANCH,
         packages: Optional[Sequence[str]]=None,
         task_type: str="training",
@@ -39,6 +40,7 @@ class BaseTask():
         self.project_name = project_name
         self.task_name = task_name
         self.docker_image = docker_image
+        self.docker_args = docker_args
         self.packages = packages
         self.task_type = task_type
         self.task = None
@@ -106,6 +108,7 @@ class BaseTask():
             task_name=self.task_name, 
             task_type=self.task_type, 
             docker=self.docker_image, 
+            docker_args=self.docker_args, 
             packages=self.packages, 
             add_task_init_call=True,
             script=self.script_path,
