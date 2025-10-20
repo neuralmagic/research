@@ -20,6 +20,7 @@ class LLMCompressorTask(BaseTask):
         recipe: Optional[Any]=None,
         recipe_args: Optional[dict]=None,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
+        docker_args: Optional[str]=None,
         packages: Optional[Sequence[str]]=None,
         model_class: str="AutoModelForCausalLM",
         dataset_name: Optional[str]="calibration",
@@ -56,6 +57,7 @@ class LLMCompressorTask(BaseTask):
             project_name=project_name,
             task_name=task_name,
             docker_image=docker_image,
+            docker_args=docker_args,
             packages=packages,
             task_type=task_type,
         )
