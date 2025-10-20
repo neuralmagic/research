@@ -116,6 +116,7 @@ def main(configurations=None, args=None):
     print("BERTScore F1 | ROUGE-1 F1 | ROUGE-L F1 | STS CosSim")
     print(f"{avg_bert:.3f} | {avg_rouge1:.3f} | {avg_rougeL:.3f} | {avg_sts:.3f}")
 
+
     data = {
         "BERTScore F1": f"{avg_bert:.3f}",
         "ROUGE-1 F1": f"{avg_rouge1:.3f}",
@@ -132,7 +133,8 @@ def main(configurations=None, args=None):
 
     print(f"\nSaved results to {out_filename}")
     if clearml_available:
-        task.upload_artifact("scores", out_filename)
+        task.upload_artifact("scores", data)
+        task.upload_artifact("outscores", out_filename)
         print("Pushing clearml artifact")
 
 if __name__ == '__main__':
