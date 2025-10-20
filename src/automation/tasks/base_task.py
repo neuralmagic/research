@@ -18,7 +18,7 @@ class BaseTask():
         project_name: str,
         task_name: str,
         docker_image: str,
-        docker_args: str,
+        docker_args: Optional[str] = None,
         branch: Optional[str] = DEFAULT_RESEARCH_BRANCH,
         packages: Optional[Sequence[str]]=None,
         task_type: str="training",
