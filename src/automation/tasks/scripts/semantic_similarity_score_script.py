@@ -123,19 +123,17 @@ def main(configurations=None, args=None):
         "STS CosSim": f"{avg_sts:.3f}",
     }
 
-    out_filename = f"scores_{reference_file.lower()}__vs__{candidate_file.lower()}.txt"
-    out_filename = os.path.join(SCORING_DIR,out_filename)
-    
-    # Save results
-    with open("data.json", "w") as file:
-        json.dump(data, file, indent=4)
 
-    print(f"\nSaved results to {out_filename}")
     if clearml_available:
         task.upload_artifact("scores", data)
-        task.upload_artifact("jsonscores", "data.json")
-        task.upload_artifact("outscores", out_filename)
         print("Pushing clearml artifact")
+    else: 
+        out_filename = f"scores_{reference_file.lower()}__vs__{candidate_file.lower()}.txt"
+        out_filename = os.path.join(SCORING_DIR,out_filename)
+        
+        print(f"\nSaved results to {out_filename}")
+        with open(out_filename, "w") as file:
+            json.dump(data, file, indent=4)
 
 
 if __name__ == '__main__':
