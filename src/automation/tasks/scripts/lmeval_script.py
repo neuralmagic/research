@@ -67,7 +67,10 @@ def lmeval_main(
     from huggingface_hub import snapshot_download
 
     print("-----------------------------------Downloading model---------------------------")
-    snapshot_download(repo_id=f"{model_id}")
+    try:
+        snapshot_download(repo_id=f"{model_id}")
+    except:
+        print(f"{model_id} not in snapshot format")
    
     if lm_eval_args["tasks"] == "humaneval_64_instruct":
         print("Setting HF_ALLOW_CODE_EVAL to 1")
