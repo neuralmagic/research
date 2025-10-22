@@ -80,7 +80,6 @@ def semantic_similarity_generate_main(
                 prompt = make_default_prompt(sample)
             all_prompts.append(prompt)
 
-    """
     print("Define sampling parameters")
     sampling_params = SamplingParams(
         temperature=semantic_similarity_args.get("temperature", 0.0),
@@ -90,7 +89,7 @@ def semantic_similarity_generate_main(
 
     print(">>> Downloading snapshot ...")
     from huggingface_hub import snapshot_download, hf_hub_download
-    snapshot_download(repo_id=model_id, local_dir="/models")
+    snapshot_download(repo_id=model_id, local_dir="/home")
     
     print(">>> trigger...")
 
@@ -100,7 +99,7 @@ def semantic_similarity_generate_main(
         llm = LLM(
             model=model_id,
             dtype="auto",
-            download_dir="/models",
+            download_dir="/home",
         )
         print("Completed the model initialization ")
         print(">>> Running vLLM generation...")
@@ -140,36 +139,7 @@ def semantic_similarity_generate_main(
 
     """
 
-    print("Define sampling parameters")
-    sampling_params = SamplingParams(
-        temperature=semantic_similarity_args.get("temperature", 0.0),
-        max_tokens=max_new_tokens,
-        stop=["### Instruction:", "### Input:", "### Response:"],
-    )
 
-    try:
-        print(">>> Initializing vLLM...")
-        os.environ["VLLM_LOGGING_LEVEL"]="DEBUG"
-        llm = LLM(
-            model=model_id,
-        )
-    except Exception as e:
-        print(f"Error initializing LLM: {e}")
-
-    llm = LLM(
-        model=model_id,
-        dtype=semantic_similarity_args.get("dtype", "auto"),
-        trust_remote_code=trust_remote_code,
-        tensor_parallel_size=device_count(),
-        enforce_eager=semantic_similarity_args.get("enforce_eager", True),
-        enable_chunked_prefill=semantic_similarity_args.get("enable_chunked_prefill", True),
-        max_model_len=max_model_len
-    )
-
-    print("Completed the model initialization ")
-    print(">>> Running vLLM generation...")
-    outputs = llm.generate(all_prompts, sampling_params)
-    """
 
     return all_prompts, outputs
 
