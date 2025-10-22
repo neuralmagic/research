@@ -74,7 +74,7 @@ def get_gptq_modifier(group_size: int = 128):
 
 
 recipes = {
-    "DENSE": [],
+    # "DENSE": [],
     # "RTN_W4A16G128": get_rtn_modifier(128),
     # "GPTQ_W4A16G128": get_gptq_modifier(128),
     # "QUIPv_B128_RTN_W4A16G128": [get_quip_modifier(128, ["v"]), get_rtn_modifier(128)],
