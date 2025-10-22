@@ -1,12 +1,23 @@
 from typing import Literal
 from clearml import Task
 
-# TODO: cannot use PipelineController, fails to clone github.com:neuralmagic/research
-# from clearml import PipelineController
 from automation.pipelines import Pipeline
 from automation.tasks import LMEvalTask, LLMCompressorTask
 
 PROJECT_NAME = "brian_transforms_v1"
+
+
+def get_spinquant_modifier(
+    transform_block_size: int | None,
+    rotations: list[Literal["R1", "R2", "R4"]] = ["R1", "R2"],
+):
+    from llmcompressor.modifiers.transform import SpinQuantModifier
+
+    return SpinQuantModifier(
+        transform_type="hadamard",
+        transform_block_size=transform_block_size,
+        rotations=rotations,
+    )
 
 
 def get_quip_modifier(
@@ -75,8 +86,16 @@ recipes = {
     #     get_quip_modifier(128, ["u", "v"]),
     #     get_rtn_modifier(128),
     # ],
-    "QUIPuv_B128_GPTQ_W4A16G128": [
-        get_quip_modifier(128, ["u", "v"]),
+    # "QUIPuv_B128_GPTQ_W4A16G128": [
+    #     get_quip_modifier(128, ["u", "v"]),
+    #     get_gptq_modifier(128),
+    # ],
+    "SpinQuantR1R2_B128_GPTQ_W4A16G128": [
+        get_spinquant_modifier(128, ["R1", "R2"]),
+        get_gptq_modifier(128),
+    ],
+    "SpinQuantR1R2R4_B128_GPTQ_W4A16G128": [
+        get_spinquant_modifier(128, ["R1", "R2", "R4"]),
         get_gptq_modifier(128),
     ],
     # "RTN_W4A16G64": get_rtn_modifier(64),
@@ -87,8 +106,16 @@ recipes = {
     #     get_gptq_modifier(64),
     # ],
     # "QUIPuv_B64_RTN_W4A16G64": [get_quip_modifier(64, ["u", "v"]), get_rtn_modifier(64)],
-    "QUIPuv_B64_GPTQ_W4A16G64": [
-        get_quip_modifier(64, ["u", "v"]),
+    # "QUIPuv_B64_GPTQ_W4A16G64": [
+    #     get_quip_modifier(64, ["u", "v"]),
+    #     get_gptq_modifier(64),
+    # ],
+    "SpinQuantR1R2_B64_GPTQ_W4A16G64": [
+        get_spinquant_modifier(64, ["R1", "R2"]),
+        get_gptq_modifier(64),
+    ],
+    "SpinQuantR1R2R4_B64_GPTQ_W4A16G64": [
+        get_spinquant_modifier(64, ["R1", "R2", "R4"]),
         get_gptq_modifier(64),
     ],
     # "RTN_W4A16G32": get_rtn_modifier(32),
@@ -99,8 +126,16 @@ recipes = {
     #     get_gptq_modifier(32),
     # ],
     # "QUIPuv_B32_RTN_W4A16G32": [get_quip_modifier(32, ["u", "v"]), get_rtn_modifier(32)],
-    "QUIPuv_B32_GPTQ_W4A16G32": [
-        get_quip_modifier(32, ["u", "v"]),
+    # "QUIPuv_B32_GPTQ_W4A16G32": [
+    #     get_quip_modifier(32, ["u", "v"]),
+    #     get_gptq_modifier(32),
+    # ],
+    "SpinQuantR1R2_B32_GPTQ_W4A16G32": [
+        get_spinquant_modifier(32, ["R1", "R2"]),
+        get_gptq_modifier(32),
+    ],
+    "SpinQuantR1R2R4_B32_GPTQ_W4A16G32": [
+        get_spinquant_modifier(32, ["R1", "R2", "R4"]),
         get_gptq_modifier(32),
     ],
 }
@@ -193,4 +228,3 @@ if __name__ == "__main__":
             )
 
     pipeline.execute_remotely()
-    # pipeline.execute_locally()
