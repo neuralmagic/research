@@ -5,69 +5,80 @@ import sys
 import os
 import torch
 from urllib.parse import urlparse
-from clearml import Task
+from automation.utils import kill_process_tree
+from datetime import datetime
+import random
 
 SERVER_LOG_PREFIX = "vllm_server_log"
 
+class VLLMServer:
+    def __init__(self, vllm_args, model_id, target, server_wait_time):
+        self.vllm_args = vllm_args
+        self.model_id = model_id
+        self.target = target
+        self.server_wait_time = server_wait_time
+        
+    def start(self):
+        executable_path = os.path.dirname(sys.executable)
+        vllm_path = os.path.join(executable_path, "vllm")
 
-def start_vllm_server(
-    vllm_args, 
-    model_id, 
-    target, 
-    server_wait_time, 
-):
-    task = Task.current_task()
+        num_gpus = torch.cuda.device_count()
 
-    executable_path = os.path.dirname(sys.executable)
-    vllm_path = os.path.join(executable_path, "vllm")
+        parsed_target = urlparse(self.target)
 
-    num_gpus = torch.cuda.device_count()
+        server_command = [
+            f"{vllm_path}", "serve", 
+            self.model_id,
+            "--host", parsed_target.hostname, 
+            "--port", str(parsed_target.port),
+            "--tensor-parallel-size", str(num_gpus)
+        ]
 
-    parsed_target = urlparse(target)
+        subprocess_env = os.environ.copy()
 
-    server_command = [
-        f"{vllm_path}", "serve", 
-        model_id,
-        "--host", parsed_target.hostname, 
-        "--port", str(parsed_target.port),
-        "--tensor-parallel-size", str(num_gpus)
-    ]
-
-    subprocess_env = os.environ.copy()
-
-    for k, v in vllm_args.items():
-        if k.startswith("VLLM_"):
-            subprocess_env[k] = str(v)
-        else:
-            if v == True or v == "True":
-                server_command.append(f"--{k}")
+        for k, v in self.vllm_args.items():
+            if k.startswith("VLLM_"):
+                subprocess_env[k] = str(v)
             else:
-                server_command.extend([f"--{k}", str(v)])
-                
+                if v == True or v == "True":
+                    server_command.append(f"--{k}")
+                else:
+                    server_command.extend([f"--{k}", str(v)])
+                    
 
-    server_log_file_name = f"{SERVER_LOG_PREFIX}_{task.id}.txt"
-    server_log_file = open(server_log_file_name, "w")
+        random_integer = random.randint(1, 9999)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    print(f"Running: {server_command}")
+        self.server_log_file_name = f"{SERVER_LOG_PREFIX}_{timestamp}_{random_integer:04d}.txt"
+        self.server_log_file = open(self.server_log_file_name, "w")
+        self.server_process = subprocess.Popen(server_command, stdout=self.server_log_file, stderr=self.server_log_file, shell=False, env=subprocess_env)
 
-    #server_process = subprocess.Popen(server_command, shell=False, env=subprocess_env)
-    server_process = subprocess.Popen(server_command, stdout=server_log_file, stderr=server_log_file, shell=False, env=subprocess_env)
+        delay = 5
+        self.server_initialized = False
+        for _ in range(self.server_wait_time // delay):
+            try:
+                response = requests.get(self.target + "/models")
+                if response.status_code == 200 and response.json().get("data"):
+                    print("Server initialized")
+                    self.server_initialized = True
+                    break  # Exit the loop if the request is successful
+            except requests.exceptions.RequestException as e:
+                pass
 
-    delay = 5
-    server_initialized = False
-    for _ in range(server_wait_time // delay):
-        try:
-            response = requests.get(target + "/models")
-            if response.status_code == 200:
-                print("Server initialized")
-                server_initialized = True
-                break  # Exit the loop if the request is successful
-        except requests.exceptions.RequestException as e:
-            pass
+            time.sleep(delay)
+        
+    def stop(self):
+        kill_process_tree(self.server_process.pid)
+        self.server_log_file.close()
+        
+    def is_initialized(self):
+        return self.server_initialized
+    
+    def get_log_file_name(self):
+        return self.server_log_file_name
+    
+    def get_log_file(self):
+        return self.server_log_file
+    
 
-        time.sleep(delay)
-
-    if server_initialized:
-        return server_process, True, server_log_file_name
-    else:
-        return server_process, False, server_log_file_name
+ 

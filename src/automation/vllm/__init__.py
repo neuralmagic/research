@@ -1,1 +1,1 @@
-from automation.vllm.server import start_vllm_server
+from automation.vllm.server import VLLMServer
