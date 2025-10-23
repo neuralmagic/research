@@ -19,6 +19,9 @@ def semantic_similarity_score_main(
     candidate_file,
     sts_model_id,
     rouge_scores,
+    bert_score_limit,
+    rouge1_score_limit,
+    sts_score_limit,
 ):
     # Load reference and candidate data
     with open(reference_file, "r") as f_ref, open(candidate_file, "r") as f_cand:
@@ -58,7 +61,7 @@ def semantic_similarity_score_main(
 
         all_bert_f1.append(f1.item())
 
-        if f1 < 0.85 or rouge1 < 0.5 or sts < 0.85:
+        if f1 < bert_score_limit or rouge1 < rouge1_score_limit or sts < sts_score_limit:
             low_score_indices.append(i)
 
     # Compute averages
@@ -106,18 +109,25 @@ def main(configurations=None, args=None):
         reference_file = os.path.join(SCORING_DIR, ref_model_jsonl)
         candidate_file = os.path.join(SCORING_DIR, cand_model_jsonl)
     
+    bert_score_limit =  scoring_args.get("f1",0.75)
+    rouge1_score_limit =  scoring_args.get("rouge1",0.6)
+    sts_score_limit =  scoring_args.get("sts",0.75)
+
     avg_bert, avg_rouge1, avg_rougeL, avg_sts, low_score_indices = semantic_similarity_score_main(
         reference_file,
         candidate_file,
         sts_model_id,
         rouge_scores,
+        bert_score_limit,
+        rouge1_score_limit,
+        sts_score_limit,
     )
     # Print summary
     print("\n=== Averages (for Google Sheets) ===")
     print("BERTScore F1 | ROUGE-1 F1 | ROUGE-L F1 | STS CosSim")
     print(f"{avg_bert:.3f} | {avg_rouge1:.3f} | {avg_rougeL:.3f} | {avg_sts:.3f}")
 
-    print("\n=== Low-score indices (BERT < 0.85, ROUGE-1 < 0.5, STS < 0.85) ===")
+    print(f"\n=== Low-score indices (BERT < {bert_score_limit}, ROUGE-1 < {rouge1_score_limit}, STS < {sts_score_limit}) ===")
     print(low_score_indices)
 
     data = {
