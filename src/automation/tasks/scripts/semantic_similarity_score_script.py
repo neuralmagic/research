@@ -80,11 +80,14 @@ def main(configurations=None, args=None):
     clearml_model = parse_argument(args["clearml_model"], bool)
     force_download = parse_argument(args["force_download"], bool)
     trust_remote_code = parse_argument(args["trust_remote_code"], bool)
+    scoring_args = args.get("scoring_args", dict)
     sts_model_id = args.get("sts_model_id", str)
     rouge_scores= args.get("rouge_scores", list)
     tags = args.get("tags", None)
 
     print(args)
+    print(scoring_args)
+   
     if clearml_available:
         reference_model_project_name = parse_argument(args["reference_model_project_name"], str)
         candidate_model_project_name = parse_argument(args["candidate_model_project_name"], str)
