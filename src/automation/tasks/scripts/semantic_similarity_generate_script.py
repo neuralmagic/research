@@ -59,6 +59,8 @@ def semantic_similarity_generate_main(
     clearml_available,
 ):
     from collections import defaultdict
+    from huggingface_hub import snapshot_download
+
     all_prompts = []
     all_samples_dict = defaultdict(list)
 
@@ -88,14 +90,10 @@ def semantic_similarity_generate_main(
     )
 
     print(">>> Downloading snapshot ...")
-    from huggingface_hub import snapshot_download 
     snapshot_download(repo_id=model_id, local_dir=HUGGINGFACE_DIR)
     
-    print(">>> trigger...")
-
     try:
         print(">>> Initializing vLLM...")
-        os.environ["VLLM_LOGGING_LEVEL"]="DEBUG"
         llm = LLM(
             model=HUGGINGFACE_DIR,
             dtype=semantic_similarity_args.get("dtype", "auto"),
