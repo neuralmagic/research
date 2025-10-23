@@ -16,8 +16,8 @@ try:
 except ImportError:
     clearml_available = False
 
-
-OUTPUT_DIR = os.path.join(os.getcwd(), "outputs")
+RESULTS_DIR = os.path.join(os.getcwd(), "results")
+os.makedirs(RESULTS_DIR, exist_ok=False)
 
 def make_alpaca_platypus_prompt(sample):
     instruction = sample["instruction"].strip()
@@ -88,7 +88,7 @@ def semantic_similarity_generate_main(
     )
 
     print(">>> Downloading snapshot ...")
-    from huggingface_hub import snapshot_download, hf_hub_download
+    from huggingface_hub import snapshot_download 
     snapshot_download(repo_id=model_id, local_dir="/home")
     
     print(">>> trigger...")
@@ -98,47 +98,18 @@ def semantic_similarity_generate_main(
         os.environ["VLLM_LOGGING_LEVEL"]="DEBUG"
         llm = LLM(
             model="/home",
-            dtype="auto",
+            dtype=semantic_similarity_args.get("dtype", "auto"),
+            trust_remote_code=trust_remote_code,
+            tensor_parallel_size=device_count(),
+            enforce_eager=semantic_similarity_args.get("enforce_eager", True),
+            enable_chunked_prefill=semantic_similarity_args.get("enable_chunked_prefill", True),
+            max_model_len=max_model_len
         )
         print("Completed the model initialization ")
         print(">>> Running vLLM generation...")
         outputs = llm.generate(all_prompts, sampling_params)
     except Exception as e:
         print(f"Error initializing LLM: {e}")
-
-    """
-    server_process, server_initialized, server_log = start_vllm_server(
-        {},
-        model_id,
-        "http://localhost:8000/v1",
-        60,
-    )
-
-    if not server_initialized:
-        kill_process_tree(server_process.pid)
-        if clearml_available:
-            from clearml import Task
-            task = Task.current_task()
-            task.upload_artifact(name="vLLM server log", artifact_object=server_log)
-        raise AssertionError("Server failed to initialize")
-
-    url = "http://localhost:8000/v1/completions"
-    headers = {
-        "Content-Type": "application/json",
-    }
-    
-    data = {
-        "model": model_id,
-        "prompt": all_prompts[0],
-        "max_tokens": max_new_tokens
-    }
-    
-    outputs = requests.post(url, headers=headers, json=data)
-    print(outputs.json())
-
-    """
-
-
 
     return all_prompts, outputs
 
@@ -173,7 +144,7 @@ def main(configurations=None, args=None):
         clearml_available,
     )
 
-    OUTPUT_FILE = os.path.join(OUTPUT_DIR,f"{model_id.replace('/', '_')}.jsonl")
+    OUTPUT_FILE = os.path.join(RESULTS_DIR,f"{model_id.replace('/', '_')}.jsonl")
     print(">>> Writing outputs to file...")
     with open(OUTPUT_FILE, "w") as fout:
         for idx, (prompt, output) in enumerate(zip(all_prompts, outputs)):
