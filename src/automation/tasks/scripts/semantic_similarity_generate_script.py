@@ -17,6 +17,7 @@ except ImportError:
     clearml_available = False
 
 RESULTS_DIR = os.path.join(os.getcwd(), "results")
+HUGGINGFACE_DIR = "/home"
 os.makedirs(RESULTS_DIR, exist_ok=False)
 
 def make_alpaca_platypus_prompt(sample):
@@ -89,7 +90,7 @@ def semantic_similarity_generate_main(
 
     print(">>> Downloading snapshot ...")
     from huggingface_hub import snapshot_download 
-    snapshot_download(repo_id=model_id, local_dir="/home")
+    snapshot_download(repo_id=model_id, local_dir=HUGGINGFACE_DIR)
     
     print(">>> trigger...")
 
@@ -97,7 +98,7 @@ def semantic_similarity_generate_main(
         print(">>> Initializing vLLM...")
         os.environ["VLLM_LOGGING_LEVEL"]="DEBUG"
         llm = LLM(
-            model="/home",
+            model=HUGGINGFACE_DIR,
             dtype=semantic_similarity_args.get("dtype", "auto"),
             trust_remote_code=trust_remote_code,
             tensor_parallel_size=device_count(),
