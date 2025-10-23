@@ -37,13 +37,13 @@ def semantic_similarity_score_main(
     
     # Compute BERTScore
     _, _, f1_scores = score(candidates, references, lang="en", verbose=False)
-    all_bert_f1 = [ f1.item() for f1 in f1_scores ]
+    #all_bert_f1 = [ f1.item() for f1 in f1_scores ]
     
     # Evaluate metrics
     all_rouge1_f1, all_rougeL_f1, all_sts, all_bert_f1 = [], [], [], []
     low_score_indices = []
 
-    for i, (ref, cand) in enumerate(zip(references, candidates)):
+    for i, (ref, cand) in enumerate(zip(references, candidates, f1_scores)):
         emb_ref = sts_model.encode(ref, convert_to_tensor=True)
         emb_cand = sts_model.encode(cand, convert_to_tensor=True)
         raw_sts = util.cos_sim(emb_cand, emb_ref).item()
@@ -51,23 +51,23 @@ def semantic_similarity_score_main(
         all_sts.append(sts)
     
         rouge_scores = rouge.score(ref, cand)
-
         rouge1 = rouge_scores["rouge1"].fmeasure
         rougeL = rouge_scores["rougeL"].fmeasure
         all_rouge1_f1.append(rouge1)
         all_rougeL_f1.append(rougeL)
-    
+
+        all_bert_f1.append(f1.item())
+
+        if f1 < 0.85 or rouge1 < 0.5 or sts < 0.85:
+            low_score_indices.append(i)
 
     # Compute averages
-    n = len(references)
-    avg_bert = sum(all_bert_f1) / n
-    avg_rouge1 = sum(all_rouge1_f1) / n
-    avg_rougeL = sum(all_rougeL_f1) / n
-    avg_sts = sum(all_sts) / n
-    return avg_bert, avg_rouge1, avg_rougeL, avg_sts
-
-
-
+    num_samples = len(references)
+    avg_bert = sum(all_bert_f1) / num_samples
+    avg_rouge1 = sum(all_rouge1_f1) / num_samples
+    avg_rougeL = sum(all_rougeL_f1) / num_samples
+    avg_sts = sum(all_sts) / num_samples
+    return avg_bert, avg_rouge1, avg_rougeL, avg_sts, low_score_indices
 
 def main(configurations=None, args=None):
     if clearml_available:
@@ -103,7 +103,7 @@ def main(configurations=None, args=None):
         reference_file = os.path.join(SCORING_DIR, ref_model_jsonl)
         candidate_file = os.path.join(SCORING_DIR, cand_model_jsonl)
     
-    avg_bert, avg_rouge1, avg_rougeL, avg_sts = semantic_similarity_score_main(
+    avg_bert, avg_rouge1, avg_rougeL, avg_sts, low_score_indices = semantic_similarity_score_main(
         reference_file,
         candidate_file,
         sts_model_id,
@@ -114,6 +114,8 @@ def main(configurations=None, args=None):
     print("BERTScore F1 | ROUGE-1 F1 | ROUGE-L F1 | STS CosSim")
     print(f"{avg_bert:.3f} | {avg_rouge1:.3f} | {avg_rougeL:.3f} | {avg_sts:.3f}")
 
+    print("\n=== Low-score indices (BERT < 0.85, ROUGE-1 < 0.5, STS < 0.85) ===")
+    print(low_score_indices)
 
     data = {
         "BERTScore F1": f"{avg_bert:.3f}",
@@ -122,7 +124,7 @@ def main(configurations=None, args=None):
         "STS CosSim": f"{avg_sts:.3f}",
     }
 
-    out_filename = f"scores_{ref_model_json.lower()}__vs__{cand_model_json.lower()}.txt"
+    out_filename = f"scores_{ref_model_jsonl.lower()}__vs__{cand_model_jsonl.lower()}.txt"
     out_filename = os.path.join(SCORING_DIR,out_filename)
     
     # Save results
