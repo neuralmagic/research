@@ -43,7 +43,7 @@ def semantic_similarity_score_main(
     all_rouge1_f1, all_rougeL_f1, all_sts, all_bert_f1 = [], [], [], []
     low_score_indices = []
 
-    for i, (ref, cand) in enumerate(zip(references, candidates, f1_scores)):
+    for i, (ref, cand, f1) in enumerate(zip(references, candidates, f1_scores)):
         emb_ref = sts_model.encode(ref, convert_to_tensor=True)
         emb_cand = sts_model.encode(cand, convert_to_tensor=True)
         raw_sts = util.cos_sim(emb_cand, emb_ref).item()
