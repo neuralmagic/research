@@ -97,9 +97,8 @@ def semantic_similarity_generate_main(
         print(">>> Initializing vLLM...")
         os.environ["VLLM_LOGGING_LEVEL"]="DEBUG"
         llm = LLM(
-            model=model_id,
+            model="/home",
             dtype="auto",
-            download_dir="/home",
         )
         print("Completed the model initialization ")
         print(">>> Running vLLM generation...")
