@@ -124,7 +124,11 @@ def main(configurations=None, args=None):
         "STS CosSim": f"{avg_sts:.3f}",
     }
 
-    out_filename = f"scores_{ref_model_jsonl.lower()}__vs__{cand_model_jsonl.lower()}.txt"
+    from pathlib import Path
+
+    reference_file = Path(reference_file).stem.lower()
+    candidate_file = Path(candidate_file).stem.lower()
+    out_filename = f"scores_{reference_file}__vs__{candidate_file}.txt"
     out_filename = os.path.join(SCORING_DIR,out_filename)
     
     # Save results
