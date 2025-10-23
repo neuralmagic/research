@@ -82,7 +82,6 @@ def main(configurations=None, args=None):
     trust_remote_code = parse_argument(args["trust_remote_code"], bool)
     sts_model_id = args.get("sts_model_id", str)
     rouge_scores= args.get("rouge_scores", list)
-    #save_directory = parse_argument(args["save_directory"], str)
     tags = args.get("tags", None)
 
     print(args)
@@ -93,17 +92,16 @@ def main(configurations=None, args=None):
         reference_model_task_name = parse_argument(args["reference_model_task_name"], str)
         reference_task = Task.query_tasks(project_name=reference_model_project_name,task_name= reference_model_task_name, task_filter={'order_by': ['-last_update'], 'status': ['completed'] })
         reference_task = Task.get_task(reference_task[0])
-        reference_file = reference_task.artifacts['jsonl model'].get_local_copy()
+        reference_file = reference_task.artifacts['jsonl_output'].get_local_copy()
 
         candidate_task = Task.query_tasks(project_name=candidate_model_project_name,task_name= candidate_model_task_name, task_filter={'order_by': ['-last_update'], 'status': ['completed'] })
         candidate_task = Task.get_task(candidate_task[0])
-        candidate_file = candidate_task.artifacts['jsonl model'].get_local_copy()
-        # add task query to get jsonl
+        candidate_file = candidate_task.artifacts['jsonl_output'].get_local_copy()
     else:
-        ref_model_json = "Qwen_Qwen3-0.6B.jsonl"
-        cand_model_json = "RedHatAI_Qwen3-0.6B-quantized.w4a16.jsonl"
-        reference_file = os.path.join(SCORING_DIR, ref_model_json)
-        candidate_file = os.path.join(SCORING_DIR, cand_model_json)
+        ref_model_jsonl = args.get("ref_model_jsonl", str)
+        cand_model_jsonl = args.get("cand_model_jsonl", str)
+        reference_file = os.path.join(SCORING_DIR, ref_model_jsonl)
+        candidate_file = os.path.join(SCORING_DIR, cand_model_jsonl)
     
     avg_bert, avg_rouge1, avg_rougeL, avg_sts = semantic_similarity_score_main(
         reference_file,
