@@ -10,7 +10,7 @@ from transformers import AutoTokenizer
 from automation.utils import kill_process_tree, parse_argument
 
 try:
-    from clearml import OutputModel, Task
+    from clearml import OutputModel, Task, Model
     clearml_available = True
 except ImportError:
     clearml_available = False
