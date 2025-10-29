@@ -16,7 +16,6 @@ except ImportError:
     clearml_available = False
 
 RESULTS_DIR = os.path.join(os.getcwd(), "results")
-HUGGINGFACE_DIR = "/home"
 os.makedirs(RESULTS_DIR, exist_ok=False)
 
 def make_alpaca_platypus_prompt(sample):
@@ -89,6 +88,7 @@ def semantic_similarity_generate_main(
         stop=["### Instruction:", "### Input:", "### Response:"],
     )
 
+    HUGGINGFACE_DIR = "/home"
     if clearml_model:
         HUGGINGFACE_DIR = Model(model_id).get_local_copy()
     else:
