@@ -56,7 +56,7 @@ def semantic_similarity_generate_main(
     max_model_len,
     max_new_tokens,
     num_samples_per_dataset,
-    clearml_available,
+    clearml_model,
 ):
     from collections import defaultdict
     from huggingface_hub import snapshot_download
@@ -89,7 +89,7 @@ def semantic_similarity_generate_main(
         stop=["### Instruction:", "### Input:", "### Response:"],
     )
 
-    if clearml_available:
+    if clearml_model:
         HUGGINGFACE_DIR = Model(model_id).get_local_copy()
     else:
         print(">>> Downloading snapshot ...")
@@ -118,11 +118,12 @@ def main(configurations=None, args=None):
     if clearml_available:
         task = Task.current_task()
         args = task.get_parameters_as_dict(cast=True)["Args"]
+        clearml_model = parse_argument(args["clearml_model"], bool)
     else:
         args = args["Args"]
+        clearml_model = False
 
     # Parse arguments
-    clearml_model = parse_argument(args["clearml_model"], bool)
     force_download = parse_argument(args["force_download"], bool)
     trust_remote_code = parse_argument(args["trust_remote_code"], bool)
     model_id = parse_argument(args["model_id"], str)
@@ -142,7 +143,7 @@ def main(configurations=None, args=None):
         max_model_len,
         max_new_tokens,
         num_samples_per_dataset,
-        clearml_available,
+        clearml_model,
     )
 
     OUTPUT_FILE = os.path.join(RESULTS_DIR,f"{model_id.replace('/', '_')}.jsonl")
