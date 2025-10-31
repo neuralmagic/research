@@ -108,6 +108,9 @@ def main(configurations=None, args=None):
     tags = args.get("tags", None)
 
     print(f"Input dataset_args: {dataset_args}")
+    dataset_args = {"tatsu-lab/alpaca" : 300 , "garage-bAInd/Open-Platypus": "310", "allenai/tulu-3-sft-mixture": 320}
+
+    print(f"Hardcode dataset_args: {dataset_args}")
 
     all_prompts, outputs = semantic_similarity_generate_main(
         model_id,
