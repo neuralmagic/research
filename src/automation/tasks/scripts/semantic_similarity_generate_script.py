@@ -106,14 +106,15 @@ def main(configurations=None, args=None):
     model_id = parse_argument(args["model_id"], str)
     max_model_len = parse_argument(args["max_model_len"], int)
     max_new_tokens = parse_argument(args["max_new_tokens"], int)
-    dataset_args = args.get("dataset_args", None)
+    #dataset_args = args.get("dataset_args", None)
+    dataset_args = parse_argument(args["dataset_args"], dict)
     semantic_similarity_args= args.get("semantic_similarity_args", None)
     tags = args.get("tags", None)
 
-    print(f"Input dataset_args: {dataset_args}")
-    dataset_args = {"tatsu-lab/alpaca" : 300 , "garage-bAInd/Open-Platypus": "310", "allenai/tulu-3-sft-mixture": 320}
+    print(f"Input dataset_args post parse : {dataset_args}")
+    #dataset_args = {"tatsu-lab/alpaca" : 300 , "garage-bAInd/Open-Platypus": "310", "allenai/tulu-3-sft-mixture": 320}
 
-    print(f"Hardcode dataset_args: {dataset_args}")
+    #print(f"Hardcode dataset_args: {dataset_args}")
 
     all_prompts, outputs = semantic_similarity_generate_main(
         model_id,
