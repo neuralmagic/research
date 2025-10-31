@@ -21,7 +21,7 @@ class SemanticSimilarityScoreTask(BaseTask):
         sts_model_id: str,
         branch: str,
         rouge_scores: Optional[len]=None,
-        scoring_args: Optional[dict]=None,
+        low_score_threshold_args: Optional[dict]=None,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
         clearml_model: bool=False,
@@ -64,12 +64,12 @@ class SemanticSimilarityScoreTask(BaseTask):
             config_rouge_scores+= rouge_scores
             self.rouge_scores = config_rouge_scores
 
-        if scoring_args is None:
-            self.scoring_args = config_kwargs.pop("scoring_args", None)
+        if low_score_threshold_args is None:
+            self.low_score_threshold_args = config_kwargs.pop("low_score_threshold_args", None)
         else:
-            config_scoring_args = config_kwargs.pop("scoring_args", {})
-            config_scoring_args.update(scoring_args)
-            self.scoring_args = config_scoring_args
+            config_low_score_threshold_args = config_kwargs.pop("low_score_threshold_args", {})
+            config_low_score_threshold_args.update(low_score_threshold_args)
+            self.low_score_threshold_args = config_low_score_threshold_args
 
         self.trust_remote_code = config_kwargs.pop("trust_remote_code", trust_remote_code)
 
@@ -110,7 +110,7 @@ class SemanticSimilarityScoreTask(BaseTask):
                 "candidate_model_task_name": self.candidate_model_task_name,
                 "sts_model_id": self.sts_model_id,
                 "rouge_scores": self.rouge_scores,
-                "scoring_args": self.scoring_args,
+                "low_score_threshold_args": self.low_score_threshold_args,
                 "clearml_model": self.clearml_model,
                 "force_download": self.force_download,
                 "save_directory": self.save_directory,

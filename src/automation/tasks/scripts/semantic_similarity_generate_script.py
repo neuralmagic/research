@@ -8,6 +8,7 @@ from vllm import LLM, SamplingParams
 from transformers import AutoTokenizer
 
 from automation.utils import kill_process_tree, parse_argument
+from automation.datasets.utils import make_alpaca_platypus_prompt, make_tulu_prompt, make_default_prompt
 
 try:
     from clearml import OutputModel, Task, Model
@@ -18,35 +19,6 @@ except ImportError:
 RESULTS_DIR = os.path.join(os.getcwd(), "results")
 os.makedirs(RESULTS_DIR, exist_ok=False)
 
-def make_alpaca_platypus_prompt(sample):
-    instruction = sample["instruction"].strip()
-    input_text = sample.get("input", "").strip()
-    prompt = (
-        f"### Instruction:\n{instruction}\n\n"
-        f"### Input:\n{input_text if input_text else 'N/A'}\n\n"
-        f"### Response:\n"
-    )
-
-    return prompt
-
-
-def make_tulu_prompt(sample):
-    msgs = []
-    for m in sample["messages"]:
-        role = m.get("role", "user")
-        content = m.get("content", "").strip()
-        msgs.append(f"{role.upper()}: {content}")
-    joined = "\n".join(msgs)
-    prompt = f"### Conversation:\n{joined}\n\n### Response:\n"
-
-    return prompt
-
-
-def make_default_prompt(sample):
-    prompt = f"### Input:\n{json.dumps(sample)}\n\n### Response:\n"
-    return prompt
-
-
 def semantic_similarity_generate_main(
     model_id,
     trust_remote_code,
@@ -54,7 +26,6 @@ def semantic_similarity_generate_main(
     semantic_similarity_args,
     max_model_len,
     max_new_tokens,
-    num_samples_per_dataset,
     clearml_model,
 ):
     from collections import defaultdict
@@ -64,17 +35,18 @@ def semantic_similarity_generate_main(
     all_samples_dict = defaultdict(list)
 
     print(">>> Loading dataset...")
-    for dataset_name,dataset_path in dataset_args.items():
+    for dataset_path, num_samples_per_dataset in dataset_args.items():
+        dataset_name = dataset_path.split("/")[1].lower()
         print(f">>> Loading dataset {dataset_name}...")
-        dataset = load_dataset(dataset_path, split=f"train[:{num_samples_per_dataset}]")
+        dataset = load_dataset(dataset_path, split=f"train[:{int(num_samples_per_dataset)}]")
         all_samples_dict[dataset_name].extend(dataset)
 
     for dataset_name,dataset_samples in all_samples_dict.items():
         print(f">>> Loading values for {dataset_name}...")
         for sample in dataset_samples:
-            if dataset_name == "alpaca" or (dataset_name == "openplatypus"):
+            if dataset_name == "alpaca" or (dataset_name == "open-platypus"):
                 prompt = make_alpaca_platypus_prompt(sample)
-            elif dataset_name == "tulu":
+            elif dataset_name == "tulu-3-sft-mixture":
                 prompt = make_tulu_prompt(sample)
             else:
                 print("Using default prompt")
@@ -128,13 +100,11 @@ def main(configurations=None, args=None):
     trust_remote_code = parse_argument(args["trust_remote_code"], bool)
     model_id = parse_argument(args["model_id"], str)
     max_model_len = parse_argument(args["max_model_len"], int)
-    num_samples_per_dataset = parse_argument(args["num_samples_per_dataset"], int)
     max_new_tokens = parse_argument(args["max_new_tokens"], int)
     dataset_args = args.get("dataset_args", None)
     semantic_similarity_args= args.get("semantic_similarity_args", None)
     tags = args.get("tags", None)
 
-    print(semantic_similarity_args)
     all_prompts, outputs = semantic_similarity_generate_main(
         model_id,
         trust_remote_code,
@@ -142,7 +112,6 @@ def main(configurations=None, args=None):
         semantic_similarity_args,
         max_model_len,
         max_new_tokens,
-        num_samples_per_dataset,
         clearml_model,
     )
 

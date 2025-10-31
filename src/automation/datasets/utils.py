@@ -141,3 +141,31 @@ def load_vlm_messages(
             return message_processor(messages, processor)
 
     return dataset.map(preprocess_sample, remove_columns=ds.column_names)
+
+def make_alpaca_platypus_prompt(sample):
+    instruction = sample["instruction"].strip()
+    input_text = sample.get("input", "").strip()
+    prompt = (
+        f"### Instruction:\n{instruction}\n\n"
+        f"### Input:\n{input_text if input_text else 'N/A'}\n\n"
+        f"### Response:\n"
+    )
+
+    return prompt
+
+def make_tulu_prompt(sample):
+    msgs = []
+    for m in sample["messages"]:
+        role = m.get("role", "user")
+        content = m.get("content", "").strip()
+        msgs.append(f"{role.upper()}: {content}")
+    joined = "\n".join(msgs)
+    prompt = f"### Conversation:\n{joined}\n\n### Response:\n"
+
+    return prompt
+
+def make_default_prompt(sample):
+    prompt = f"### Input:\n{json.dumps(sample)}\n\n### Response:\n"
+
+    return prompt
+

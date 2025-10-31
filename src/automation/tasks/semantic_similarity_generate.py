@@ -20,7 +20,6 @@ class SemanticSimilarityGenerateTask(BaseTask):
         branch: str,
         max_new_tokens: int,
         max_model_len: int,
-        num_samples_per_dataset: Optional[int],
         dataset_args: Optional[dict]=None,
         semantic_similarity_args: Optional[dict]=None,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
@@ -72,7 +71,6 @@ class SemanticSimilarityGenerateTask(BaseTask):
             config_semantic_similarity_args.update(semantic_similarity_args)
             self.semantic_similarity_args = config_semantic_similarity_args
 
-        self.num_samples_per_dataset = config_kwargs.pop("num_samples_per_dataset", num_samples_per_dataset)
         self.max_new_tokens = config_kwargs.pop("max_new_tokens", max_new_tokens)
         self.max_model_len = config_kwargs.pop("max_model_len", max_model_len)
         self.trust_remote_code = config_kwargs.pop("trust_remote_code", trust_remote_code)
@@ -110,7 +108,6 @@ class SemanticSimilarityGenerateTask(BaseTask):
                 "clearml_model": self.clearml_model,
                 "force_download": self.force_download,
                 "save_directory": self.save_directory,
-                "num_samples_per_dataset": self.num_samples_per_dataset,
                 "max_new_tokens": self.max_new_tokens,
                 "max_model_len": self.max_model_len,
                 "trust_remote_code": self.trust_remote_code,

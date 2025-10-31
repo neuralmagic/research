@@ -1,7 +1,4 @@
 import json
-from bert_score import score
-from rouge_score import rouge_scorer
-from sentence_transformers import SentenceTransformer, util
 import os
 from automation.utils import parse_argument
 
@@ -23,6 +20,10 @@ def semantic_similarity_score_main(
     rouge1_score_limit,
     sts_score_limit,
 ):
+    from bert_score import score
+    from rouge_score import rouge_scorer
+    from sentence_transformers import SentenceTransformer, util
+
     # Load reference and candidate data
     with open(reference_file, "r") as f_ref, open(candidate_file, "r") as f_cand:
         reference_data = [json.loads(line) for line in f_ref]
@@ -83,13 +84,13 @@ def main(configurations=None, args=None):
     clearml_model = parse_argument(args["clearml_model"], bool)
     force_download = parse_argument(args["force_download"], bool)
     trust_remote_code = parse_argument(args["trust_remote_code"], bool)
-    scoring_args = args.get("scoring_args", dict)
+    low_score_threshold_args = args.get("low_score_threshold_args", dict)
     sts_model_id = args.get("sts_model_id", str)
     rouge_scores= args.get("rouge_scores", list)
     tags = args.get("tags", None)
 
     print(args)
-    print(scoring_args)
+    print(low_score_threshold_args)
    
     if clearml_available:
         reference_model_project_name = parse_argument(args["reference_model_project_name"], str)
@@ -109,9 +110,9 @@ def main(configurations=None, args=None):
         reference_file = os.path.join(SCORING_DIR, ref_model_jsonl)
         candidate_file = os.path.join(SCORING_DIR, cand_model_jsonl)
     
-    bert_score_limit =  scoring_args.get("f1",0.75)
-    rouge1_score_limit =  scoring_args.get("rouge1",0.6)
-    sts_score_limit =  scoring_args.get("sts",0.75)
+    bert_score_limit =  low_score_threshold_args.get("f1",0.75)
+    rouge1_score_limit =  low_score_threshold_args.get("rouge1",0.6)
+    sts_score_limit =  low_score_threshold_args.get("sts",0.75)
 
     avg_bert, avg_rouge1, avg_rougeL, avg_sts, low_score_indices = semantic_similarity_score_main(
         reference_file,
@@ -133,7 +134,7 @@ def main(configurations=None, args=None):
     data = {
         "BERTScore F1": f"{avg_bert:.3f}",
         "ROUGE-1 F1": f"{avg_rouge1:.3f}",
-        "ROUGE-1 FL": f"{avg_rougeL:.3f}",
+        "ROUGE-L F1": f"{avg_rougeL:.3f}",
         "STS CosSim": f"{avg_sts:.3f}",
     }
 
