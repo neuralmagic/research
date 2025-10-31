@@ -56,6 +56,9 @@ class SemanticSimilarityGenerateTask(BaseTask):
             task_type=task_type,
         )
 
+        for key in config_kwargs:
+            if key in kwargs:
+                raise ValueError(f"{key} already defined in config's args. It can't be defined again in task instantiation.")
 
         if dataset_args is None:
             self.dataset_args = config_kwargs.pop("dataset_args", None)

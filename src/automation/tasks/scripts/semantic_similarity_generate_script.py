@@ -8,7 +8,10 @@ from vllm import LLM, SamplingParams
 from transformers import AutoTokenizer
 
 from automation.utils import kill_process_tree, parse_argument
-from automation.datasets.utils import make_alpaca_platypus_prompt, make_tulu_prompt, make_default_prompt
+from automation.datasets.tulu import make_tulu_prompt
+from automation.datasets.openplatypus import make_openplatypus_prompt
+from automation.datasets.alpaca import make_alpaca_prompt
+from automation.datasets.defaults import make_default_prompt
 
 try:
     from clearml import OutputModel, Task, Model
@@ -36,8 +39,6 @@ def semantic_similarity_generate_main(
 
     print(">>> Loading dataset...")
     for dataset_path, num_samples_per_dataset in dataset_args.items():
-        print(f"The dataset args: {dataset_args}")
-        print(f"The dataset path is: {dataset_path}")
         dataset_name = dataset_path.split("/")[1].lower()
         print(f">>> Loading dataset {dataset_name}...")
         dataset = load_dataset(dataset_path, split=f"train[:{int(num_samples_per_dataset)}]")
@@ -46,8 +47,10 @@ def semantic_similarity_generate_main(
     for dataset_name,dataset_samples in all_samples_dict.items():
         print(f">>> Loading values for {dataset_name}...")
         for sample in dataset_samples:
-            if dataset_name == "alpaca" or (dataset_name == "open-platypus"):
-                prompt = make_alpaca_platypus_prompt(sample)
+            if dataset_name == "alpaca":
+                prompt = make_alpaca_prompt(sample)
+            elif dataset_name == "open-platypus":
+                prompt = make_openplatypus_prompt(sample)
             elif dataset_name == "tulu-3-sft-mixture":
                 prompt = make_tulu_prompt(sample)
             else:
