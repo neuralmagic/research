@@ -91,6 +91,13 @@ def semantic_similarity_generate_main(
 
     return all_prompts, outputs
 
+def flatten_nested_dict(nested_dataset_args):
+    flattened_dict = {}
+    for org, datasets in nested_dataset_args.items():
+        for dataset, count in datasets.items():
+            flattened_dict[f"{org}/{dataset}"]  = count
+    return flattened_dict
+
 def main(configurations=None, args=None):
     if clearml_available:
         task = Task.current_task()
@@ -100,8 +107,11 @@ def main(configurations=None, args=None):
         args = args["Args"]
         clearml_model = False
 
-    dataset_args = args["dataset_args"]
-    print(f"Input dataset_args pre parse : {dataset_args}")
+    nested_dataset_args = parse_argument(args["dataset_args"], dict)
+    print(f"Input dataset_args : {nested_dataset_args}")
+
+    dataset_args = flatten_nested_dict(nested_dataset_args)
+    print(f"Input dataset_args post parse : {dataset_args}")
     # Parse arguments
     force_download = parse_argument(args["force_download"], bool)
     trust_remote_code = parse_argument(args["trust_remote_code"], bool)
@@ -109,11 +119,9 @@ def main(configurations=None, args=None):
     max_model_len = parse_argument(args["max_model_len"], int)
     max_new_tokens = parse_argument(args["max_new_tokens"], int)
     #dataset_args = args.get("dataset_args", None)
-    dataset_args = parse_argument(args["dataset_args"], dict)
     semantic_similarity_args= args.get("semantic_similarity_args", None)
     tags = args.get("tags", None)
 
-    print(f"Input dataset_args post parse : {dataset_args}")
     #dataset_args = {"tatsu-lab/alpaca" : 300 , "garage-bAInd/Open-Platypus": "310", "allenai/tulu-3-sft-mixture": 320}
 
     #print(f"Hardcode dataset_args: {dataset_args}")
