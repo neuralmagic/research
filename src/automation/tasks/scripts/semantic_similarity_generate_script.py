@@ -100,6 +100,8 @@ def main(configurations=None, args=None):
         args = args["Args"]
         clearml_model = False
 
+    dataset_args = args["dataset_args"]
+    print(f"Input dataset_args pre parse : {dataset_args}")
     # Parse arguments
     force_download = parse_argument(args["force_download"], bool)
     trust_remote_code = parse_argument(args["trust_remote_code"], bool)
