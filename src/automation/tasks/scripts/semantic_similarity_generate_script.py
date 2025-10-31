@@ -107,6 +107,8 @@ def main(configurations=None, args=None):
     semantic_similarity_args= args.get("semantic_similarity_args", None)
     tags = args.get("tags", None)
 
+    print(f"Input dataset_args: {dataset_args}")
+
     all_prompts, outputs = semantic_similarity_generate_main(
         model_id,
         trust_remote_code,
