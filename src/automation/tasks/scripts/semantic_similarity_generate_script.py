@@ -36,6 +36,7 @@ def semantic_similarity_generate_main(
 
     print(">>> Loading dataset...")
     for dataset_path, num_samples_per_dataset in dataset_args.items():
+        print(f"The dataset args: {dataset_args}")
         print(f"The dataset path is: {dataset_path}")
         dataset_name = dataset_path.split("/")[1].lower()
         print(f">>> Loading dataset {dataset_name}...")
