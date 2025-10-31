@@ -12,6 +12,7 @@ class LMEvalTask(BaseTask):
         "huggingface-hub==0.34.3",
         "triton==3.3.1",
         "vllm==0.10.1.1",
+        "networkx==3.4.2",
         #"git+https://github.com/EleutherAI/lm-evaluation-harness.git@705bedd0eb8bddc0c95ebfa3d535de4da2094f8c",
         "git+https://github.com/EleutherAI/lm-evaluation-harness.git@2d7cb5c31cffd3cbeb5367542ab8f4c23f4b77f4",
         "numpy==2.1",
