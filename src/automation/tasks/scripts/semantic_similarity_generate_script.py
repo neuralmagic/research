@@ -7,7 +7,7 @@ from datasets import load_dataset
 from vllm import LLM, SamplingParams
 from transformers import AutoTokenizer
 
-from automation.utils import kill_process_tree, parse_argument
+from automation.utils import kill_process_tree, parse_argument, flatten_nested_dict
 from automation.datasets.tulu import make_tulu_prompt
 from automation.datasets.openplatypus import make_openplatypus_prompt
 from automation.datasets.alpaca import make_alpaca_prompt
@@ -91,12 +91,6 @@ def semantic_similarity_generate_main(
 
     return all_prompts, outputs
 
-def flatten_nested_dict(nested_dataset_args):
-    flattened_dict = {}
-    for org, datasets in nested_dataset_args.items():
-        for dataset, count in datasets.items():
-            flattened_dict[f"{org}/{dataset}"]  = count
-    return flattened_dict
 
 def main(configurations=None, args=None):
     if clearml_available:
@@ -107,24 +101,15 @@ def main(configurations=None, args=None):
         args = args["Args"]
         clearml_model = False
 
-    nested_dataset_args = parse_argument(args["dataset_args"], dict)
-    print(f"Input dataset_args : {nested_dataset_args}")
-
-    dataset_args = flatten_nested_dict(nested_dataset_args)
-    print(f"Input dataset_args post parse : {dataset_args}")
     # Parse arguments
     force_download = parse_argument(args["force_download"], bool)
     trust_remote_code = parse_argument(args["trust_remote_code"], bool)
     model_id = parse_argument(args["model_id"], str)
     max_model_len = parse_argument(args["max_model_len"], int)
     max_new_tokens = parse_argument(args["max_new_tokens"], int)
-    #dataset_args = args.get("dataset_args", None)
+    dataset_args = flatten_nested_dict(parse_argument(args["dataset_args"], dict))
     semantic_similarity_args= args.get("semantic_similarity_args", None)
     tags = args.get("tags", None)
-
-    #dataset_args = {"tatsu-lab/alpaca" : 300 , "garage-bAInd/Open-Platypus": "310", "allenai/tulu-3-sft-mixture": 320}
-
-    #print(f"Hardcode dataset_args: {dataset_args}")
 
     all_prompts, outputs = semantic_similarity_generate_main(
         model_id,
