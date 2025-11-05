@@ -101,6 +101,7 @@ def main():
     answer_dir = os.path.join(arenahard_dir, "model_answer")
     from arenahard.utils.completion import make_config
     configs = make_config(os.path.join(ARENAHARD_CONFIG_PATH, tmp_arenahard_file))
+    print(configs)
     model_name = configs["model_list"][0]
     default_answers = False
     if arenahard_judgement_args.get("answer_task_name","") :
@@ -178,9 +179,9 @@ def main():
         #os.makedirs(answer_dir, exist_ok=True)
         #shutil.copy(artifact_obj,os.path.join(answer_dir, f"{answer_model}.jsonl"))
         #battles = load_judgments("gpt-oss-120b", "arena-hard-v0.1")
-        battles = load_judgments("gpt-4-1106-preview", "arena-hard-v0.1")
+        battles = load_judgments(["gpt-4-1106-preview"], arenahard_judgement_args["bench_name"])
 
-        for category in ["arena-hard-v0.1"]:
+        for category in arenahard_judgement_args["bench_name"]:
             assert category in battles.category.unique(), f"Invalid category: {category}"
             battles = battles[battles.category == category].reset_index(drop=True)
             print_leaderboard(battles, category)
