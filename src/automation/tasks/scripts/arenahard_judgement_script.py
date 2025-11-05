@@ -183,9 +183,8 @@ def main():
         import arenahard
         import os
         from pathlib import Path
-        judge_name = "gpt-oss-120b"
-        judge_dir = os.path.join(str(Path(arenahard.__file__).parents[2]), "data",arenahard_judgement_args["bench_name"], "model_judgment", judge_name )
-        print(judge_dir)
+        judge_dir = os.path.join(str(Path(arenahard.__file__).parents[2]), "data",arenahard_judgement_args["bench_name"], "model_judgment", configs["judge_name"] )
+        print(f"The judge dir: {judge_dir}")
         os.makedirs( judge_dir, exist_ok=True)
 
         #shutil.copy(output_path,os.path.join(judge_dir, f"{answer_model}.jsonl"))
