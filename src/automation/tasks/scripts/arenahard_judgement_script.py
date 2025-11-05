@@ -167,11 +167,22 @@ def main():
         time.sleep(150)
 
     finally:
+        from arenahard.gen_judgment import load_judgments, print_leaderboard
         from clearml.storage import StorageManager
         judgement_dir = os.path.join(arenahard_dir, "model_judgment", lowercase_model)
         os.makedirs(judgement_dir, exist_ok=True)
         output_path = os.path.join(judgement_dir, f"{answer_model}.jsonl") 
         arenahard_judgement_args["output_path"] = str(output_path)
+
+        #os.makedirs(answer_dir, exist_ok=True)
+        #shutil.copy(artifact_obj,os.path.join(answer_dir, f"{answer_model}.jsonl"))
+        #battles = load_judgments("gpt-oss-120b", "arena-hard-v0.1")
+        battles = load_judgments("gpt-4-1106-preview", "arena-hard-v0.1")
+
+        for category in ["arena-hard-v0.1"]:
+            assert category in battles.category.unique(), f"Invalid category: {category}"
+            battles = battles[battles.category == category].reset_index(drop=True)
+            print_leaderboard(battles, category)
 
         if default_answers:
             task.upload_artifact(name="arenahard default judgement report", artifact_object=output_path)
