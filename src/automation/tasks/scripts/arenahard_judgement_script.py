@@ -183,7 +183,8 @@ def main():
         import arenahard
         import os
         from pathlib import Path
-        judge_dir = os.path.join(str(Path(arenahard.__file__).parents[2]), "data",arenahard_judgement_args["bench_name"], "model_judgment", configs["judge_name"] )
+        print(arenahard.__file__)
+        judge_dir = os.path.join(str(Path(arenahard.__file__).parents[2]), "data",arenahard_judgement_args["bench_name"], "model_judgment", configs["judge_model"] )
         print(f"The judge dir: {judge_dir}")
         os.makedirs( judge_dir, exist_ok=True)
 
