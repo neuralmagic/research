@@ -16,6 +16,14 @@ SERVER_LOG_PREFIX = "judgement_server_log"
 STANDARDS_PATH = os.path.join(os.getcwd(), "src", "automation", "standards")
 ARENAHARD_CONFIG_PATH = os.path.join(STANDARDS_PATH, "arenahard")
 
+import arenahard
+import os
+from pathlib import Path
+benchmark = "arena-hard-v0.1"
+judge_name = "gpt-oss-120b"
+judge_dir = os.path.join(str(Path(arenahard.__file__).parents[2]), "data", benchmark, "model_judgment", judge_name )
+os.makedirs( judge_dir, exist_ok=True)
+
 def main():
     from pathlib import Path
     import shutil
