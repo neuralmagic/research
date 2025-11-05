@@ -185,14 +185,14 @@ def main():
         from pathlib import Path
         judge_name = "gpt-oss-120b"
         judge_dir = os.path.join(str(Path(arenahard.__file__).parents[2]), "data",arenahard_judgement_args["bench_name"], "model_judgment", judge_name )
+        print(judge_dir)
         os.makedirs( judge_dir, exist_ok=True)
 
-        #os.makedirs(answer_dir, exist_ok=True)
-        #shutil.copy(artifact_obj,os.path.join(answer_dir, f"{answer_model}.jsonl"))
+        #shutil.copy(output_path,os.path.join(judge_dir, f"{answer_model}.jsonl"))
         #battles = load_judgments("gpt-oss-120b", "arena-hard-v0.1")
         battles = load_judgments(["gpt-4-1106-preview"], arenahard_judgement_args["bench_name"])
 
-        for category in arenahard_judgement_args["bench_name"]:
+        for category in [arenahard_judgement_args["bench_name"] ]:
             assert category in battles.category.unique(), f"Invalid category: {category}"
             battles = battles[battles.category == category].reset_index(drop=True)
             df = print_leaderboard(battles, category)
