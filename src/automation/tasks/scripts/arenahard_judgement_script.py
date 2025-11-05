@@ -16,13 +16,6 @@ SERVER_LOG_PREFIX = "judgement_server_log"
 STANDARDS_PATH = os.path.join(os.getcwd(), "src", "automation", "standards")
 ARENAHARD_CONFIG_PATH = os.path.join(STANDARDS_PATH, "arenahard")
 
-import arenahard
-import os
-from pathlib import Path
-benchmark = "arena-hard-v0.1"
-judge_name = "gpt-oss-120b"
-judge_dir = os.path.join(str(Path(arenahard.__file__).parents[2]), "data", benchmark, "model_judgment", judge_name )
-os.makedirs( judge_dir, exist_ok=True)
 
 def main():
     from pathlib import Path
@@ -139,6 +132,7 @@ def main():
     #if arenahard_judgement_args.get("question_size","") == "small" :
     #    shutil.copy( os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
 
+    """
     if arenahard_judgement_args.get("api_key", "'-'") == "'-'":
         # Start vLLM server
         server_process, server_initialized, server_log = start_vllm_server(
@@ -166,6 +160,7 @@ def main():
     print(json.dumps(arenahard_judgement_args, indent=2))
 
     print(f"Project name:{arenahard_judgement_args.get('answer_project_name', task.get_project_name() )}, task_name={arenahard_judgement_args['answer_task_name']}")
+    """
 
     try:
     
@@ -173,8 +168,10 @@ def main():
         from arenahard.gen_judgment import run
         print(f"Arenahard args: {arenahard_judgement_args}")
 
-        run(setting_file= tmp_arenahard_file, endpoint_file= tmp_judge_endpoint_file, question_path= ARENAHARD_CONFIG_PATH, config_path=ARENAHARD_CONFIG_PATH, answer_path=ARENAHARD_CONFIG_PATH)
-        time.sleep(150)
+        """
+        #run(setting_file= tmp_arenahard_file, endpoint_file= tmp_judge_endpoint_file, question_path= ARENAHARD_CONFIG_PATH, config_path=ARENAHARD_CONFIG_PATH, answer_path=ARENAHARD_CONFIG_PATH)
+        #time.sleep(150)
+        """
 
     finally:
         from arenahard.show_result import load_judgments, print_leaderboard
@@ -183,6 +180,12 @@ def main():
         os.makedirs(judgement_dir, exist_ok=True)
         output_path = os.path.join(judgement_dir, f"{answer_model}.jsonl") 
         arenahard_judgement_args["output_path"] = str(output_path)
+        import arenahard
+        import os
+        from pathlib import Path
+        judge_name = "gpt-oss-120b"
+        judge_dir = os.path.join(str(Path(arenahard.__file__).parents[2]), "data",arenahard_judgement_args["bench_name"], "model_judgment", judge_name )
+        os.makedirs( judge_dir, exist_ok=True)
 
         #os.makedirs(answer_dir, exist_ok=True)
         #shutil.copy(artifact_obj,os.path.join(answer_dir, f"{answer_model}.jsonl"))
@@ -192,7 +195,8 @@ def main():
         for category in arenahard_judgement_args["bench_name"]:
             assert category in battles.category.unique(), f"Invalid category: {category}"
             battles = battles[battles.category == category].reset_index(drop=True)
-            print_leaderboard(battles, category)
+            df = print_leaderboard(battles, category)
+            task.upload_artifact(f"{category}-scores", df.to_dict())
 
         if default_answers:
             task.upload_artifact(name="arenahard default judgement report", artifact_object=output_path)
