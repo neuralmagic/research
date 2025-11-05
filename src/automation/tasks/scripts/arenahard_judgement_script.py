@@ -9,6 +9,7 @@ import requests
 import time
 from urllib.parse import urlparse
 from clearml import Task
+from arenahard.show_result import load_judgments, print_leaderboard
 
 SERVER_LOG_PREFIX = "judgement_server_log"
 
@@ -167,7 +168,7 @@ def main():
         time.sleep(150)
 
     finally:
-        from arenahard.gen_judgment import load_judgments, print_leaderboard
+        from arenahard.show_result import load_judgments, print_leaderboard
         from clearml.storage import StorageManager
         judgement_dir = os.path.join(arenahard_dir, "model_judgment", lowercase_model)
         os.makedirs(judgement_dir, exist_ok=True)
