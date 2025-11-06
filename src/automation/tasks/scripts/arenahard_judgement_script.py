@@ -175,15 +175,18 @@ def main():
         from pathlib import Path
         from arenahard.show_result import load_judgments, print_leaderboard
         from clearml.storage import StorageManager
+        judgement_dir = os.path.join(arenahard_dir, "model_judgment", lowercase_model)
+        os.makedirs(judgement_dir, exist_ok=True)
+        output_path = os.path.join(judgement_dir, f"{answer_model}.jsonl") 
+        arenahard_judgement_args["output_path"] = str(output_path)
+
 
         judgement_dir = os.path.join(os.path.dirname(arenahard.__file__), "data",arenahard_judgement_args["bench_name"], "model_judgment", configs["judge_model"] )
         print(f"The judge dir: {judgement_dir}")
         os.makedirs( judgement_dir, exist_ok=True)
 
-        output_path = os.path.join(judgement_dir, f"{answer_model}.jsonl") 
-        arenahard_judgement_args["output_path"] = str(output_path)
-        print(arenahard.__file__)
 
+        shutil.copy(output_path,os.path.join(judgement_dir, f"{answer_model}.jsonl"))
         #battles = load_judgments(["gpt-4-1106-preview"], arenahard_judgement_args["bench_name"], parent_dir = os.path.dirname(arenahard.__file__))
         battles = load_judgments([configs["judge_model"]], arenahard_judgement_args["bench_name"], parent_dir = os.path.dirname(arenahard.__file__))
 
