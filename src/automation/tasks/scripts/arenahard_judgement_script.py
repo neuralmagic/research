@@ -132,7 +132,6 @@ def main():
     #if arenahard_judgement_args.get("question_size","") == "small" :
     #    shutil.copy( os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
 
-    """
     if arenahard_judgement_args.get("api_key", "'-'") == "'-'":
         # Start vLLM server
         server_process, server_initialized, server_log = start_vllm_server(
@@ -160,7 +159,6 @@ def main():
     print(json.dumps(arenahard_judgement_args, indent=2))
 
     print(f"Project name:{arenahard_judgement_args.get('answer_project_name', task.get_project_name() )}, task_name={arenahard_judgement_args['answer_task_name']}")
-    """
 
     try:
     
@@ -168,30 +166,26 @@ def main():
         from arenahard.gen_judgment import run
         print(f"Arenahard args: {arenahard_judgement_args}")
 
-        """
-        #run(setting_file= tmp_arenahard_file, endpoint_file= tmp_judge_endpoint_file, question_path= ARENAHARD_CONFIG_PATH, config_path=ARENAHARD_CONFIG_PATH, answer_path=ARENAHARD_CONFIG_PATH)
+        run(setting_file= tmp_arenahard_file, endpoint_file= tmp_judge_endpoint_file, question_path= ARENAHARD_CONFIG_PATH, config_path=ARENAHARD_CONFIG_PATH, answer_path=ARENAHARD_CONFIG_PATH)
         #time.sleep(150)
-        """
 
     finally:
-        from arenahard.show_result import load_judgments, print_leaderboard
-        from clearml.storage import StorageManager
-        judgement_dir = os.path.join(arenahard_dir, "model_judgment", lowercase_model)
-        os.makedirs(judgement_dir, exist_ok=True)
-        output_path = os.path.join(judgement_dir, f"{answer_model}.jsonl") 
-        arenahard_judgement_args["output_path"] = str(output_path)
         import arenahard
         import os
         from pathlib import Path
-        print(arenahard.__file__)
-        #judge_dir = os.path.join(str(Path(arenahard.__file__).parents[0]), "data",arenahard_judgement_args["bench_name"], "model_judgment", configs["judge_model"] )
-        judge_dir = os.path.join(os.path.dirname(arenahard.__file__), "data",arenahard_judgement_args["bench_name"], "model_judgment", configs["judge_model"] )
-        print(f"The judge dir: {judge_dir}")
-        os.makedirs( judge_dir, exist_ok=True)
+        from arenahard.show_result import load_judgments, print_leaderboard
+        from clearml.storage import StorageManager
 
-        #shutil.copy(output_path,os.path.join(judge_dir, f"{answer_model}.jsonl"))
-        #battles = load_judgments("gpt-oss-120b", "arena-hard-v0.1")
-        battles = load_judgments(["gpt-4-1106-preview"], arenahard_judgement_args["bench_name"], parent_dir = os.path.dirname(arenahard.__file__))
+        judgement_dir = os.path.join(os.path.dirname(arenahard.__file__), "data",arenahard_judgement_args["bench_name"], "model_judgment", configs["judge_model"] )
+        print(f"The judge dir: {judgement_dir}")
+        os.makedirs( judgement_dir, exist_ok=True)
+
+        output_path = os.path.join(judgement_dir, f"{answer_model}.jsonl") 
+        arenahard_judgement_args["output_path"] = str(output_path)
+        print(arenahard.__file__)
+
+        #battles = load_judgments(["gpt-4-1106-preview"], arenahard_judgement_args["bench_name"], parent_dir = os.path.dirname(arenahard.__file__))
+        battles = load_judgments([configs["judge_model"]], arenahard_judgement_args["bench_name"], parent_dir = os.path.dirname(arenahard.__file__))
 
         for category in [arenahard_judgement_args["bench_name"] ]:
             assert category in battles.category.unique(), f"Invalid category: {category}"
@@ -200,9 +194,9 @@ def main():
             task.upload_artifact(f"{category}-scores", df.to_dict())
 
         if default_answers:
-            task.upload_artifact(name="arenahard default judgement report", artifact_object=output_path)
+            task.upload_artifact(name="arenahard-default-judgement-report", artifact_object=output_path)
         else:
-            task.upload_artifact(name="arenahard judgement report", artifact_object=output_path)
+            task.upload_artifact(name="arenahard-judgement-report", artifact_object=output_path)
 
         if arenahard_judgement_args.get("api_key", "'-'") == "'-'":
             task.upload_artifact(name="vLLM server log", artifact_object=server_log)
