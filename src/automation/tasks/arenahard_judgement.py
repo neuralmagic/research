@@ -11,7 +11,7 @@ class ArenaHardJudgeTask(BaseTask):
 
     arenahard_packages = [
         #"vllm",
-        "git+https://github.com/vllm-project/vllm.git@c757a15f0f8ed54b7f85b849d5e075226fabbcd9",
+        "git+https://github.com/vllm-project/vllm.git@v0.11.1rc5",
         ARENAHARD_PACKAGE,
         "hf_xet",
     ]
