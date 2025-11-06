@@ -10,7 +10,8 @@ ARENAHARD_PACKAGE = "git+https://github.com/neuralmagic/arena-hard-auto.git@refa
 class ArenaHardJudgeTask(BaseTask):
 
     arenahard_packages = [
-        "vllm",
+        #"vllm",
+        "git+https://github.com/vllm-project/vllm.git@c757a15f0f8ed54b7f85b849d5e075226fabbcd9",
         ARENAHARD_PACKAGE,
         "hf_xet",
     ]
