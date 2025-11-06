@@ -184,13 +184,14 @@ def main():
         import os
         from pathlib import Path
         print(arenahard.__file__)
-        judge_dir = os.path.join(str(Path(arenahard.__file__).parents[0]), "data",arenahard_judgement_args["bench_name"], "model_judgment", configs["judge_model"] )
+        #judge_dir = os.path.join(str(Path(arenahard.__file__).parents[0]), "data",arenahard_judgement_args["bench_name"], "model_judgment", configs["judge_model"] )
+        judge_dir = os.path.join(os.path.dirname(arenahard.__file__), "data",arenahard_judgement_args["bench_name"], "model_judgment", configs["judge_model"] )
         print(f"The judge dir: {judge_dir}")
         os.makedirs( judge_dir, exist_ok=True)
 
         #shutil.copy(output_path,os.path.join(judge_dir, f"{answer_model}.jsonl"))
         #battles = load_judgments("gpt-oss-120b", "arena-hard-v0.1")
-        battles = load_judgments(["gpt-4-1106-preview"], arenahard_judgement_args["bench_name"])
+        battles = load_judgments(["gpt-4-1106-preview"], arenahard_judgement_args["bench_name"], parent_dir = os.path.dirname(arenahard.__file__))
 
         for category in [arenahard_judgement_args["bench_name"] ]:
             assert category in battles.category.unique(), f"Invalid category: {category}"
