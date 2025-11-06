@@ -190,7 +190,12 @@ def main():
         #battles = load_judgments(["gpt-4-1106-preview"], arenahard_judgement_args["bench_name"], parent_dir = os.path.dirname(arenahard.__file__))
         battles = load_judgments([configs["judge_model"]], arenahard_judgement_args["bench_name"], parent_dir = os.path.dirname(arenahard.__file__))
 
-        for category in [arenahard_judgement_args["bench_name"] ]:
+        if arenahard_judgement_args["bench_name"] == "arena-hard-v0.2":
+            categories = ["hard_prompt"]
+        else:
+            categories = [arenahard_judgement_args["bench_name"] ]
+
+        for category in categories:
             assert category in battles.category.unique(), f"Invalid category: {category}"
             battles = battles[battles.category == category].reset_index(drop=True)
             df = print_leaderboard(battles, category)
