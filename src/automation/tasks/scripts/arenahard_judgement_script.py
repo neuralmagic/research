@@ -190,7 +190,7 @@ def main():
         #battles = load_judgments(["gpt-4-1106-preview"], arenahard_judgement_args["bench_name"], parent_dir = os.path.dirname(arenahard.__file__))
         battles = load_judgments([configs["judge_model"]], arenahard_judgement_args["bench_name"], parent_dir = os.path.dirname(arenahard.__file__))
 
-        if arenahard_judgement_args["bench_name"] == "arena-hard-v0.2":
+        if arenahard_judgement_args["bench_name"] == "arena-hard-v2.0":
             categories = ["hard_prompt"]
         else:
             categories = [arenahard_judgement_args["bench_name"] ]
