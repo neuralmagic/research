@@ -61,8 +61,7 @@ def semantic_similarity_generate_main(
     print("Define sampling parameters")
     sampling_params = SamplingParams(
         temperature=semantic_similarity_args.get("temperature", 0.0),
-        max_tokens=max_new_tokens,
-        stop=["### Instruction:", "### Input:", "### Response:"],
+        max_tokens=max_new_tokens
     )
 
     HUGGINGFACE_DIR = "/home"
