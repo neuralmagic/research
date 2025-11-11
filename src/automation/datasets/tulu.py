@@ -1,5 +1,10 @@
 
 def make_tulu_prompt(sample):
+    return sample["messages"]
+
+
+"""
+def make_tulu_prompt(sample):
     msgs = []
     for m in sample["messages"]:
         role = m.get("role", "user")
@@ -9,3 +14,4 @@ def make_tulu_prompt(sample):
     prompt = f"### Conversation:\n{joined}\n\n### Response:\n"
 
     return prompt
+"""

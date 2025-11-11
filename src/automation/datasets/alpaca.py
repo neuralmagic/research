@@ -1,10 +1,22 @@
 def make_alpaca_prompt(sample):
     instruction = sample["instruction"].strip()
     input_text = sample.get("input", "").strip()
-    prompt = (
-        f"### Instruction:\n{instruction}\n\n"
-        f"### Input:\n{input_text if input_text else 'N/A'}\n\n"
-        f"### Response:\n"
-    )
 
-    return prompt
+    if input_text == "":
+        messages = [
+            {
+                "role": "user",
+                "content": f"{instruction}",
+            }
+        ]
+
+
+    else:
+        messages = [
+            {
+                "role": "user",
+                "content": f"{instruction}\n{input_text}",
+            }
+        ]
+
+    return messages
