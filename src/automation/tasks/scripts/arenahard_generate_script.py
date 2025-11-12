@@ -134,7 +134,7 @@ def main():
         from arenahard.gen_answer import run
         print(f"Arenahard args: {arenahard_generate_args}")
         run(config_file = tmp_gen_config_file, endpoint_file= tmp_gen_endpoint_file, question_path= ARENAHARD_CONFIG_PATH, config_path=ARENAHARD_CONFIG_PATH, answer_path=ARENAHARD_CONFIG_PATH)
-        time.sleep(150)
+        time.sleep(300)
 
     finally:
         from arenahard.utils.completion import load_model_answers
