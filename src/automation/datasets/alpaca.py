@@ -19,5 +19,6 @@ def make_alpaca_prompt(sample):
             }
         ]
 
-    prompt = "\n".join([f"{msg['role']}: {msg['content']}" for msg in messages])
-    return prompt
+    #prompt = "\n".join([f"{msg['role']}: {msg['content']}" for msg in messages])
+    return messages
+    #return prompt
