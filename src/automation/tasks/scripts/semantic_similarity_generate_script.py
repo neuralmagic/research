@@ -84,11 +84,14 @@ def semantic_similarity_generate_main(
         )
         print("Completed the model initialization ")
         print(">>> Running vLLM generation...")
-        outputs = llm.generate(all_prompts, sampling_params)
+        all_conversations = all_prompts.copy()
+        #outputs = llm.generate(all_prompts, sampling_params)
+        outputs = llm.chat(messages=all_conversations , sampling_params)
     except Exception as e:
         print(f"Error initializing LLM: {e}")
 
-    return all_prompts, outputs
+    return all_conversations, outputs
+    #return all_prompts, outputs
 
 
 def main(configurations=None, args=None):
