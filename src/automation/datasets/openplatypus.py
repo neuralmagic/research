@@ -18,6 +18,4 @@ def make_openplatypus_prompt(sample):
             }
         ]
 
-    prompt = "\n".join([f"{msg['role']}: {msg['content']}" for msg in messages])
     return messages
-    #return prompt

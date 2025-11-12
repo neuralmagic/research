@@ -34,7 +34,7 @@ def semantic_similarity_generate_main(
     from collections import defaultdict
     from huggingface_hub import snapshot_download
 
-    all_prompts = []
+    all_conversations = []
     all_samples_dict = defaultdict(list)
 
     print(">>> Loading dataset...")
@@ -44,7 +44,9 @@ def semantic_similarity_generate_main(
         dataset = load_dataset(dataset_path, split=f"train[:{int(num_samples_per_dataset)}]")
         all_samples_dict[dataset_name].extend(dataset)
 
-    for dataset_name,dataset_samples in all_samples_dict.items():
+    sorted_all_samples_dict = dict(sorted(all_samples_dict.items()))
+
+    for dataset_name,dataset_samples in sorted_all_samples_dict.items():
         print(f">>> Loading values for {dataset_name}...")
         for sample in dataset_samples:
             if dataset_name == "alpaca":
@@ -56,7 +58,7 @@ def semantic_similarity_generate_main(
             else:
                 print("Using default prompt")
                 prompt = make_default_prompt(sample)
-            all_prompts.append(prompt)
+            all_conversations.append(prompt)
 
     print("Define sampling parameters")
     sampling_params = SamplingParams(
@@ -84,14 +86,11 @@ def semantic_similarity_generate_main(
         )
         print("Completed the model initialization ")
         print(">>> Running vLLM generation...")
-        all_conversations = all_prompts.copy()
-        #outputs = llm.generate(all_prompts, sampling_params)
         outputs = llm.chat(messages=all_conversations , sampling_params=sampling_params, use_tqdm=True)
     except Exception as e:
         print(f"Error initializing LLM: {e}")
 
     return all_conversations, outputs
-    #return all_prompts, outputs
 
 
 def main(configurations=None, args=None):
@@ -113,7 +112,7 @@ def main(configurations=None, args=None):
     semantic_similarity_args= args.get("semantic_similarity_args", None)
     tags = args.get("tags", None)
 
-    all_prompts, outputs = semantic_similarity_generate_main(
+    all_conversations, outputs = semantic_similarity_generate_main(
         model_id,
         trust_remote_code,
         dataset_args,
@@ -126,7 +125,7 @@ def main(configurations=None, args=None):
     OUTPUT_FILE = os.path.join(RESULTS_DIR,f"{model_id.replace('/', '_')}.jsonl")
     print(">>> Writing outputs to file...")
     with open(OUTPUT_FILE, "w") as fout:
-        for idx, (prompt, output) in enumerate(zip(all_prompts, outputs)):
+        for idx, (prompt, output) in enumerate(zip(all_conversations, outputs)):
             response = output.outputs[0].text.strip()
             fout.write(json.dumps({
                 "index": idx,
