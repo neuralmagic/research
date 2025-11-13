@@ -70,6 +70,7 @@ def semantic_similarity_generate_main(
     if clearml_model:
         HUGGINGFACE_DIR = Model(model_id).get_local_copy()
     else:
+        print("Download snapshot")
         #snapshot_download(repo_id=model_id, local_dir=HUGGINGFACE_DIR)
     
     try:
