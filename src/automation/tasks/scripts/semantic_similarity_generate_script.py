@@ -70,12 +70,12 @@ def semantic_similarity_generate_main(
     if clearml_model:
         HUGGINGFACE_DIR = Model(model_id).get_local_copy()
     else:
-        snapshot_download(repo_id=model_id, local_dir=HUGGINGFACE_DIR)
+        #snapshot_download(repo_id=model_id, local_dir=HUGGINGFACE_DIR)
     
     try:
         print(f"Initializing vLLM: {model_id}...")
         llm = LLM(
-            model=HUGGINGFACE_DIR,
+            model= model_id if "mistral" in model_id.lower() else HUGGINGFACE_DIR,
             dtype=semantic_similarity_args.get("dtype", "auto"),
             trust_remote_code=trust_remote_code,
             tensor_parallel_size=device_count(),
