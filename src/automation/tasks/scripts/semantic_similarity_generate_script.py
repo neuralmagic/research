@@ -20,7 +20,7 @@ except ImportError:
     clearml_available = False
 
 RESULTS_DIR = os.path.join(os.getcwd(), "results")
-os.makedirs(RESULTS_DIR, exist_ok=False)
+os.makedirs(RESULTS_DIR, exist_ok=True)
 
 def semantic_similarity_generate_main(
     model_id,
