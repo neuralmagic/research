@@ -81,11 +81,12 @@ def semantic_similarity_generate_main(
             tensor_parallel_size=device_count(),
             enforce_eager=semantic_similarity_args.get("enforce_eager", True),
             enable_chunked_prefill=semantic_similarity_args.get("enable_chunked_prefill", True),
-            max_model_len=max_model_len
+            max_model_len=max_model_len,
+            tokenizer_mode="mistral" if "mistral" in model_id.lower() else "auto"
         )
         print("Completed the model initialization ")
         print(">>> Running vLLM generation...")
-        outputs = llm.chat(messages=all_conversations , sampling_params=sampling_params, use_tqdm=True)
+        outputs = llm.chat(messages=all_conversations, sampling_params=sampling_params)
     except Exception as e:
         print(f"Error initializing LLM: {e}")
 
