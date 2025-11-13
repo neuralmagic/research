@@ -74,7 +74,7 @@ def semantic_similarity_generate_main(
         snapshot_download(repo_id=model_id, local_dir=HUGGINGFACE_DIR)
     
     try:
-        print(">>> Initializing vLLM...")
+        print(f"Initializing vLLM: {model_id}...")
         llm = LLM(
             model=HUGGINGFACE_DIR,
             dtype=semantic_similarity_args.get("dtype", "auto"),
