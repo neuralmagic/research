@@ -72,11 +72,14 @@ def semantic_similarity_generate_main(
     else:
         print("Download snapshot")
         snapshot_download(repo_id=model_id, local_dir=HUGGINGFACE_DIR)
+        print(os.listdir(HUGGINGFACE_DIR))
         if "mistral" in model_id.lower():
             os.makedirs("/tmp", exist_ok=True)
             from huggingface_hub import hf_hub_download
             hf_hub_download(repo_id="mistralai/Mistral-Small-3.1-24B-Instruct-2503", filename="params.json", local_dir="/tmp")
             print(os.listdir("/tmp"))
+            import shutil
+            shutil.copy("/tmp/params.json", HUGGINGFACE_DIR)
         print(os.listdir(HUGGINGFACE_DIR))
     
     try:
