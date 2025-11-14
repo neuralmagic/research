@@ -84,7 +84,7 @@ def semantic_similarity_generate_main(
         print("Download snapshot")
         #snapshot_download(repo_id=model_id, local_dir=HUGGINGFACE_DIR)
         print(os.listdir(HUGGINGFACE_DIR))
-        if "mistral" in model_id.lower():
+        if "mistral" in model_id.lower() and "quantized" in model_id.lower():
             #os.makedirs("/tmp", exist_ok=True)
             from huggingface_hub import hf_hub_download
             hf_hub_download(repo_id="mistralai/Mistral-Small-3.1-24B-Instruct-2503", filename="params.json", local_dir=HUGGINGFACE_DIR)
@@ -96,8 +96,8 @@ def semantic_similarity_generate_main(
     try:
         print(f"Initializing vLLM: {model_id}...")
         llm = LLM(
-            model= HUGGINGFACE_DIR,
-            #model= model_id,
+            #model= HUGGINGFACE_DIR,
+            model= model_id,
             dtype=semantic_similarity_args.get("dtype", "auto"),
             trust_remote_code=trust_remote_code,
             tensor_parallel_size=device_count(),
