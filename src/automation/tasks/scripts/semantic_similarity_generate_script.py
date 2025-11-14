@@ -70,29 +70,8 @@ def semantic_similarity_generate_main(
     if clearml_model:
         HUGGINGFACE_DIR = Model(model_id).get_local_copy()
     else:
-        """
-        snapshot_download(repo_id=model_id)
-        import glob
-        import os
-        matched_files = glob.glob("/home/hub/**/tokenizer.json", recursive=True)
-        
-        if matched_files:
-            HUGGINGFACE_DIR= os.path.dirname(matched_files[0])
-            print("Use this directory to load model:", HUGGINGFACE_DIR)
-        else:
-            print("Model weights not found")
-
-        print("Download snapshot")
-        """
         HUGGINGFACE_DIR = "/home"
         snapshot_download(repo_id=model_id, local_dir=HUGGINGFACE_DIR)
-        """
-        if "mistral" in model_id.lower() and "quantized" in model_id.lower():
-            from huggingface_hub import hf_hub_download
-            hf_hub_download(repo_id="mistralai/Mistral-Small-3.1-24B-Instruct-2503", filename="params.json", local_dir=HUGGINGFACE_DIR)
-            #import shutil
-            #shutil.copy("/tmp/params.json", HUGGINGFACE_DIR)
-        """
         print(os.listdir(HUGGINGFACE_DIR))
         if "mistral" in model_id.lower() and "quantized" not in model_id.lower():
             llm_format = "mistral"
