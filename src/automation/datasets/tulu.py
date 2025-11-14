@@ -1,3 +1,13 @@
-
 def make_tulu_prompt(sample):
-    return sample["messages"]
+    messages = []
+    for m in sample["messages"]:
+        role = m.get("role", "")
+        content = m.get("content", "").strip()
+        if role == "user":
+            convo = {
+                "role": role,
+                "content": content,
+            }
+            messages.append(convo)
+
+    return messages
