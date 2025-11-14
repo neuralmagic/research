@@ -96,8 +96,8 @@ def semantic_similarity_generate_main(
     try:
         print(f"Initializing vLLM: {model_id}...")
         llm = LLM(
-            #model= HUGGINGFACE_DIR,
-            model= model_id,
+            model= HUGGINGFACE_DIR,
+            #model= model_id,
             dtype=semantic_similarity_args.get("dtype", "auto"),
             trust_remote_code=trust_remote_code,
             tensor_parallel_size=device_count(),
