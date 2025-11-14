@@ -66,9 +66,11 @@ def semantic_similarity_generate_main(
         max_tokens=max_new_tokens
     )
 
+    llm_format = "auto"
     if clearml_model:
         HUGGINGFACE_DIR = Model(model_id).get_local_copy()
     else:
+        """
         snapshot_download(repo_id=model_id)
         import glob
         import os
@@ -81,8 +83,9 @@ def semantic_similarity_generate_main(
             print("Model weights not found")
 
         print("Download snapshot")
-        #HUGGINGFACE_DIR = "/home"
-        #snapshot_download(repo_id=model_id, local_dir=HUGGINGFACE_DIR)
+        """
+        HUGGINGFACE_DIR = "/home"
+        snapshot_download(repo_id=model_id, local_dir=HUGGINGFACE_DIR)
         """
         if "mistral" in model_id.lower() and "quantized" in model_id.lower():
             from huggingface_hub import hf_hub_download
@@ -91,21 +94,22 @@ def semantic_similarity_generate_main(
             #shutil.copy("/tmp/params.json", HUGGINGFACE_DIR)
         """
         print(os.listdir(HUGGINGFACE_DIR))
+        if "mistral" in model_id.lower() and "quantized" not in model_id.lower():
+            llm_format = "mistral"
     
     try:
         print(f"Initializing vLLM: {model_id}...")
         llm = LLM(
-            #model= HUGGINGFACE_DIR,
-            model= model_id,
+            model= HUGGINGFACE_DIR,
             dtype=semantic_similarity_args.get("dtype", "auto"),
             trust_remote_code=trust_remote_code,
             tensor_parallel_size=device_count(),
             enforce_eager=semantic_similarity_args.get("enforce_eager", True),
             enable_chunked_prefill=semantic_similarity_args.get("enable_chunked_prefill", True),
             max_model_len=max_model_len,
-            #load_format="mistral",
-            #config_format="mistral",
-            tokenizer_mode="mistral" if "mistral" in model_id.lower() else "auto"
+            load_format=llm_format,
+            config_format=llm_format,
+            tokenizer_mode=llm_format,
         )
         print("Completed the model initialization ")
         print(">>> Running vLLM generation...")
