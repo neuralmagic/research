@@ -83,13 +83,11 @@ def semantic_similarity_generate_main(
         print("Download snapshot")
         #HUGGINGFACE_DIR = "/home"
         #snapshot_download(repo_id=model_id, local_dir=HUGGINGFACE_DIR)
-        """
         if "mistral" in model_id.lower() and "quantized" in model_id.lower():
             from huggingface_hub import hf_hub_download
             hf_hub_download(repo_id="mistralai/Mistral-Small-3.1-24B-Instruct-2503", filename="params.json", local_dir=HUGGINGFACE_DIR)
             #import shutil
             #shutil.copy("/tmp/params.json", HUGGINGFACE_DIR)
-        """
         print(os.listdir(HUGGINGFACE_DIR))
     
     try:
@@ -103,8 +101,8 @@ def semantic_similarity_generate_main(
             enforce_eager=semantic_similarity_args.get("enforce_eager", True),
             enable_chunked_prefill=semantic_similarity_args.get("enable_chunked_prefill", True),
             max_model_len=max_model_len,
-            load_format="mistral",
-            config_format="mistral",
+            #load_format="mistral",
+            #config_format="mistral",
             tokenizer_mode="mistral" if "mistral" in model_id.lower() else "auto"
         )
         print("Completed the model initialization ")
