@@ -34,6 +34,8 @@ def semantic_similarity_generate_main(
     from collections import defaultdict
     from huggingface_hub import snapshot_download
 
+    snapshot_download(repo_id=model_id)
+
     all_conversations = []
     all_samples_dict = defaultdict(list)
 
@@ -71,7 +73,6 @@ def semantic_similarity_generate_main(
         HUGGINGFACE_DIR = Model(model_id).get_local_copy()
     else:
         print("Download snapshot")
-        snapshot_download(repo_id=model_id)
         snapshot_download(repo_id=model_id, local_dir=HUGGINGFACE_DIR)
         print(os.listdir(HUGGINGFACE_DIR))
         if "mistral" in model_id.lower():
