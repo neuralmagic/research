@@ -34,8 +34,6 @@ def semantic_similarity_generate_main(
     from collections import defaultdict
     from huggingface_hub import snapshot_download
 
-    snapshot_download(repo_id=model_id)
-
     all_conversations = []
     all_samples_dict = defaultdict(list)
 
@@ -72,8 +70,19 @@ def semantic_similarity_generate_main(
     if clearml_model:
         HUGGINGFACE_DIR = Model(model_id).get_local_copy()
     else:
+        snapshot_download(repo_id=model_id)
+        import glob
+        import os
+        matched_files = glob.glob("/home/hub/**/tokenizer.json", recursive=True)
+        
+        if matched_files:
+            HUGGINGFACE_DIR= os.path.dirname(matched_files[0])
+            print("Use this directory to load model:", HUGGINGFACE_DIR)
+        else:
+            print("Model weights not found")
+
         print("Download snapshot")
-        snapshot_download(repo_id=model_id, local_dir=HUGGINGFACE_DIR)
+        #snapshot_download(repo_id=model_id, local_dir=HUGGINGFACE_DIR)
         print(os.listdir(HUGGINGFACE_DIR))
         if "mistral" in model_id.lower():
             os.makedirs("/tmp", exist_ok=True)
@@ -87,7 +96,8 @@ def semantic_similarity_generate_main(
     try:
         print(f"Initializing vLLM: {model_id}...")
         llm = LLM(
-            model= HUGGINGFACE_DIR,
+            #model= HUGGINGFACE_DIR,
+            model= model_id,
             dtype=semantic_similarity_args.get("dtype", "auto"),
             trust_remote_code=trust_remote_code,
             tensor_parallel_size=device_count(),
