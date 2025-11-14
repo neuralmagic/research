@@ -103,8 +103,8 @@ def semantic_similarity_generate_main(
             enforce_eager=semantic_similarity_args.get("enforce_eager", True),
             enable_chunked_prefill=semantic_similarity_args.get("enable_chunked_prefill", True),
             max_model_len=max_model_len,
-            load_format="mistral",
-            config_format="mistral",
+            #load_format="mistral",
+            #config_format="mistral",
             tokenizer_mode="mistral" if "mistral" in model_id.lower() else "auto"
         )
         print("Completed the model initialization ")
