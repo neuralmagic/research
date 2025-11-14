@@ -66,7 +66,6 @@ def semantic_similarity_generate_main(
         max_tokens=max_new_tokens
     )
 
-    HUGGINGFACE_DIR = "/home"
     if clearml_model:
         HUGGINGFACE_DIR = Model(model_id).get_local_copy()
     else:
@@ -82,7 +81,8 @@ def semantic_similarity_generate_main(
             print("Model weights not found")
 
         print("Download snapshot")
-        #snapshot_download(repo_id=model_id, local_dir=HUGGINGFACE_DIR)
+        HUGGINGFACE_DIR = "/home"
+        snapshot_download(repo_id=model_id, local_dir=HUGGINGFACE_DIR)
         print(os.listdir(HUGGINGFACE_DIR))
         if "mistral" in model_id.lower() and "quantized" in model_id.lower():
             #os.makedirs("/tmp", exist_ok=True)
