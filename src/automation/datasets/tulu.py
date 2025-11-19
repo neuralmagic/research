@@ -1,3 +1,9 @@
+
+def make_tulu_prompt(sample):
+    messages = sample["messages"][:-1]
+return messages
+
+"""
 def make_tulu_prompt(sample):
     messages = []
     for m in sample["messages"]:
@@ -11,3 +17,4 @@ def make_tulu_prompt(sample):
             messages.append(convo)
 
     return messages
+"""
