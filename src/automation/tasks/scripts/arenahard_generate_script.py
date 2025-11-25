@@ -1,6 +1,6 @@
 import os
 import sys
-from clearml import Task
+from clearml import Task, Model
 from automation.utils import resolve_model_id, cast_args, kill_process_tree, render_yaml
 from automation.vllm import start_vllm_server
 from pyhocon import ConfigFactory
@@ -10,7 +10,6 @@ import time
 import sys
 import os
 from urllib.parse import urlparse
-from clearml import Task
 
 SERVER_LOG_PREFIX = "generation_server_log"
 
@@ -100,6 +99,18 @@ def main():
     assert os.path.exists(api_config_path), f"{api_config_path} does not exist"
     gen_answer_config_path = os.path.join(ARENAHARD_CONFIG_PATH, tmp_gen_config_file)
     assert os.path.exists(gen_answer_config_path), f"{gen_answer_config_path} does not exist"
+
+
+
+    if clearml_model:
+        if "_st_" in task_name:
+            project_name="qwen3_compression_hp_w8a8_large"
+        else:
+            project_name="qwen3_compression_hp_w4a16_large"
+
+        model_task = Task.get_task(project_name= project_name,  task_name = task_name, task_filter={'order_by': ['-last_update'], 'status': ['completed'] })
+        model_id = model_task.output_models_id['output']
+        model_id = Model(model_id).get_local_copy()
 
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(
