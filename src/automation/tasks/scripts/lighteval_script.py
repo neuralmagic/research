@@ -87,6 +87,7 @@ def main(configurations=None, args=None):
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{project_name}_{task_name}_{timestamp}.json"
+    filename = filename.replace('/', '_')
 
 
     with open(filename, "w") as f:
