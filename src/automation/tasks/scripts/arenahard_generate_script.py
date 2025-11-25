@@ -70,7 +70,7 @@ def main():
     model_name = args["Args"]["generate_model"]
 
     if clearml_model:
-        if "_st_" in task_name:
+        if "_st_" in model_name:
             project_name="qwen3_compression_hp_w8a8_large"
         else:
             project_name="qwen3_compression_hp_w4a16_large"
