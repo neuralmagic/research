@@ -67,14 +67,28 @@ def main():
     arenahard_dir = Path(os.path.join(ARENAHARD_CONFIG_PATH, bench_name))
     #if arenahard_generate_args.get("question_size","") == "small" :
     #    shutil.copy(os.path.join(arenahard_dir,"shortquestion.jsonl"),os.path.join(arenahard_dir, "question.jsonl"))
-
-    # Resolve model_id
-    model_id = resolve_model_id(args["Args"]["generate_model"], clearml_model, force_download)
-
     model_name = args["Args"]["generate_model"]
+
+    if clearml_model:
+        if "_st_" in task_name:
+            project_name="qwen3_compression_hp_w8a8_large"
+        else:
+            project_name="qwen3_compression_hp_w4a16_large"
+
+        model_task = Task.get_task(project_name= project_name,  task_name = model_name, task_filter={'order_by': ['-last_update'], 'status': ['completed'] })
+        model_id = model_task.output_models_id['output']
+        model_id = Model(model_id).get_local_copy()
+    else:
+        # Resolve model_id
+        model_id = resolve_model_id(args["Args"]["generate_model"], clearml_model, force_download)
+
     get_lowercase_model = lambda model: model.split("/")[1].lower()
+    get_clearml_lowercase_model = lambda model: model.split("/")[1].lower().split("_")[0]
     if arenahard_generate_args.get("api_key", "'-'") == "'-'":
-        lowercase_model = get_lowercase_model(model_name)
+        if clearml_model:
+            lowercase_model = get_clearml_lowercase_model(model_name)
+        else:
+            lowercase_model = get_lowercase_model(model_name)
     else:
         lowercase_model = model_name.lower()
     
@@ -99,18 +113,6 @@ def main():
     assert os.path.exists(api_config_path), f"{api_config_path} does not exist"
     gen_answer_config_path = os.path.join(ARENAHARD_CONFIG_PATH, tmp_gen_config_file)
     assert os.path.exists(gen_answer_config_path), f"{gen_answer_config_path} does not exist"
-
-
-
-    if clearml_model:
-        if "_st_" in task_name:
-            project_name="qwen3_compression_hp_w8a8_large"
-        else:
-            project_name="qwen3_compression_hp_w4a16_large"
-
-        model_task = Task.get_task(project_name= project_name,  task_name = task_name, task_filter={'order_by': ['-last_update'], 'status': ['completed'] })
-        model_id = model_task.output_models_id['output']
-        model_id = Model(model_id).get_local_copy()
 
     # Start vLLM server
     server_process, server_initialized, server_log = start_vllm_server(
