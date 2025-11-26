@@ -13,7 +13,7 @@ class LightEvalTask(BaseTask):
         "triton==3.4.0", 
         "vllm==0.11.0",
         "starlette==0.50.0",
-        "lighteval==0.11.0",
+        "lighteval",
         "math-verify==0.5.2",
         "more-itertools==10.8.0",
         "latex2sympy2_extended==1.0.6",
