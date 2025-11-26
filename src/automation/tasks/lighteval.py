@@ -8,6 +8,24 @@ import os
 class LightEvalTask(BaseTask):
 
     lihghteval_packages = [
+        "networkx==3.4.2", 
+        "huggingface-hub==0.34.3",
+        "triton==3.4.0", 
+        "vllm==0.11.0",
+        "starlette==0.50.0",
+        "lighteval==0.11.0",
+        "math-verify==0.5.2",
+        "more-itertools==10.8.0",
+        "latex2sympy2_extended==1.0.6",
+        "langdetect==1.0.9",
+        "openai==1.109.1",
+        "hf-xet==1.1.10",
+        "emoji==2.15.0",
+        "immutabledict==4.2.1",
+    ]
+    
+    """ 
+    lihghteval_packages = [
         "torch==2.7.1", 
         "torchaudio==2.7.1",
         "torchvision==0.22.1",
@@ -25,6 +43,7 @@ class LightEvalTask(BaseTask):
         "emoji==2.15.0",
         "immutabledict==4.2.1",
     ]
+    """
 
     def __init__(
         self,
