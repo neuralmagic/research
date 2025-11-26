@@ -7,6 +7,7 @@ import os
 
 class LightEvalTask(BaseTask):
 
+    """
     lihghteval_packages = [
         "networkx==3.4.2", 
         "huggingface-hub==0.34.3",
@@ -43,7 +44,6 @@ class LightEvalTask(BaseTask):
         "emoji==2.15.0",
         "immutabledict==4.2.1",
     ]
-    """
 
     def __init__(
         self,
