@@ -14,14 +14,14 @@ class LightEvalTask(BaseTask):
         "vllm==0.11.0",
         "starlette==0.50.0",
         "lighteval",
-        "math-verify==0.5.2",
-        "more-itertools==10.8.0",
-        "latex2sympy2_extended==1.0.6",
-        "langdetect==1.0.9",
-        "openai==1.109.1",
-        "hf-xet==1.1.10",
-        "emoji==2.15.0",
-        "immutabledict==4.2.1",
+        #"math-verify==0.5.2",
+        #"more-itertools==10.8.0",
+        #"latex2sympy2_extended==1.0.6",
+        #"langdetect==1.0.9",
+        #"openai",
+        #"hf-xet==1.1.10",
+        #"emoji==2.15.0",
+        #"immutabledict==4.2.1",
     ]
     
     """ 
