@@ -9,6 +9,7 @@ class LMEvalTask(BaseTask):
         "vllm==0.10.1.1",
         "networkx==3.4.2",
         "lm_eval==0.4.9.2",
+        "huggingface-hub==0.36.0",
         "math-verify==0.5.2",
         "more-itertools==10.8.0",
         "langdetect==1.0.9",
