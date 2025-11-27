@@ -13,7 +13,7 @@ class LightEvalTask(BaseTask):
         "torchvision==0.22.1",
         "vllm==0.10.1.1",
         "networkx==3.4.2",
-        "lighteval==0.13.0",
+        "lighteval==0.11.0",
         "triton==3.3.1",
         "huggingface-hub==0.36.0",
         "math-verify==0.5.2",
