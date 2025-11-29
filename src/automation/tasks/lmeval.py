@@ -11,6 +11,7 @@ class LMEvalTask(BaseTask):
         "torchvision==0.22.1",
         "vllm==0.10.1.1",
         "networkx==3.4.2",
+        "datasets==2.19.1",
         "lm_eval==0.4.9.2",
         "triton==3.3.1",
         "huggingface-hub==0.36.0",
