@@ -14,6 +14,7 @@ class LightEvalTask(BaseTask):
         "vllm==0.10.1.1",
         "networkx==3.4.2",
         "lighteval==0.11.0",
+        "datasets==2.19.1",
         "triton==3.3.1",
         "huggingface-hub==0.36.0",
         "math-verify==0.5.2",
