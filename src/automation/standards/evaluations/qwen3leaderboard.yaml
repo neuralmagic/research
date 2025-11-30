@@ -1,0 +1,23 @@
+packages:
+  - "langdetect"
+  - "immutabledict"
+  - "antlr4-python3-runtime==4.11"
+  - "math-verify"
+  - "sympy"
+tasks: leaderboard
+model_args: "add_bos_token=False,max_model_len=15000,dtype=auto"
+apply_chat_template: "true"
+fewshot_as_multiturn: "true"
+groups:
+  leaderboard:
+    leaderboard_mmlu_pro:
+      series: "acc,none"
+      normalize: True
+      random_score: 0.1
+    ifeval:
+      ifeval_instlevel:
+        leaderboard_ifeval:
+          series: "inst_level_strict_acc,none"
+      ifeval_promptlevel:
+        leaderboard_ifeval:
+          series: "prompt_level_strict_acc,none"
