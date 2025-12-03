@@ -1,5 +1,5 @@
 from automation.tasks.base_task import BaseTask
-from automation.configs import DEFAULT_DOCKER_IMAGE
+from automation.configs import DEFAULT_DOCKER_IMAGE, DEFAULT_RESEARCH_BRANCH
 from automation.utils import serialize_callable
 from typing import Union, List, Optional, Sequence, Any, Callable
 import os
@@ -18,6 +18,7 @@ class LLMCompressorTask(BaseTask):
         project_name: str,
         task_name: str,
         model_id: str,
+        branch: str= DEFAULT_RESEARCH_BRANCH,
         recipe: Optional[Any]=None,
         recipe_args: Optional[dict]=None,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
@@ -61,6 +62,7 @@ class LLMCompressorTask(BaseTask):
             docker_args=docker_args,
             packages=packages,
             task_type=task_type,
+            branch=branch,
         )
 
         # Store class attributes that may be part of config
