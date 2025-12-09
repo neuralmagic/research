@@ -5,9 +5,9 @@ packages:
   - "math-verify"
   - "sympy"
 tasks: leaderboard
-model_args: "add_bos_token=False,max_model_len=262144,dtype=auto"
+model_args: "think_end_token='</think>',max_model_len=262144,dtype=auto"
 apply_chat_template: "true"
-fewshot_as_multiturn: "true"
+gen_kwargs: "temperature=0.6,top_p=0.95,top_k=20,min_p=0"
 groups:
   leaderboard:
     math_lvl5:
