@@ -5,6 +5,7 @@ import os
 
 class LMEvalTask(BaseTask):
 
+    """
     lmeval_packages = [
         "torch==2.7.1", 
         "torchaudio==2.7.1",
@@ -12,7 +13,6 @@ class LMEvalTask(BaseTask):
         "vllm==0.10.1.1",
         "networkx==3.4.2",
         "datasets==2.19.1",
-        #"lm_eval==0.4.9.2",
         "git+https://github.com/EleutherAI/lm-evaluation-harness.git@2d7cb5c31cffd3cbeb5367542ab8f4c23f4b77f4",
         "triton==3.3.1",
         "huggingface-hub==0.36.0",
@@ -31,22 +31,20 @@ class LMEvalTask(BaseTask):
     ]
 
     """
+
     lmeval_packages = [
-        "torch==2.7.1", 
-        "torchaudio==2.7.1",
-        "torchvision==0.22.1",
-        "huggingface-hub==0.34.3",
+        "vllm==0.12.0",
+        "git+https://github.com/EleutherAI/lm-evaluation-harness.git@c9772b90a8ee95b0df1ba76651443a0534c96aad",
+        "emoji==2.15.0",
+        "huggingface-hub==0.36.0",
         "triton==3.3.1",
-        "vllm==0.10.1.1",
-        "networkx==3.4.2",
-        "lm_eval==0.4.9.1",
-        "numpy==2.1",
-        "hf_xet",
-        "rouge-score",
-        "bert-score",
-        "nltk",
+        "networkx==3.6.1",
+        "hf-xet==1.2.0",
+        "immutabledict==4.2.2",
+        "langdetect==1.0.9",
+        "math-verify==0.8.0",
+        "more-itertools==10.8.0",
     ]
-    """
 
     def __init__(
         self,
