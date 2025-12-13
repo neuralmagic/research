@@ -35,6 +35,7 @@ class LMEvalTask(BaseTask):
     lmeval_packages = [
         "vllm==0.12.0",
         "git+https://github.com/EleutherAI/lm-evaluation-harness.git@c9772b90a8ee95b0df1ba76651443a0534c96aad",
+        "datasets==4.4.1",
         "emoji==2.15.0",
         "huggingface-hub==0.36.0",
         "triton==3.3.1",
