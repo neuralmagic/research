@@ -38,7 +38,7 @@ class LMEvalTask(BaseTask):
         "datasets==4.4.1",
         "emoji==2.15.0",
         "huggingface-hub==0.36.0",
-        "triton==3.3.1",
+        "triton==3.5.0",
         "networkx==3.4.2",
         "hf-xet==1.2.0",
         "immutabledict==4.2.2",
