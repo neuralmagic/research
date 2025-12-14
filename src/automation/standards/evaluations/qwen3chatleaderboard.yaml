@@ -9,6 +9,7 @@ model_args: "think_end_token='</think>',max_length=262144,dtype=auto,max_gen_tok
 gen_kwargs: "do_sample=True,temperature=0.6,top_p=0.95,top_k=20,min_p=0,max_gen_toks=32768"
 apply_chat_template: "true"
 fewshot_as_multiturn: "true"
+limit: 20
 groups:
   leaderboard:
     math_lvl5:
