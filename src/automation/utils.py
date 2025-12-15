@@ -75,6 +75,13 @@ def cast_args(data: dict[str, str], func: callable) -> dict:
     """
     sig = inspect.signature(func)
     converted_data = {}
+
+    def model_arg_convert(value: str):
+        import ast
+        try:
+            return ast.literal_eval(value)
+        except (SyntaxError, ValueError, TypeError):
+            return value
     
     def convert_value(value: str, expected_type):
         if expected_type is inspect.Parameter.empty:
@@ -105,7 +112,10 @@ def cast_args(data: dict[str, str], func: callable) -> dict:
             return value
     
     for key, value in data.items():
-        if key in sig.parameters:
+        if key == "model_args":
+            arg_dict = {item.split("=")[0]: model_arg_convert(item.split("=")[1]) for item in value.split(",")}
+            converted_data[key] = arg_dict
+        elif key in sig.parameters:
             param = sig.parameters[key]
             converted_data[key] = convert_value(value, param.annotation)
         else:
