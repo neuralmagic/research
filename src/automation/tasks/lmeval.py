@@ -45,8 +45,10 @@ class LMEvalTask(BaseTask):
         "langdetect==1.0.9",
         "math-verify==0.8.0",
         "more-itertools==10.8.0",
-        "pydantic==2.9.2",
-        "pydantic-core==2.20.1"
+        "pydantic==2.11.2",
+        "pydantic-core==2.23.4"
+        #"pydantic==2.9.2",
+        #"pydantic-core==2.20.1"
     ]
 
     def __init__(
