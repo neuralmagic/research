@@ -133,7 +133,7 @@ class LightEvalTask(BaseTask):
         configs = {
             "lighteval_args": self.lighteval_args,
         }
-        if self.lighteval_args.get("entrypoint") == "litellm":
+        if self.entrypoint == "litellm":
             configs["vLLM"] = self.vllm_kwargs
 
         return configs
@@ -149,7 +149,7 @@ class LightEvalTask(BaseTask):
             },
         }
 
-        if self.lighteval_args.get("entrypoint") == "litellm":
+        if self.entrypoint == "litellm":
             args["Args"]["target"] = self.target
             args["Args"]["server_wait_time"] = self.server_wait_time
         
