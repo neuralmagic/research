@@ -25,7 +25,6 @@ Allowed model_args:
 
 model_args="""
 model_parameters:
-  max_model_length: 40960
   generation_parameters:
     max_new_tokens: 32768
     temperature: 0.6
@@ -41,6 +40,7 @@ task = LightEvalTask(
     config="aime2024",
     model_args=model_args,
     entrypoint="litellm",
+    vllm_kwargs={"max_model_len": 40960},
     target="http://localhost:8000/v1",
     server_wait_time=120,
 )
