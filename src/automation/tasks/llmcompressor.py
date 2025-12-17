@@ -9,7 +9,7 @@ class LLMCompressorTask(BaseTask):
     task_packages = [
         #"git+https://github.com/vllm-project/llm-compressor.git",
         #"git+https://github.com/vllm-project/llm-compressor.git@6db28bcf94f53c2d072b0b68ef124b2a7c0816bf",
-        "git+https://github.com/vllm-project/llm-compressor.git@0.9.0",
+        "git+https://github.com/vllm-project/llm-compressor.git@0.8.1",
         "torchvision",
         "hf_xet",
     ]
