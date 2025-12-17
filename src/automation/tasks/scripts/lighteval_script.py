@@ -56,14 +56,16 @@ def lighteval_litellm_main(
     model_id: str,
     lighteval_args: dict,
     vllm_args: dict,
-    target: str,
     server_wait_time: int,
 ):    
+
+    base_url= "http://localhost:8000/v1"
+
     # Start vLLM server
     vllm_server = VLLMServer(
         vllm_args=vllm_args,
         model_id=model_id,
-        target=target,
+        target=base_url,
         server_wait_time=server_wait_time,
     )
     vllm_server.start()
@@ -72,8 +74,8 @@ def lighteval_litellm_main(
     model_args = lighteval_args.pop("model_args", {})
     model_args["provider"] = "hosted_vllm"
     model_args["model_name"] = f"hosted_vllm/{model_id}"
-    model_args["base_url"] = target
-    model_args["api_key"] = "EMPTY"
+    model_args["base_url"] = base_url
+    model_args["api_key"] = ""
 
 
     config = {"model_parameters": model_args}
@@ -126,7 +128,6 @@ def main(configurations=None, args=None):
         )
     elif entrypoint == "litellm":
         server_wait_time = args["Args"]["server_wait_time"]
-        target = args["Args"]["target"]
         if clearml_available and configurations is None:
             vllm_args = ConfigFactory.parse_string(task.get_configuration_object("vLLM"))
         else:
@@ -135,7 +136,6 @@ def main(configurations=None, args=None):
             model_id=model_id,
             lighteval_args=lighteval_args,
             vllm_args=vllm_args,
-            target=target,
             server_wait_time=server_wait_time,
         )
     else:

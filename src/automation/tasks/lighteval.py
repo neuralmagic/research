@@ -32,7 +32,6 @@ class LightEvalTask(BaseTask):
         force_download: bool=False,
         config: Optional[str]=None,
         vllm_kwargs: dict={},
-        target: str="http://localhost:8000/v1",
         server_wait_time: int=600,
         **kwargs,
     ):
@@ -118,7 +117,6 @@ class LightEvalTask(BaseTask):
         self.lighteval_args = kwargs
         self.force_download = force_download
         self.vllm_kwargs = vllm_kwargs
-        self.target = target
         self.server_wait_time = server_wait_time
         self.entrypoint = entrypoint
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "lighteval_script.py")
@@ -150,7 +148,6 @@ class LightEvalTask(BaseTask):
         }
 
         if self.entrypoint == "litellm":
-            args["Args"]["target"] = self.target
             args["Args"]["server_wait_time"] = self.server_wait_time
         
         return args
