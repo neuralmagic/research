@@ -16,6 +16,7 @@ class LightEvalTask(BaseTask):
         "langdetect",
         "openai",
         "hf_xet",
+        "huggingface-hub>=0.34.0"
     ]
 
     def __init__(
