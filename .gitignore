@@ -6,3 +6,4 @@ src/automation.egg-info/PKG-INFO
 src/automation.egg-info/requires.txt
 src/automation.egg-info/SOURCES.txt
 src/automation.egg-info/top_level.txt
+.DS_Store
