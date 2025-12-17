@@ -41,7 +41,6 @@ task = LightEvalTask(
     config="aime2024",
     model_args=model_args,
     entrypoint="litellm",
-    vllm_args={},
     target="http://localhost:8000/v1",
     server_wait_time=120,
 )

@@ -80,7 +80,7 @@ def lighteval_litellm_main(
 
     lighteval_args["save_details"] = True
     # Run lighteval
-    lighteval_args = cast_args(lighteval_args, lighteval_vllm)
+    lighteval_args = cast_args(lighteval_args, lighteval_litellm)
     results = lighteval_litellm(model_args="lighteval_config.yaml", **lighteval_args)
 
     if results is None:
