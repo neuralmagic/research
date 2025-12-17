@@ -28,6 +28,11 @@ def lighteval_vllm_main(
     model_args["tensor_parallel_size"] = num_gpus
 
 
+    # Set default dtype
+    if "dtype" not in model_args:
+        model_args["dtype"] = "auto"
+
+
     config = {"model_parameters": model_args}
     if "metric_options" in lighteval_args:
         config["metric_options"] = lighteval_args.pop("metric_options")

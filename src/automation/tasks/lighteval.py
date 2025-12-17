@@ -40,10 +40,13 @@ class LightEvalTask(BaseTask):
         # Process config
         config_kwargs = self.process_config(config)
 
+        if entrypoint == "litellm":
+            self.task_packages.append("litellm")
+
         # Set packages, taking into account default packages
         # for the LightEvalTask and packages set in the config
         if packages is not None:
-            packages = list(set(packages + self.task_packages))
+            packages = list(set[str](packages + self.task_packages))
         else:
             packages = self.task_packages
 
@@ -102,10 +105,6 @@ class LightEvalTask(BaseTask):
                 config_model_args = config_kwargs.get("model_args")
 
             model_args = merge_dicts(model_args, config_model_args)
-
-        # Set default dtype and enable_chunked_prefill
-        if "dtype" not in model_args:
-            model_args["dtype"] = "auto"
 
         kwargs["model_args"] = model_args
         if metric_options is not None:
