@@ -81,7 +81,8 @@ def lighteval_litellm_main(
         config["metric_options"] = lighteval_args.pop("metric_options")
 
     config = to_plain_dict(config)
-    
+
+    print(config)
     yaml.dump(config, open("lighteval_config.yaml", "w"))
 
     lighteval_args["save_details"] = True
