@@ -70,7 +70,8 @@ def lighteval_litellm_main(
 
     # Add base_model_args to model_args
     model_args = lighteval_args.pop("model_args", {})
-    model_args["model_name"] = f"hosted_vllm//{model_id}"
+    model_args["provider"] = "hosted_vllm"
+    model_args["model_name"] = f"hosted_vllm/{model_id}"
     model_args["base_url"] = target
     model_args["api_key"] = "EMPTY"
 
