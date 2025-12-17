@@ -1,6 +1,8 @@
 import torch
 from automation.utils import resolve_model_id, cast_args, to_plain_dict
+from automation.vllm import VLLMServer
 from lighteval.main_vllm import vllm as lighteval_vllm
+from lighteval.main_endpoint import litellm as lighteval_litellm
 from lighteval.logging.evaluation_tracker import EnhancedJSONEncoder
 import yaml
 from pyhocon import ConfigFactory
@@ -13,7 +15,7 @@ try:
 except ImportError:
     clearml_available = False
 
-def lighteval_main(
+def lighteval_vllm_main(
     model_id: str,
     lighteval_args: dict,
 ):    
@@ -24,6 +26,7 @@ def lighteval_main(
     model_args = lighteval_args.pop("model_args", {})
     model_args["model_name"] = model_id
     model_args["tensor_parallel_size"] = num_gpus
+
 
     config = {"model_parameters": model_args}
     if "metric_options" in lighteval_args:
@@ -43,6 +46,47 @@ def lighteval_main(
 
     return results
 
+
+def lighteval_litellm_main(
+    model_id: str,
+    lighteval_args: dict,
+    vllm_args: dict,
+    target: str,
+    server_wait_time: int,
+):    
+    # Start vLLM server
+    vllm_server = VLLMServer(
+        vllm_args=vllm_args,
+        model_id=model_id,
+        target=target,
+        server_wait_time=server_wait_time,
+    )
+    vllm_server.start()
+
+    # Add base_model_args to model_args
+    model_args = lighteval_args.pop("model_args", {})
+    model_args["model_name"] = f"hosted_vllm//{model_id}"
+    model_args["base_url"] = target
+    model_args["api_key"] = "EMPTY"
+
+
+    config = {"model_parameters": model_args}
+    if "metric_options" in lighteval_args:
+        config["metric_options"] = lighteval_args.pop("metric_options")
+
+    config = to_plain_dict(config)
+    
+    yaml.dump(config, open("lighteval_config.yaml", "w"))
+
+    lighteval_args["save_details"] = True
+    # Run lighteval
+    lighteval_args = cast_args(lighteval_args, lighteval_vllm)
+    results = lighteval_litellm(model_args="lighteval_config.yaml", **lighteval_args)
+
+    if results is None:
+        raise Exception("Evaluation failed.")
+
+    return results
 
 def main(configurations=None, args=None):
     if clearml_available:
@@ -65,10 +109,30 @@ def main(configurations=None, args=None):
     # Resolve model_id
     model_id = resolve_model_id(model_name, clearml_model, force_download)
 
-    results = lighteval_main(
-        model_id=model_id,
-        lighteval_args=lighteval_args,
-    )
+    # Resolve entrypoint
+    entrypoint = args["Args"]["entrypoint"]
+
+    if entrypoint == "vllm":
+        results = lighteval_vllm_main(
+            model_id=model_id,
+            lighteval_args=lighteval_args,
+        )
+    elif entrypoint == "litellm":
+        server_wait_time = args["Args"]["server_wait_time"]
+        target = args["Args"]["target"]
+        if clearml_available and configurations is None:
+            vllm_args = ConfigFactory.parse_string(task.get_configuration_object("vLLM"))
+        else:
+            vllm_args = configurations.get("vLLM", {})
+        results = lighteval_litellm_main(
+            model_id=model_id,
+            lighteval_args=lighteval_args,
+            vllm_args=vllm_args,
+            target=target,
+            server_wait_time=server_wait_time,
+        )
+    else:
+        raise ValueError(f"Invalid entrypoint: {entrypoint}")
 
     dumped = json.dumps(results, cls=EnhancedJSONEncoder, indent=2, ensure_ascii=False)
 

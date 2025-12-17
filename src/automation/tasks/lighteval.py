@@ -26,9 +26,13 @@ class LightEvalTask(BaseTask):
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
         clearml_model: bool=False,
+        entrypoint: str="vllm",
         task_type: str="training",
         force_download: bool=False,
         config: Optional[str]=None,
+        vllm_kwargs: dict={},
+        target: str="http://localhost:8000/v1",
+        server_wait_time: int=600,
         **kwargs,
     ):
 
@@ -113,6 +117,10 @@ class LightEvalTask(BaseTask):
         self.clearml_model = clearml_model
         self.lighteval_args = kwargs
         self.force_download = force_download
+        self.vllm_kwargs = vllm_kwargs
+        self.target = target
+        self.server_wait_time = server_wait_time
+        self.entrypoint = entrypoint
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "lighteval_script.py")
 
 
@@ -122,16 +130,27 @@ class LightEvalTask(BaseTask):
 
 
     def get_configurations(self):
-        return {
+        configs = {
             "lighteval_args": self.lighteval_args,
         }
+        if self.lighteval_args.get("entrypoint") == "litellm":
+            configs["vLLM"] = self.vllm_kwargs
+
+        return configs
 
 
     def get_arguments(self):
-        return {
+        args = {
             "Args": {
                 "model_id": self.model_id,
                 "clearml_model": self.clearml_model,
                 "force_download": self.force_download,
+                "entrypoint": self.entrypoint,
             },
         }
+
+        if self.lighteval_args.get("entrypoint") == "litellm":
+            args["Args"]["target"] = self.target
+            args["Args"]["server_wait_time"] = self.server_wait_time
+        
+        return args
