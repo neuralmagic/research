@@ -41,7 +41,6 @@ task = LightEvalTask(
     model_args=model_args,
     entrypoint="litellm",
     vllm_kwargs={"max_model_len": 40960, "enable_chunked_prefill": True},
-    target="http://localhost:8000/v1",
     server_wait_time=120,
 )
 
