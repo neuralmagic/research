@@ -9,7 +9,7 @@ class LightEvalTask(BaseTask):
 
     task_packages = [
         "vllm",
-        "git+https://github.com/neuralmagic/lighteval.git@reasoning",
+        "git+https://github.com/neuralmagic/lighteval.git@vllm0.11",
         "math-verify==0.5.2",
         "more_itertools",
         "latex2sympy2_extended",
