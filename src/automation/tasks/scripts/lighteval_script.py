@@ -83,7 +83,6 @@ def lighteval_litellm_main(
 
     config = to_plain_dict(config)
 
-    print(config)
     yaml.dump(config, open("lighteval_config.yaml", "w"))
 
     lighteval_args["save_details"] = True
