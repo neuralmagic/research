@@ -160,7 +160,7 @@ def main(configurations=None, args=None):
         f.write(dumped)
 
     if clearml_available:
-        task.upload_artifact(name="results", artifact_object=filename)
+        task.upload_artifact(name="results", artifact_object=dumped)
 
     return results
 
