@@ -68,7 +68,15 @@ def lighteval_litellm_main(
         server_wait_time=server_wait_time,
     )
     vllm_server.start()
-
+    if vllm_server.is_initialized():
+        print("VLLM server initialized")
+    else:
+        if clearml_available:
+            task = Task.current_task()
+            task.upload_artifact(name="vLLM server log", artifact_object=vllm_server.get_log_file_name())
+        vllm_server.stop()
+        raise Exception("VLLM server failed to initialize")
+    
     # Add base_model_args to model_args
     model_args = lighteval_args.pop("model_args", {})
     model_args["provider"] = "hosted_vllm"
