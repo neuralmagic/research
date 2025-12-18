@@ -46,7 +46,6 @@ class BaseTask():
         self.task = None
         self.branch = branch
         self.script_path = None
-        self.callable_artifacts = None
         self.pretask_callback = pretask_callback
 
     @property

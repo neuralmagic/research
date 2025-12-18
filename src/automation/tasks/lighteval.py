@@ -117,7 +117,6 @@ class LightEvalTask(BaseTask):
         # Store class attributes
         self.model_id = model_id
         self.clearml_model = clearml_model
-        self.pretask_callback = pretask_callback
         self.lighteval_args = kwargs
         self.force_download = force_download
         self.vllm_kwargs = vllm_kwargs
