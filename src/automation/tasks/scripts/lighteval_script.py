@@ -1,5 +1,5 @@
 import torch
-from automation.utils import resolve_model_id, cast_args, to_plain_dict
+from automation.utils import resolve_model_id, cast_args, to_plain_dict, load_callable_configuration
 from automation.vllm import VLLMServer
 from lighteval.main_vllm import vllm as lighteval_vllm
 from lighteval.main_endpoint import litellm as lighteval_litellm
@@ -110,9 +110,15 @@ def main(configurations=None, args=None):
 
     if clearml_available and configurations is None:
         lighteval_args = ConfigFactory.parse_string(task.get_configuration_object("lighteval_args"))
+        pretask_callback = task.get_configuration_object("pretask callback")
     else:
         lighteval_args = configurations.get("lighteval_args", {})
+        pretask_callback = configurations.get("pretask callback", None)
     
+    if pretask_callback is not None:
+        pretask_callback_fn = load_callable_configuration("pretask callback", configurations)
+        pretask_callback_fn()
+
     model_name = args["Args"]["model_id"]
     clearml_model = args["Args"]["clearml_model"]
     if isinstance(clearml_model, str):

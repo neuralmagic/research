@@ -1,7 +1,7 @@
 from automation.tasks.base_task import BaseTask
 from automation.configs import DEFAULT_DOCKER_IMAGE
 from automation.utils import is_yaml_content, merge_dicts
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Callable
 import yaml
 import os
 
@@ -26,6 +26,7 @@ class LightEvalTask(BaseTask):
         model_id: str,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
+        pretask_callback: Optional[Callable]=None,
         clearml_model: bool=False,
         entrypoint: str="vllm",
         task_type: str="training",
@@ -60,6 +61,7 @@ class LightEvalTask(BaseTask):
             docker_image=docker_image,
             packages=packages,
             task_type=task_type,
+            pretask_callback=pretask_callback,
         )
 
         # Check for conflicts in configs and constructor arguments
@@ -115,6 +117,7 @@ class LightEvalTask(BaseTask):
         # Store class attributes
         self.model_id = model_id
         self.clearml_model = clearml_model
+        self.pretask_callback = pretask_callback
         self.lighteval_args = kwargs
         self.force_download = force_download
         self.vllm_kwargs = vllm_kwargs
