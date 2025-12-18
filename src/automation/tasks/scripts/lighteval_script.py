@@ -117,6 +117,7 @@ def main(configurations=None, args=None):
     
     if pretask_callback is not None:
         pretask_callback_fn = load_callable_configuration("pretask callback", configurations)
+        print(f"Running pretask callback")
         pretask_callback_fn()
 
     model_name = args["Args"]["model_id"]
