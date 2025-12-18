@@ -96,7 +96,21 @@ def lighteval_litellm_main(
     lighteval_args["save_details"] = True
     # Run lighteval
     lighteval_args = cast_args(lighteval_args, lighteval_litellm)
-    results = lighteval_litellm(model_args="lighteval_config.yaml", **lighteval_args)
+
+    try:
+        results = lighteval_litellm(model_args="lighteval_config.yaml", **lighteval_args)
+    except Exception as e:
+        print(f"Error running lighteval_litellm: {e}")
+        if clearml_available:
+            task = Task.current_task()
+            task.upload_artifact(name="vLLM server log", artifact_object=vllm_server.get_log_file_name())
+        vllm_server.stop()
+        raise e
+
+    if clearml_available:
+        task = Task.current_task()
+        task.upload_artifact(name="vLLM server log", artifact_object=vllm_server.get_log_file_name())
+        vllm_server.stop()
 
     if results is None:
         raise Exception("Evaluation failed.")
