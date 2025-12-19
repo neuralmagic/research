@@ -110,7 +110,8 @@ def lighteval_litellm_main(
     if clearml_available:
         task = Task.current_task()
         task.upload_artifact(name="vLLM server log", artifact_object=vllm_server.get_log_file_name())
-        vllm_server.stop()
+    
+    vllm_server.stop()
 
     if results is None:
         raise Exception("Evaluation failed.")
