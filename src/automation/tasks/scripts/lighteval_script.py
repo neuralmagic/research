@@ -8,6 +8,9 @@ import yaml
 from pyhocon import ConfigFactory
 import json
 from datetime import datetime
+import os
+
+os.environ["LIGHTEVAL_CACHE_DIR"] = "/dev/null"
 
 try:
     from clearml import Task
