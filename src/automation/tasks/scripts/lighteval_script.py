@@ -178,11 +178,12 @@ def main(configurations=None, args=None):
         task_name = task.name
     else:
         project_name = "automation"
-        lighteval_tasks = lighteval_args.get("tasks").replace(",", "_").replace(" ", "").replace("|", "_")
-        task_name = f"lighteval_{model_name.replace('/', '_')}_{lighteval_tasks}"
+        lighteval_tasks = lighteval_args.get("tasks")
+        task_name = f"lighteval_{model_name}_{lighteval_tasks}"
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{project_name}_{task_name}_{timestamp}.json"
+    filename = filename.replace(",", "_").replace(" ", "").replace("|", "_").replace("/", "__")
 
 
     with open(filename, "w") as f:
