@@ -1,7 +1,7 @@
 from automation.tasks.base_task import BaseTask
 from automation.configs import DEFAULT_DOCKER_IMAGE
 from automation.utils import is_yaml_content, merge_dicts
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Callable
 import yaml
 import os
 
@@ -9,13 +9,14 @@ class LightEvalTask(BaseTask):
 
     task_packages = [
         "vllm",
-        "git+https://github.com/neuralmagic/lighteval.git@reasoning",
+        "git+https://github.com/neuralmagic/lighteval.git@vllm0.11",
         "math-verify==0.5.2",
         "more_itertools",
         "latex2sympy2_extended",
         "langdetect",
         "openai",
         "hf_xet",
+        "huggingface-hub>=0.34.0,<1.0 "
     ]
 
     def __init__(
@@ -25,20 +26,28 @@ class LightEvalTask(BaseTask):
         model_id: str,
         docker_image: str=DEFAULT_DOCKER_IMAGE,
         packages: Optional[Sequence[str]]=None,
+        pretask_callback: Optional[Callable]=None,
         clearml_model: bool=False,
+        entrypoint: str="vllm",
         task_type: str="training",
         force_download: bool=False,
         config: Optional[str]=None,
+        vllm_kwargs: dict={},
+        base_url: str="http://localhost:8000/v1",
+        server_wait_time: int=600,
         **kwargs,
     ):
 
         # Process config
         config_kwargs = self.process_config(config)
 
+        if entrypoint == "litellm":
+            self.task_packages.append("litellm")
+
         # Set packages, taking into account default packages
         # for the LightEvalTask and packages set in the config
         if packages is not None:
-            packages = list(set(packages + self.task_packages))
+            packages = list(set[str](packages + self.task_packages))
         else:
             packages = self.task_packages
 
@@ -52,6 +61,7 @@ class LightEvalTask(BaseTask):
             docker_image=docker_image,
             packages=packages,
             task_type=task_type,
+            pretask_callback=pretask_callback,
         )
 
         # Check for conflicts in configs and constructor arguments
@@ -98,10 +108,6 @@ class LightEvalTask(BaseTask):
 
             model_args = merge_dicts(model_args, config_model_args)
 
-        # Set default dtype and enable_chunked_prefill
-        if "dtype" not in model_args:
-            model_args["dtype"] = "auto"
-
         kwargs["model_args"] = model_args
         if metric_options is not None:
             kwargs["metric_options"] = metric_options
@@ -113,6 +119,10 @@ class LightEvalTask(BaseTask):
         self.clearml_model = clearml_model
         self.lighteval_args = kwargs
         self.force_download = force_download
+        self.vllm_kwargs = vllm_kwargs
+        self.base_url = base_url
+        self.server_wait_time = server_wait_time
+        self.entrypoint = entrypoint
         self.script_path = os.path.join(".", "src", "automation", "tasks", "scripts", "lighteval_script.py")
 
 
@@ -122,16 +132,27 @@ class LightEvalTask(BaseTask):
 
 
     def get_configurations(self):
-        return {
+        configs = {
             "lighteval_args": self.lighteval_args,
         }
+        if self.entrypoint == "litellm":
+            configs["vLLM"] = self.vllm_kwargs
+
+        return configs
 
 
     def get_arguments(self):
-        return {
+        args = {
             "Args": {
                 "model_id": self.model_id,
                 "clearml_model": self.clearml_model,
                 "force_download": self.force_download,
+                "entrypoint": self.entrypoint,
             },
         }
+
+        if self.entrypoint == "litellm":
+            args["Args"]["server_wait_time"] = self.server_wait_time
+            args["Args"]["base_url"] = self.base_url
+        
+        return args

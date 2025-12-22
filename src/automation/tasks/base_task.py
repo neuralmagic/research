@@ -1,6 +1,7 @@
-from typing import Sequence, Optional
+from typing import Sequence, Optional, Callable
 from automation.configs import DEFAULT_OUTPUT_URI, DEFAULT_RESEARCH_BRANCH
 from automation.standards import STANDARD_CONFIGS
+from automation.utils import serialize_callable
 import yaml
 import os
 
@@ -18,6 +19,7 @@ class BaseTask():
         project_name: str,
         task_name: str,
         docker_image: str,
+        pretask_callback: Optional[Callable]=None,
         branch: Optional[str] = DEFAULT_RESEARCH_BRANCH,
         packages: Optional[Sequence[str]]=None,
         task_type: str="training",
@@ -44,8 +46,7 @@ class BaseTask():
         self.task = None
         self.branch = branch
         self.script_path = None
-        self.callable_artifacts = None
-  
+        self.pretask_callback = pretask_callback
 
     @property
     def id(self):
@@ -89,6 +90,10 @@ class BaseTask():
 
     def set_configurations(self):
         configurations = self.get_configurations()
+
+        if self.pretask_callback is not None:
+            configurations["pretask callback"] = serialize_callable(self.pretask_callback)
+
         if clearml_available:
             for name, config in configurations.items():
                 self.task.connect_configuration(config, name=name)

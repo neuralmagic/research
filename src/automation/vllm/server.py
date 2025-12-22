@@ -17,6 +17,7 @@ class VLLMServer:
         self.model_id = model_id
         self.target = target
         self.server_wait_time = server_wait_time
+        self.server_initialized = False
         
     def start(self):
         executable_path = os.path.dirname(sys.executable)
@@ -54,7 +55,6 @@ class VLLMServer:
         self.server_process = subprocess.Popen(server_command, stdout=self.server_log_file, stderr=self.server_log_file, shell=False, env=subprocess_env)
 
         delay = 5
-        self.server_initialized = False
         for _ in range(self.server_wait_time // delay):
             try:
                 response = requests.get(self.target + "/models")
