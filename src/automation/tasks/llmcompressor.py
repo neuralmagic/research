@@ -7,6 +7,7 @@ import yaml
 
 class LLMCompressorTask(BaseTask):
     task_packages = [
+        "transformers==5.0.0rc2", 
         "git+https://github.com/vllm-project/llm-compressor.git",
         #"git+https://github.com/vllm-project/llm-compressor.git@6db28bcf94f53c2d072b0b68ef124b2a7c0816bf",
         #"git+https://github.com/vllm-project/llm-compressor.git@0.8.1",
