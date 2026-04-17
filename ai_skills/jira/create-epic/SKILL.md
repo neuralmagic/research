@@ -81,18 +81,38 @@ Once you have gathered sufficient information:
 
 **CRITICAL**: Only create the Jira ticket after the user has **explicitly approved** it. Look for clear approval statements like "looks good", "create it", "approved", "go ahead", etc.
 
-Once approved, use the appropriate MCP Atlassian tools to create the epic:
-- First, get the cloud ID and project information using `mcp__atlassian__getVisibleJiraProjects`
-- Look up the assignee's account ID using `mcp__atlassian__lookupJiraAccountId`
+Once approved, use the Atlassian CLI (`acli`) to create the epic:
 - Always create epics under the INFERENG project key
-- Validate the field names before creating the epic
-- Create the epic using `mcp__atlassian__createJiraIssue` with issue type "Epic"
+- Use `acli jira workitem create` with issue type "Epic"
 - Include all the gathered information in the appropriate fields
-- Always include the Team field
+- Always include the Team field (customfield_10001)
+
+### Creating an Epic with acli
+
+Use the following command pattern:
+
+```bash
+acli jira workitem create \
+  --project INFERENG \
+  --type Epic \
+  --summary "<epic name>" \
+  --description "<detailed description including goals>" \
+  --assignee "<assignee-email>" \
+  --priority <priority-id> \
+  --components <component-id> \
+  --field customfield_10001="<team-id>" \
+  --json
+```
+
+**Important Notes:**
+- Use email addresses for assignee (e.g., "almarque@redhat.com")
+- Use numeric IDs for priority, components, and custom fields (see Field IDs Reference below)
+- For multiple components, repeat the `--components` flag: `--components 33675 --components 33677`
+- Always include `--json` to get structured output with the created issue key
 
 ## Field IDs Reference
 
-These are the Jira field IDs for creating stories in the INFERENG project. Use these when calling `mcp__atlassian__createJiraIssue`:
+These are the Jira field IDs for creating epics in the INFERENG project. Use these when calling `acli jira workitem create`:
 
 ### Priority IDs
 - Blocker: `10000`

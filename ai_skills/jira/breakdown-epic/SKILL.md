@@ -18,7 +18,12 @@ Start by explaining that you'll help break down a Jira epic into story tickets t
    - The epic name
    - A brief description
 
-2. **Search and Identify**: Based on the information provided, search for the epic using `mcp__atlassian__searchJiraIssuesUsingJql`. Use appropriate JQL queries to find matching epics in the INFERENG project.
+2. **Search and Identify**: Based on the information provided, search for the epic using `acli jira workitem search`. Use appropriate JQL queries to find matching epics in the INFERENG project.
+
+   Example search command:
+   ```bash
+   acli jira workitem search --jql "project = INFERENG AND type = Epic AND summary ~ '<search-term>'" --json
+   ```
 
 3. **Confirm the Epic**: Present the epic you found (with its key, summary, and brief description) and confirm with the user that this is the correct epic before proceeding.
 
@@ -26,9 +31,19 @@ Start by explaining that you'll help break down a Jira epic into story tickets t
 
 Once the user confirms the epic:
 
-1. **Retrieve the Epic**: Use `mcp__atlassian__getJiraIssue` to get the full epic details including description, goals, and all fields.
+1. **Retrieve the Epic**: Use `acli jira workitem view` to get the full epic details including description, goals, and all fields.
+
+   Example command:
+   ```bash
+   acli jira workitem view <EPIC-KEY> --fields '*all' --json
+   ```
 
 2. **Find Existing Stories**: Search for any existing stories linked to this epic using JQL. Read those stories to understand what work has already been planned or completed.
+
+   Example command:
+   ```bash
+   acli jira workitem search --jql "project = INFERENG AND type = Story AND parent = <EPIC-KEY>" --json
+   ```
 
 ## Phase 3: Suggest High-Level Breakdown
 
@@ -113,15 +128,32 @@ Ask the user to review and confirm before creation.
 
 **CRITICAL**: Only create the story after explicit user approval.
 
-Once approved:
-- Use `mcp__atlassian__createJiraIssue` with issue type "Story"
+Once approved, use the Atlassian CLI (`acli`) to create the story:
+
+```bash
+acli jira workitem create \
+  --project INFERENG \
+  --type Story \
+  --summary "<story summary>" \
+  --description "<detailed description>" \
+  --assignee "<assignee-email>" \
+  --priority <priority-id> \
+  --components <component-id> \
+  --field customfield_10464="<activity-type-id>" \
+  --field customfield_10001="<team-id>" \
+  --parent <EPIC-KEY> \
+  --json
+```
+
+**Important Notes:**
 - Always use the INFERENG project key
-- Include all gathered information in appropriate fields:
-  - Set priority using the priority ID (e.g., `{"priority": {"id": "10003"}}`)
-  - Set components using component IDs (e.g., `{"components": [{"id": "33675"}]}`)
-  - Set Activity Type using the field ID (e.g., `{"customfield_10464": {"id": "12229"}}`)
-  - Set Team using the plain string ID (e.g., `{"customfield_10001": "ec74d716-af36-4b3c-950f-f79213d08f71-639"}`)
-- Link the story to the parent epic using the `parent` parameter
+- Use email addresses for assignee (e.g., "almarque@redhat.com")
+- Use numeric IDs for priority, components, and custom fields (see Field IDs Reference below)
+- For multiple components, repeat the `--components` flag: `--components 33675 --components 33677`
+- Set Activity Type using customfield_10464 with the appropriate ID
+- Set Team using customfield_10001 with the team ID
+- Link to parent epic using `--parent <EPIC-KEY>`
+- Always include `--json` to get structured output with the created issue key
 - Confirm to the user that the story has been created with the issue key
 
 #### Step 6: Move to Next Story
@@ -141,7 +173,7 @@ After successful creation, move on to the next story in the breakdown and repeat
 
 ## Field IDs Reference
 
-These are the Jira field IDs for creating stories in the INFERENG project. Use these when calling `mcp__atlassian__createJiraIssue`:
+These are the Jira field IDs for creating stories in the INFERENG project. Use these when calling `acli jira workitem create`:
 
 ### Priority IDs
 - Blocker: `10000`
