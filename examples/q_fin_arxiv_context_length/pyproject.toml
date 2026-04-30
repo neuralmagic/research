@@ -1,0 +1,18 @@
+[project]
+name = "speculators-long-context"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "kagglehub>=1.0.1",
+    "matplotlib>=3.10.9",
+    "pdfminer>=20191125",
+    "pdfminer-six>=20260107",
+    "polars>=1.40.1",
+    "pydantic>=2.13.3",
+    "pymupdf>=1.27.2.3",
+    "reportlab>=4.5.0",
+    "tqdm>=4.67.3",
+    "vllm>=0.19.0,<0.20.0",
+]
