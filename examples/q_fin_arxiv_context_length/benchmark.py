@@ -364,7 +364,7 @@ for article in tqdm(q_fin_filtered):
 logging.info(f"Loading {MODEL_NAME} in vLLM")
 sampling_params = SamplingParams(**SAMPLING_PARAMS)
 llm = LLM(
-    model="Qwen/Qwen3-8B",
+    model=MODEL_NAME,
     trust_remote_code=True,
     disable_log_stats=False,
     speculative_config=SPECULATIVE_CONFIG,
