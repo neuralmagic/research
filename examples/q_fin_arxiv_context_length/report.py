@@ -73,17 +73,40 @@ def generate_report(
     article_sizes_json="",
     output_pdf_name="detailed_benchmark_report.pdf",
 ):
-    # Extract values for plotting
+    # Calculate conditional acceptance rates and extract values for plotting
     chunk_sizes = [d["chunk_size"] for d in data]
     mean_acc_lengths = [d["mean_acceptance_length"] for d in data]
-
-    # Extract acceptance rates by position
     num_rates = len(data[0]["acceptance_rates"])
+
+    # Create x-axis labels: show every other label, but always show first and last.
+    chunk_labels = []
+    num_chunks = len(chunk_sizes)
+    for i in range(num_chunks):
+        if i == 0 or i == num_chunks - 1:
+            chunk_labels.append(str(chunk_sizes[i]))
+        elif i % 2 == 0:
+            chunk_labels.append(str(chunk_sizes[i]))
+        else:
+            chunk_labels.append("")
+
     acc_rates_by_pos = [[] for _ in range(num_rates)]
+    cond_acc_rates_by_pos = [[] for _ in range(num_rates)]
 
     for d in data:
+        cond_rates = []
         for i, rate in enumerate(d["acceptance_rates"]):
             acc_rates_by_pos[i].append(rate)
+            # Calculate conditional rate
+            if i == 0:
+                cond_rate = rate
+            else:
+                prev_rate = d["acceptance_rates"][i - 1]
+                cond_rate = rate / prev_rate if prev_rate > 0 else 0.0
+            cond_rates.append(cond_rate)
+            cond_acc_rates_by_pos[i].append(cond_rate)
+
+        # Store for the summary table later
+        d["conditional_acceptance_rates"] = cond_rates
 
     # List to store paths of generated plot images for later cleanup
     generated_plots = []
@@ -98,7 +121,7 @@ def generate_report(
     plt.xlabel("Max Article Chunk Size (num tokens)")
     plt.ylabel("Mean Acceptance Length")
     plt.grid(True, linestyle="--", alpha=0.7)
-    plt.xticks(chunk_sizes, rotation=45, ha="right")  # Updated here
+    plt.xticks(ticks=chunk_sizes, labels=chunk_labels, rotation=45, ha="right")
     plot1_path = "plot_mean_acc_len.png"
     plt.savefig(plot1_path, bbox_inches="tight", dpi=150)
     plt.close()
@@ -120,13 +143,35 @@ def generate_report(
     plt.ylabel("Acceptance Rate")
     plt.grid(True, linestyle="--", alpha=0.7)
     plt.legend()
-    plt.xticks(chunk_sizes, rotation=45, ha="right")  # Updated here
+    plt.xticks(ticks=chunk_sizes, labels=chunk_labels, rotation=45, ha="right")
     plot2_path = "plot_combined_acc_rates.png"
     plt.savefig(plot2_path, bbox_inches="tight", dpi=150)
     plt.close()
     generated_plots.append(plot2_path)
 
-    # Plot C: Generate Individual Plots per Token Position
+    # Plot C: Chunk Size vs Conditional Acceptance Rates (Combined for all positions)
+    plt.figure(figsize=(6, 4))
+    for i in range(num_rates):
+        plt.plot(
+            chunk_sizes,
+            cond_acc_rates_by_pos[i],
+            marker="D",
+            linestyle="-",
+            linewidth=2,
+            label=f"Token Pos {i+1} Cond Rate",
+        )
+    plt.title("Chunk Size vs Conditional Acceptance Rates (Combined)")
+    plt.xlabel("Max Article Chunk Size (num tokens)")
+    plt.ylabel("Conditional Acceptance Rate")
+    plt.grid(True, linestyle="--", alpha=0.7)
+    plt.legend()
+    plt.xticks(ticks=chunk_sizes, labels=chunk_labels, rotation=45, ha="right")
+    plot3_path = "plot_combined_cond_acc_rates.png"
+    plt.savefig(plot3_path, bbox_inches="tight", dpi=150)
+    plt.close()
+    generated_plots.append(plot3_path)
+
+    # Plot D: Generate Individual Plots per Token Position
     individual_plot_paths = []
     for i in range(num_rates):
         plt.figure(figsize=(6, 3))
@@ -142,20 +187,43 @@ def generate_report(
         plt.xlabel("Max Article Chunk Size (num tokens)")
         plt.ylabel("Acceptance Rate")
         plt.grid(True, linestyle=":", alpha=0.6)
-        plt.xticks(chunk_sizes, rotation=45, ha="right")  # Updated here
+        plt.xticks(ticks=chunk_sizes, labels=chunk_labels, rotation=45, ha="right")
         plot_path = f"plot_acc_rate_pos_{i+1}.png"
         plt.savefig(plot_path, bbox_inches="tight", dpi=130)
         plt.close()
         individual_plot_paths.append(plot_path)
         generated_plots.append(plot_path)
 
-    # --- Generate Article Size Histogram (If Data Provided) ---
+    # Plot E: Generate Individual Conditional Plots per Token Position
+    individual_cond_plot_paths = []
+    for i in range(num_rates):
+        plt.figure(figsize=(6, 3))
+        plt.plot(
+            chunk_sizes,
+            cond_acc_rates_by_pos[i],
+            marker="v",
+            color="purple",
+            linestyle="-",
+            linewidth=1.5,
+        )
+        plt.title(f"Chunk Size vs Cond. Acceptance Rate (Token Position {i+1})")
+        plt.xlabel("Max Article Chunk Size (num tokens)")
+        plt.ylabel("Conditional Acceptance Rate")
+        plt.grid(True, linestyle=":", alpha=0.6)
+        plt.xticks(ticks=chunk_sizes, labels=chunk_labels, rotation=45, ha="right")
+        plot_path = f"plot_cond_acc_rate_pos_{i+1}.png"
+        plt.savefig(plot_path, bbox_inches="tight", dpi=130)
+        plt.close()
+        individual_cond_plot_paths.append(plot_path)
+        generated_plots.append(plot_path)
+
+    # --- Generate Article Size Analysis (If Data Provided) ---
     has_article_sizes = bool(article_sizes_json)
     if has_article_sizes:
         article_data = json.loads(article_sizes_json)
         raw_sizes = article_data.get("article_sizes", [])
 
-        # Filter outliers > 100,000
+        # Filter outliers > 100,000 for the histogram
         filtered_sizes = [s for s in raw_sizes if s <= 100000]
         outliers_count = len(raw_sizes) - len(filtered_sizes)
 
@@ -166,11 +234,36 @@ def generate_report(
         plt.xlabel("Article Size (num tokens)")
         plt.ylabel("Frequency")
         plt.grid(axis="y", linestyle="--", alpha=0.7)
-        plt.xticks(rotation=45, ha="right")  # Updated here to ensure consistency
+        plt.xticks(rotation=45, ha="right")  # Histogram retains full labels
         hist_plot_path = "plot_article_sizes_hist.png"
         plt.savefig(hist_plot_path, bbox_inches="tight", dpi=150)
         plt.close()
         generated_plots.append(hist_plot_path)
+
+        # Compute number of articles >= chunk size
+        articles_geq_chunk = [
+            sum(1 for s in raw_sizes if s >= cs) for cs in chunk_sizes
+        ]
+
+        # Generate Line Graph for Articles >= Chunk Size
+        plt.figure(figsize=(6, 4))
+        plt.plot(
+            chunk_sizes,
+            articles_geq_chunk,
+            marker="o",
+            color="#E67E22",
+            linestyle="-",
+            linewidth=2,
+        )
+        plt.title("Number of Articles >= Chunk Size")
+        plt.xlabel("Max Article Chunk Size (num tokens)")
+        plt.ylabel("Number of Articles")
+        plt.grid(True, linestyle="--", alpha=0.7)
+        plt.xticks(ticks=chunk_sizes, labels=chunk_labels, rotation=45, ha="right")
+        geq_plot_path = "plot_articles_geq_chunk.png"
+        plt.savefig(geq_plot_path, bbox_inches="tight", dpi=150)
+        plt.close()
+        generated_plots.append(geq_plot_path)
 
     # --- Build Document Elements using ReportLab ---
     doc = SimpleDocTemplate(output_pdf_name, pagesize=letter)
@@ -214,6 +307,7 @@ def generate_report(
     )
     elements.append(Image(plot1_path, width=400, height=266))
     elements.append(Spacer(1, 12))
+
     elements.append(
         Paragraph(
             f"{section_num}.2 Combined Token Position Acceptance Rates",
@@ -221,10 +315,19 @@ def generate_report(
         )
     )
     elements.append(Image(plot2_path, width=400, height=266))
+    elements.append(Spacer(1, 12))
+
+    elements.append(
+        Paragraph(
+            f"{section_num}.3 Combined Conditional Acceptance Rates",
+            styles["SectionHeader"],
+        )
+    )
+    elements.append(Image(plot3_path, width=400, height=266))
     elements.append(Spacer(1, 24))
     section_num += 1
 
-    # Add Individual Plots to PDF
+    # Add Individual Standard Plots to PDF
     elements.append(
         Paragraph(
             f"<b>{section_num}. Individual Token Position Analysis</b>",
@@ -243,6 +346,25 @@ def generate_report(
         elements.append(Spacer(1, 10))
     section_num += 1
 
+    # Add Individual Conditional Plots to PDF
+    elements.append(
+        Paragraph(
+            f"<b>{section_num}. Individual Conditional Position Analysis</b>",
+            styles["Heading1"],
+        )
+    )
+    elements.append(Spacer(1, 6))
+    for i, plot_path in enumerate(individual_cond_plot_paths):
+        elements.append(
+            Paragraph(
+                f"{section_num}.{i+1} Token Position {i+1} Conditional Acceptance Rate",
+                styles["SectionHeader"],
+            )
+        )
+        elements.append(Image(plot_path, width=350, height=175))
+        elements.append(Spacer(1, 10))
+    section_num += 1
+
     # Add Data Summary Table
     elements.append(Spacer(1, 24))
     elements.append(
@@ -251,14 +373,19 @@ def generate_report(
     elements.append(Spacer(1, 12))
 
     table_data = []
-    headers = ["Chunk Size", "Mean Acc Length"] + [
-        f"Pos {i+1} Rate" for i in range(num_rates)
-    ]
+    # Expanded headers for conditional rates
+    headers = (
+        ["Chunk Size", "Mean Acc Len"]
+        + [f"Pos {i+1} Rate" for i in range(num_rates)]
+        + [f"Pos {i+1} Cond" for i in range(num_rates)]
+    )
+
     table_data.append(headers)
 
     for d in data:
         row = [str(d["chunk_size"]), f"{d['mean_acceptance_length']:.4f}"]
         row.extend([f"{rate:.4f}" for rate in d["acceptance_rates"]])
+        row.extend([f"{rate:.4f}" for rate in d["conditional_acceptance_rates"]])
         table_data.append(row)
 
     t = Table(table_data)
@@ -272,23 +399,29 @@ def generate_report(
                 ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
                 ("BACKGROUND", (0, 1), (-1, -1), colors.HexColor("#EAEAEA")),
                 ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                ("FONTSIZE", (0, 0), (-1, -1), 9),
+                ("FONTSIZE", (0, 0), (-1, -1), 7),
             ]
         )
     )
     elements.append(t)
     section_num += 1
 
-    # Add Histogram Section
+    # Add Article Size Analysis Section
     if has_article_sizes:
         elements.append(Spacer(1, 24))
         elements.append(
             Paragraph(
-                f"<b>{section_num}. Article Size Distribution</b>", styles["Heading1"]
+                f"<b>{section_num}. Article Size Analysis</b>", styles["Heading1"]
             )
         )
         elements.append(Spacer(1, 6))
 
+        elements.append(
+            Paragraph(
+                f"{section_num}.1 Distribution of Article Sizes",
+                styles["SectionHeader"],
+            )
+        )
         note_text = (
             f"The histogram below illustrates the distribution of article sizes within the dataset. "
             f"Articles exceeding 100,000 tokens were considered outliers and omitted from this visualization. "
@@ -298,6 +431,21 @@ def generate_report(
         elements.append(Paragraph(note_text, styles["BodyText"]))
         elements.append(Spacer(1, 12))
         elements.append(Image(hist_plot_path, width=400, height=266))
+
+        elements.append(Spacer(1, 24))
+        elements.append(
+            Paragraph(
+                f"{section_num}.2 Articles Exceeding Chunk Size",
+                styles["SectionHeader"],
+            )
+        )
+        geq_text = (
+            "The line graph below shows the number of articles in the dataset that contain "
+            "a token count greater than or equal to each evaluated chunk size."
+        )
+        elements.append(Paragraph(geq_text, styles["BodyText"]))
+        elements.append(Spacer(1, 12))
+        elements.append(Image(geq_plot_path, width=400, height=266))
 
     # Build PDF
     doc.build(elements)

@@ -41,7 +41,8 @@ SAMPLING_PARAMS = {
     "min_p": 0.0,
     "max_tokens": 256,
 }
-TOKEN_SWEEP = [500 * (n + 1) for n in range(20)]
+CHAT_TEMPLATE_KWARGS = {"enable_thinking": True}
+TOKEN_SWEEP = [500 * (n + 1) for n in range(40)]
 BENCHMARK_OUTPUT_DIR = "results/"
 
 parser = argparse.ArgumentParser(description="Script to process articles.")
@@ -293,7 +294,7 @@ def benchmark(
     llm: LLM, messages: list[list[dict[str, str]]], sampling_params: SamplingParams
 ):
     metrics_before = get_raw_metrics(llm, NUM_SPEC_TOKENS)
-    llm.chat(messages, sampling_params=sampling_params, use_tqdm=True, chat_template_kwargs={"enable_thinking": True})  # type: ignore
+    llm.chat(messages, sampling_params=sampling_params, use_tqdm=True, chat_template_kwargs=CHAT_TEMPLATE_KWARGS)  # type: ignore
     metrics_after = get_raw_metrics(llm, NUM_SPEC_TOKENS)
     delta = calculate_metrics_delta(metrics_after, metrics_before)
     stats = compute_speculative_stats(delta, "BENCHMARK")
@@ -379,10 +380,12 @@ with open("article_sizes.json", "w") as f:
 logging.info(f"Saving results to {BENCHMARK_OUTPUT_DIR}")
 Path(BENCHMARK_OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
 for num_tokens in TOKEN_SWEEP:
+    tokenized = [t for t in tokenized if len(t) >= num_tokens]
     output_filename = Path(BENCHMARK_OUTPUT_DIR) / Path(f"chunk_size_{num_tokens}.json")
     logging.info(f"Benchmarking with {num_tokens}-sized chunks")
     data = generate_messages(tokenizer, tokenized, num_tokens)
     result = benchmark(llm, data, sampling_params)
     result["chunk_size"] = num_tokens
+    result["num_articles"] = len(tokenized)
     with open(str(output_filename), "w") as f:
         json.dump(result, f)
