@@ -22,25 +22,61 @@ def parse_eval_file(filepath: Path) -> Optional[Tuple[str, float]]:
     Returns:
         Tuple of (evaluation_name, score) or None if parsing fails
     """
+    # Define benchmark-specific evaluation criteria
+    # Maps filename stem to (expected evaluation_name, expected evaluation_description)
+    BENCHMARK_METRICS = {
+        'gsm8k_platinum_cot_llama': ('gsm8k_platinum_cot_llama/strict-match', 'exact_match (filter: strict-match)'),
+        'mmlu_pro_chat': ('mmlu_pro_chat/custom-extract', 'exact_match (filter: custom-extract)'),
+        'ifeval': ('ifeval', 'inst_level_strict_acc'),
+        'aime25': ('aime25', 'avg@n:n=1'),
+        'gpqa_diamond': ('gpqa:diamond', 'gpqa_pass@k:k=1'),
+        'math_500': ('math_500', 'pass@k:k=1&n=1'),
+    }
+
     try:
         with open(filepath, 'r') as f:
             data = json.load(f)
 
-        # Extract from evaluation_results[0]
+        # Extract from evaluation_results
         eval_results = data.get('evaluation_results', [])
         if not eval_results:
             print(f"Warning: No evaluation_results in {filepath.name}")
             return None
 
-        first_result = eval_results[0]
-        eval_name = first_result.get('evaluation_name', filepath.stem)
-        score = first_result.get('score_details', {}).get('score')
+        # Get the expected evaluation_name and description for this benchmark
+        benchmark_key = filepath.stem
+        if benchmark_key in BENCHMARK_METRICS:
+            expected_name, expected_description = BENCHMARK_METRICS[benchmark_key]
 
-        if score is None:
-            print(f"Warning: No score found in {filepath.name}")
+            # Search through all evaluation results to find the matching one
+            for result in eval_results:
+                eval_name = result.get('evaluation_name', '')
+                metric_config = result.get('metric_config', {})
+                eval_description = metric_config.get('evaluation_description', '')
+
+                # Check if both the evaluation_name and description match
+                if eval_name == expected_name and eval_description == expected_description:
+                    score = result.get('score_details', {}).get('score')
+                    if score is not None:
+                        return (eval_name, score)
+                    else:
+                        print(f"Warning: Found matching evaluation but no score in {filepath.name}")
+                        return None
+
+            # If we didn't find a match, warn the user
+            print(f"Warning: Could not find evaluation with name '{expected_name}' and description '{expected_description}' in {filepath.name}")
             return None
+        else:
+            # For unrecognized benchmarks, use the first result as fallback
+            target_result = eval_results[0]
+            eval_name = target_result.get('evaluation_name', filepath.stem)
+            score = target_result.get('score_details', {}).get('score')
 
-        return (eval_name, score)
+            if score is None:
+                print(f"Warning: No score found in {filepath.name}")
+                return None
+
+            return (eval_name, score)
 
     except Exception as e:
         print(f"Error parsing {filepath.name}: {e}")
@@ -84,6 +120,97 @@ def load_directory_results(directory: Path) -> Tuple[Optional[str], Dict[str, fl
     return (model_name, results)
 
 
+def verify_metrics(directories: List[Path]) -> bool:
+    """
+    Verify that all benchmarks use the expected metrics.
+
+    Args:
+        directories: List of directories to verify
+
+    Returns:
+        True if all verifications pass, False otherwise
+    """
+    # Define the expected metrics for each benchmark
+    EXPECTED_METRICS = {
+        'gsm8k_platinum_cot_llama': {
+            'evaluation_name': 'gsm8k_platinum_cot_llama/strict-match',
+            'evaluation_description': 'exact_match (filter: strict-match)',
+        },
+        'mmlu_pro_chat': {
+            'evaluation_name': 'mmlu_pro_chat/custom-extract',
+            'evaluation_description': 'exact_match (filter: custom-extract)',
+        },
+        'ifeval': {
+            'evaluation_name': 'ifeval',
+            'evaluation_description': 'inst_level_strict_acc',
+        },
+        'aime25': {
+            'evaluation_name': 'aime25',
+            'evaluation_description': 'avg@n:n=1',
+        },
+        'gpqa_diamond': {
+            'evaluation_name': 'gpqa:diamond',
+            'evaluation_description': 'gpqa_pass@k:k=1',
+        },
+        'math_500': {
+            'evaluation_name': 'math_500',
+            'evaluation_description': 'pass@k:k=1&n=1',
+        },
+    }
+
+    print("\n" + "=" * 80)
+    print("VERIFICATION: Checking that correct metrics are being used")
+    print("=" * 80)
+
+    all_passed = True
+
+    for directory in directories:
+        print(f"\nDirectory: {directory}")
+        for benchmark_name, expected in EXPECTED_METRICS.items():
+            json_file = directory / f"{benchmark_name}.json"
+
+            if not json_file.exists():
+                continue
+
+            try:
+                with open(json_file, 'r') as f:
+                    data = json.load(f)
+
+                eval_results = data.get('evaluation_results', [])
+
+                # Search for the matching metric
+                found = False
+                for result in eval_results:
+                    eval_name = result.get('evaluation_name', '')
+                    metric_config = result.get('metric_config', {})
+                    eval_desc = metric_config.get('evaluation_description', '')
+
+                    if (eval_name == expected['evaluation_name'] and
+                        eval_desc == expected['evaluation_description']):
+                        score = result.get('score_details', {}).get('score')
+                        if score is not None:
+                            print(f"  ✅ {benchmark_name:30} {score:.4f} ({score*100:.2f}%)")
+                            found = True
+                            break
+
+                if not found:
+                    print(f"  ❌ {benchmark_name:30} Metric not found!")
+                    all_passed = False
+
+            except Exception as e:
+                print(f"  ❌ {benchmark_name:30} Error: {e}")
+                all_passed = False
+
+    print("=" * 80)
+    if all_passed:
+        print("✅ VERIFICATION PASSED: All metrics are correct")
+    else:
+        print("❌ VERIFICATION FAILED: Some metrics are incorrect")
+    print("=" * 80 + "\n")
+
+    return all_passed
+
+
 def format_benchmark_name(eval_name: str) -> str:
     """
     Convert evaluation name to a more readable benchmark name.
@@ -97,7 +224,8 @@ def format_benchmark_name(eval_name: str) -> str:
     # Simple formatting - can be enhanced based on patterns
     name_map = {
         'gsm8k_platinum_cot_llama/strict-match': 'GSM8k Platinum (0-shot)',
-        'mmlu_pro_chat': 'MMLU-Pro (0-shot)',
+        'mmlu_pro_chat': 'MMLU Pro Chat',
+        'mmlu_pro_chat/custom-extract': 'MMLU Pro Chat',
         'ifeval': 'IfEval (0-shot)',
         'aime25': 'AIME 2025',
         'gpqa:diamond': 'GPQA diamond',
@@ -290,6 +418,13 @@ def main():
     # Generate the table
     include_recovery = not args.no_recovery and len(directory_results) >= 2
     generate_markdown_table(directory_results, args.output, include_recovery)
+
+    # Run verification
+    verification_passed = verify_metrics(args.directories)
+
+    if not verification_passed:
+        print("\n⚠️  Warning: Verification found issues. Please review the metrics above.")
+        return 1
 
     return 0
 

@@ -48,12 +48,12 @@ Use the bundled `scripts/generate_table.py` script to process the evaluation dir
 
 For a **single directory** (accuracy table only):
 ```bash
-python scripts/generate_table.py /path/to/results/directory -o table.md
+python3 scripts/generate_table.py /path/to/results/directory -o table.md
 ```
 
 For **two directories** (with recovery):
 ```bash
-python scripts/generate_table.py /path/to/base/model /path/to/comparison/model -o table.md
+python3 scripts/generate_table.py /path/to/base/model /path/to/comparison/model -o table.md
 ```
 
 ### Recovery Calculation Rules
@@ -69,7 +69,7 @@ python scripts/generate_table.py /path/to/base/model /path/to/comparison/model -
 **Comparing quantized model to base model:**
 ```bash
 # Base model is MiniMax-M2.5-BF16, comparison is MiniMax-M2.5-NVFP4
-python scripts/generate_table.py base_model_results/ quantized_model_results/ -o table.md
+python3 scripts/generate_table.py base_model_results/ quantized_model_results/ -o table.md
 ```
 
 **Downloading results from HuggingFace:**
@@ -79,7 +79,7 @@ git clone https://huggingface.co/inference-optimization/MiniMax-M2.5-BF16
 git clone https://huggingface.co/inference-optimization/MiniMax-M2.5-NVFP4
 
 # Then generate the table
-python scripts/generate_table.py \
+python3 scripts/generate_table.py \
   MiniMax-M2.5-BF16/every_eval_ever \
   MiniMax-M2.5-NVFP4/every_eval_ever \
   -o results_comparison.md
@@ -87,7 +87,7 @@ python scripts/generate_table.py \
 
 **Disabling recovery calculation:**
 ```bash
-python scripts/generate_table.py /path/to/results --no-recovery -o table.md
+python3 scripts/generate_table.py /path/to/results --no-recovery -o table.md
 ```
 
 ## Output Format
@@ -140,7 +140,7 @@ When a user asks you to generate a results table:
 
 **Your response**:
 1. Download both model evaluation directories from HuggingFace
-2. Run: `python scripts/generate_table.py MiniMax-M2.5-BF16/every_eval_ever MiniMax-M2.5-NVFP4/every_eval_ever -o table.md`
+2. Run: `python3 scripts/generate_table.py MiniMax-M2.5-BF16/every_eval_ever MiniMax-M2.5-NVFP4/every_eval_ever -o table.md`
 3. Read and display the generated table
 4. Explain the recovery percentages if the user asks
 
