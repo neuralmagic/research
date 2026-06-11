@@ -33,6 +33,11 @@ simultaneously. All benchmark Jobs and utility pods mount it at `/tier2`.
 
 | Tier | Type | Speed | Persistence | Typical use |
 |------|------|-------|-------------|-------------|
-| tier0 | Node-local hostPath (`/var/mnt/scratch/scratch`) | Fastest | Survives pod restarts, shared across pods on the same node | Scratch space |
-| tier1 | Ephemeral LVM NVMe (`lvms-h100-tier1-storage`) | Fast | Pod-lifetime only, deleted when pod terminates | Model copies for fast loading |
+| tier0 | Node-local hostPath (`/var/mnt/scratch/scratch`) | Fastest | Survives pod restarts, shared across pods on the same node | Legacy — prefer tier1 for scratch |
+| **tier1** | **Ephemeral LVM NVMe (`lvms-h100-tier1-storage`)** | **Fast** | **Pod-lifetime only, deleted when pod terminates** | **Scratch space, model copies for fast loading** |
 | tier2 | CephFS (`ocs-storagecluster-cephfs-tier2`) | Network | Persistent across pods and nodes | Model cache, results, datasets |
+
+Prefer **tier1** for scratch work and temporary model copies. It is
+dedicated NVMe storage provisioned per-pod, so there is no contention
+with other pods on the same node. Tier0 is a shared hostPath that
+predates tier1 and is mounted for compatibility but has no isolation.
