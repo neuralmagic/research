@@ -1,37 +1,25 @@
-# BFCL v4 on OpenShift
+# OpenShift Benchmarks
 
-Tool calling benchmarks using the
-[Berkeley Function Calling Leaderboard](https://github.com/ShishirPatil/gorilla)
-for evaluating FP8 quantization recovery on Command A+.
+Job definitions for running ML benchmarks and experiments on the OpenShift
+H100 cluster.
 
-Each benchmark runs as a Kubernetes **Job** with two containers on an H100 node:
-- **vllm-server** — serves the model on port 8000 with `--served-model-name`
-  matching the BFCL registry (image: `vllm/vllm-openai:v0.22.1`)
-- **benchmark** — clones the gorilla fork, registers the model, then runs
-  `bfcl generate` + `bfcl evaluate` for each test category
+## Directory structure
 
-> **Note:** Replace all occurrences of `<YOUR_NAME>` in the YAML with
-> your identifier before applying. This affects the Job name, secret references,
-> and PVC claim names.
+Each task lives in its own subdirectory with a README and one or more YAML files:
 
-## Presets
+```
+openshift/
+├── README.md              ← this file (conventions & architecture)
+└── bfcl/
+    ├── README.md
+    └── bfcl.yml
+```
 
-`bfcl.yml` ships configured for FP8. To switch presets, update the lines
-marked with `✎` in the YAML:
+## Shared prerequisites
 
-| Field | FP8 (default) | BF16 baseline |
-|-------|---------------|---------------|
-| Job name suffix | `-bfcl-fp8` | `-bfcl-bf16` |
-| `MODEL_ID` / `MODEL` | `RedHatAI/command-a-plus-05-2026-fp8` | `CohereLabs/command-a-plus-05-2026-bf16` |
-| `QUANTIZATION` | `fp8` | `bf16` |
-| `NUM_THREADS` | `12` | `8` |
+### HuggingFace token
 
-`NUM_THREADS` is tuned to model size — the smaller FP8 model handles more
-concurrent requests, so it gets more benchmark threads.
-
-## Prerequisites
-
-### 1. Create the HF token secret (one-time)
+Most tasks need a HF token for model downloads. Create the secret once:
 
 ```bash
 oc create secret generic mlr-<YOUR_NAME>-hf-token-read-only \
@@ -39,90 +27,188 @@ oc create secret generic mlr-<YOUR_NAME>-hf-token-read-only \
   -n machine-learning
 ```
 
-### 2. Ensure the tier2 PVC exists
+Then reference it in container env:
 
-The YAML mounts `mlr-tier2-<YOUR_NAME>` (ReadWriteMany) for:
-- HF model cache (`/tier2/hf-hub`)
-- Benchmark results (`/tier2/benchmark_results/<timestamp>/`)
-
-## Usage
-
-### Run a benchmark
-
-```bash
-oc apply -f bfcl.yml
+```yaml
+env:
+- name: HF_TOKEN
+  valueFrom:
+    secretKeyRef:
+      name: mlr-<YOUR_NAME>-hf-token-read-only
+      key: HF_TOKEN
 ```
 
-### Monitor progress
+### Tier2 PVC
+
+All tasks share a user-specific PVC (`mlr-tier2-<YOUR_NAME>`, CephFS,
+ReadWriteMany) mounted at `/tier2`.
+
+### Cleanup label
+
+Every resource should carry an `app.kubernetes.io/instance` label so the
+entire task can be torn down with one command:
 
 ```bash
-# Find the pod created by the Job
-oc get pods -l app.kubernetes.io/instance=mlr-vllm-<YOUR_NAME>-bfcl-fp8
-
-# Server logs
-oc logs -l app.kubernetes.io/instance=mlr-vllm-<YOUR_NAME>-bfcl-fp8 -c vllm-server -f
-
-# Benchmark logs
-oc logs -l app.kubernetes.io/instance=mlr-vllm-<YOUR_NAME>-bfcl-fp8 -c benchmark -f
+oc delete all -l app.kubernetes.io/instance=<instance-name> -n machine-learning
 ```
 
-### Clean up
+## Creating a new task
+
+1. Create a subdirectory: `openshift/<task-name>/`
+2. Add your YAML file(s) and a `README.md` with usage instructions.
+3. Follow the conventions below.
+
+### Job conventions
+
+- Use `kind: Job` with `backoffLimit: 0` for run-to-completion workloads.
+  Use `kind: Pod` only for interactive utility pods (e.g. `sleep infinity`).
+- Set `activeDeadlineSeconds` at the Job spec level.
+- Set `restartPolicy: Never` in the pod template spec.
+- Use `nodeSelector: node-role.kubernetes.io/up-h100mcp: ""` for GPU work.
+- Use `serviceAccountName: ml-workload`.
+- Reference the HF token from the shared secret — never hardcode tokens.
+- Add the `app.kubernetes.io/instance` label to both Job metadata and the
+  pod template metadata for cleanup and Service selectors.
+
+### Server + sidecar architecture
+
+For benchmarks that pair a vLLM server with an eval harness, use the
+**native sidecar** pattern (requires Kubernetes 1.28+ / OpenShift 4.15+).
+Place the server in `initContainers` with `restartPolicy: Always` so that:
+
+1. The server starts before the benchmark container.
+2. When the benchmark container exits (success or failure), Kubernetes
+   automatically sends SIGTERM to the server.
+3. The pod completes without burning GPU time on idle servers.
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 86400
+  template:
+    spec:
+      restartPolicy: Never
+      initContainers:
+      - name: vllm-server
+        restartPolicy: Always    # native sidecar — runs alongside main container
+        image: vllm/vllm-openai:v0.22.1
+        ...
+      containers:
+      - name: benchmark          # main container — its exit terminates the pod
+        image: python:3.12-slim
+        ...
+```
+
+### Benchmark results
+
+All benchmark tasks must write results to:
+
+```
+/tier2/benchmark_results/<timestamp>/
+```
+
+where `<timestamp>` is UTC formatted as `YYYYMMDD-HHMMSS` (e.g., `20260610-143052`).
+
+Each result directory must contain:
+- `config.json` — written at the start with the fields below, so partial runs
+  are still identifiable.
+- `run-metadata.json` — written **only** when the entire sweep completes
+  successfully. Its presence is the definitive indicator that the run finished.
+  A directory with `config.json` but no `run-metadata.json` is an
+  incomplete or failed run.
+
+### run-metadata.json spec
+
+Written at the very end of the benchmark script. Required fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | `string` | Always `"completed"` (file only exists on success). |
+| `start_timestamp` | `string` | UTC start time (`YYYYMMDD-HHMMSS`). |
+| `end_timestamp` | `string` | UTC end time (`YYYYMMDD-HHMMSS`). |
+| `duration_seconds` | `int` | Wall-clock duration of the benchmark sweep. |
+| `result_files_written` | `int` | Number of result JSON files produced. |
+
+### config.json spec
+
+#### Required top-level fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `benchmark_type` | `string` | Identifies the benchmark (e.g., `"bfcl"`, `"speed-bench"`). Used as the primary filter key. |
+| `target_model` | `string` | The model being served (e.g., `"Qwen/Qwen3-8B"`). |
+| `run_timestamp` | `string` | UTC timestamp matching the directory name (`YYYYMMDD-HHMMSS`). |
+
+#### Required sections
+
+**`server`** — everything needed to reproduce the server configuration:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `server.vllm_version` | `string` | Version string from the `/version` endpoint. |
+| `server.model` | `string` | Model identifier passed to `vllm serve`. |
+| `server.max_model_len` | `int \| null` | The `--max-model-len` value, or `null` if using the model default. |
+| `server.image` | `string` | Container image (omit if built from source). |
+
+Include any other server flags that affect results (e.g. `speculative_config`,
+`tensor_parallel_size`, `tool_call_parser`).
+
+**`client`** — the benchmark runner:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `client.harness` | `string` | Harness name (e.g., `"bfcl"`, `"lm-eval"`). |
+| `client.image` | `string` | Container image used for the benchmark client. |
+
+**`benchmark`** — dataset and parameters:
+
+Add benchmark-specific fields (tasks, categories, num_threads, etc.)
+under this section.
+
+#### Example
+
+```json
+{
+  "benchmark_type": "bfcl",
+  "target_model": "RedHatAI/command-a-plus-05-2026-fp8",
+  "run_timestamp": "20260610-143052",
+  "server": {
+    "vllm_version": "0.22.1",
+    "model": "RedHatAI/command-a-plus-05-2026-fp8",
+    "image": "vllm/vllm-openai:v0.22.1",
+    "tensor_parallel_size": 8,
+    "tool_call_parser": "cohere_command4"
+  },
+  "client": {
+    "harness": "bfcl",
+    "image": "python:3.12-slim"
+  },
+  "benchmark": {
+    "test_categories": ["non_live", "multi_turn"],
+    "num_threads": 12
+  }
+}
+```
+
+### Searching results
 
 ```bash
-# By name
-oc delete job mlr-vllm-<YOUR_NAME>-bfcl-fp8 -n machine-learning
+# All benchmark runs
+ls /tier2/benchmark_results/
 
-# Or by label
-oc delete all -l app.kubernetes.io/instance=mlr-vllm-<YOUR_NAME>-bfcl-fp8 -n machine-learning
+# All runs of a specific benchmark type
+grep -rl '"benchmark_type": "bfcl"' /tier2/benchmark_results/*/config.json
+
+# All runs for a specific model
+grep -rl '"target_model": "Qwen/Qwen3-8B"' /tier2/benchmark_results/*/config.json
+
+# Only completed runs
+ls /tier2/benchmark_results/*/run-metadata.json
+
+# Incomplete/failed runs
+for d in /tier2/benchmark_results/*/; do
+  [ -f "$d/config.json" ] && [ ! -f "$d/run-metadata.json" ] && echo "$d"
+done
 ```
-
-## What it benchmarks
-
-The sweep runs 2 test categories using native tool calling (`is_fc_model=True`):
-
-| Category | Description | Reproducibility |
-|----------|-------------|-----------------|
-| `non_live` | Single-turn tool use (simple, parallel, multiple, java, javascript, relevance) | Static dataset, fully reproducible |
-| `multi_turn` | Multi-turn dialog with tool use, deterministic simulated backends | Deterministic, fully reproducible |
-
-The sidecar uses the
-[neuralmagic gorilla fork](https://github.com/neuralmagic/gorilla/tree/shubhra/bfcl-vllm-patches)
-which includes the OpenAI completions fix and optional DuckDuckGo web search.
-
-### How it works
-
-1. The sidecar clones the fork, installs BFCL, and auto-registers the model
-   in `model_config.py` and `supported_models.py`
-2. A `.env` file is written pointing `OPENAI_BASE_URL` at the local vLLM server
-3. For each category: `bfcl generate` sends prompts and collects responses,
-   then `bfcl evaluate` scores them
-4. Both `result/` and `score/` directories are copied to the timestamped
-   result directory on tier2
-
-Each run produces a timestamped directory under `/tier2/benchmark_results/` containing:
-- `config.json` — full reproducibility metadata
-- `bfcl_result/` — raw generation output per test category
-- `bfcl_score/` — evaluation scores and CSVs
-- `run-metadata.json` — written only on successful completion
-
-## Configuration
-
-### Model
-
-To use a different model entirely, update the `MODEL_ID` / `MODEL` variables
-(marked `✎`) in both container scripts. The `--served-model-name` must match
-the model name registered in BFCL.
-
-### Test categories
-
-To add or change categories, edit the `BFCL_CATEGORIES` variable in the
-benchmark container. Available categories:
-
-```bash
-# After installing BFCL:
-bfcl test-categories
-```
-
-### GPU count
-
-The YAML requests 8 GPUs. TP and DP are set in the vllm-server script.
