@@ -34,6 +34,10 @@ spec:
         cpu: "4"
         memory: "16Gi"
     volumeMounts:
+    - name: tier0
+      mountPath: /tier0
+    - name: tier1
+      mountPath: /tier1
     - name: tier2
       mountPath: /tier2
     envFrom:
@@ -42,6 +46,22 @@ spec:
     - secretRef:
         name: ceph-bucket-class
   volumes:
+  - name: tier0
+    hostPath:
+      path: /var/mnt/scratch/scratch
+  - name: tier1
+    ephemeral:
+      volumeClaimTemplate:
+        metadata:
+          labels:
+            type: ephemeral-volume
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          storageClassName: lvms-h100-tier1-storage
+          resources:
+            requests:
+              storage: 256Gi
   - name: tier2
     persistentVolumeClaim:
       claimName: mlr-tier2-<YOUR_NAME>

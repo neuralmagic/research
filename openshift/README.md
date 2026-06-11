@@ -10,6 +10,9 @@ Each task lives in its own subdirectory with a README and one or more YAML files
 ```
 openshift/
 ├── README.md              ← this file (conventions & architecture)
+├── storage/
+│   ├── README.md          ← storage tiers explained
+│   └── tier2.yml          ← one-time PVC setup
 ├── bfcl/
 │   ├── README.md
 │   └── bfcl.yml
@@ -45,7 +48,8 @@ env:
 ### Tier2 PVC
 
 All tasks share a user-specific PVC (`mlr-tier2-<YOUR_NAME>`, CephFS,
-ReadWriteMany) mounted at `/tier2`.
+ReadWriteMany) mounted at `/tier2`. Create yours once using
+[`storage/tier2.yml`](storage/README.md).
 
 ### Cleanup label
 
