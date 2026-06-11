@@ -1,7 +1,7 @@
 # OpenShift Benchmarks
 
-Job definitions for running ML benchmarks and experiments on the OpenShift
-H100 cluster.
+Job and Pod definitions for running ML benchmarks and experiments on the
+OpenShift H100 cluster.
 
 ## Directory structure
 
@@ -10,9 +10,13 @@ Each task lives in its own subdirectory with a README and one or more YAML files
 ```
 openshift/
 ├── README.md              ← this file (conventions & architecture)
-└── bfcl/
+├── bfcl/
+│   ├── README.md
+│   └── bfcl.yml
+└── utility-pods/
     ├── README.md
-    └── bfcl.yml
+    ├── cpu.yml
+    └── h100.yml
 ```
 
 ## Shared prerequisites

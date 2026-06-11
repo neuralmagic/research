@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mlr-h100-<YOUR_NAME>
+  namespace: machine-learning
+spec:
+  activeDeadlineSeconds: 7200
+  serviceAccountName: ml-workload
+  securityContext:
+    fsGroup: 1000760000
+    fsGroupChangePolicy: Always
+  nodeSelector:
+    node-role.kubernetes.io/up-h100mcp: ""
+  containers:
+  - name: debug-container
+    image: nvidia/cuda:13.0.0-devel-ubuntu24.04
+    securityContext:
+      runAsUser: 0
+    command: ["/bin/bash", "-c", "apt-get update && apt-get install -y neovim git && sleep infinity"]
+    resources:
+      requests:
+        nvidia.com/gpu: 1
+      limits:
+        nvidia.com/gpu: 1
+    env:
+    - name: NVIDIA_VISIBLE_DEVICES
+      value: all
+    - name: NVIDIA_DRIVER_CAPABILITIES
+      value: compute,utility
+    volumeMounts:
+    - name: tier2
+      mountPath: /tier2
+    envFrom:
+    - configMapRef:
+        name: ceph-bucket-class
+    - secretRef:
+        name: ceph-bucket-class
+  volumes:
+  - name: tier2
+    persistentVolumeClaim:
+      claimName: mlr-tier2-<YOUR_NAME>

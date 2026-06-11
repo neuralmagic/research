@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mlr-cpu-<YOUR_NAME>
+  namespace: machine-learning
+spec:
+  activeDeadlineSeconds: 3600
+  serviceAccountName: ml-workload
+  securityContext:
+    fsGroup: 1000760000
+    fsGroupChangePolicy: Always
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: node-role.kubernetes.io/worker
+            operator: Exists
+          - key: node-role.kubernetes.io/ceph
+            operator: DoesNotExist
+          - key: node-role.kubernetes.io/control-plane
+            operator: DoesNotExist
+  containers:
+  - name: debug-container
+    image: ubuntu:24.04
+    securityContext:
+      runAsUser: 0
+    command: ["/bin/bash", "-c", "apt-get update && apt-get install -y neovim && sleep infinity"]
+    resources:
+      requests:
+        cpu: "4"
+        memory: "16Gi"
+      limits:
+        cpu: "4"
+        memory: "16Gi"
+    volumeMounts:
+    - name: tier2
+      mountPath: /tier2
+    envFrom:
+    - configMapRef:
+        name: ceph-bucket-class
+    - secretRef:
+        name: ceph-bucket-class
+  volumes:
+  - name: tier2
+    persistentVolumeClaim:
+      claimName: mlr-tier2-<YOUR_NAME>
