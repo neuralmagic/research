@@ -4,20 +4,30 @@ Tool calling benchmarks using the
 [Berkeley Function Calling Leaderboard](https://github.com/ShishirPatil/gorilla)
 for evaluating FP8 quantization recovery on Command A+.
 
-| File | Model | TP | DP | Purpose |
-|------|-------|----|----|---------|
-| `bfcl-fp8.yml` | `RedHatAI/command-a-plus-05-2026-fp8` | 4 | 2 | FP8 quantized model |
-| `bfcl-bf16.yml` | `CohereLabs/command-a-plus-05-2026-bf16` | 8 | 1 | BF16 baseline |
-
 Each benchmark runs as a Kubernetes **Job** with two containers on an H100 node:
 - **vllm-server** — serves the model on port 8000 with `--served-model-name`
   matching the BFCL registry (image: `vllm/vllm-openai:v0.22.1`)
 - **benchmark** — clones the gorilla fork, registers the model, then runs
   `bfcl generate` + `bfcl evaluate` for each test category
 
-> **Note:** Replace all occurrences of `<YOUR_NAME>` in the YAML files with
+> **Note:** Replace all occurrences of `<YOUR_NAME>` in the YAML with
 > your identifier before applying. This affects the Job name, secret references,
 > and PVC claim names.
+
+## Presets
+
+`bfcl.yml` ships configured for FP8. To switch presets, update the lines
+marked with `✎` in the YAML:
+
+| Field | FP8 (default) | BF16 baseline |
+|-------|---------------|---------------|
+| Job name suffix | `-bfcl-fp8` | `-bfcl-bf16` |
+| `MODEL_ID` / `MODEL` | `RedHatAI/command-a-plus-05-2026-fp8` | `CohereLabs/command-a-plus-05-2026-bf16` |
+| `QUANTIZATION` | `fp8` | `bf16` |
+| `NUM_THREADS` | `12` | `8` |
+
+`NUM_THREADS` is tuned to model size — the smaller FP8 model handles more
+concurrent requests, so it gets more benchmark threads.
 
 ## Prerequisites
 
@@ -31,7 +41,7 @@ oc create secret generic mlr-<YOUR_NAME>-hf-token-read-only \
 
 ### 2. Ensure the tier2 PVC exists
 
-Both YAMLs mount `mlr-tier2-<YOUR_NAME>` (ReadWriteMany) for:
+The YAML mounts `mlr-tier2-<YOUR_NAME>` (ReadWriteMany) for:
 - HF model cache (`/tier2/hf-hub`)
 - Benchmark results (`/tier2/benchmark_results/<timestamp>/`)
 
@@ -40,11 +50,7 @@ Both YAMLs mount `mlr-tier2-<YOUR_NAME>` (ReadWriteMany) for:
 ### Run a benchmark
 
 ```bash
-# FP8 quantized model
-oc apply -f bfcl-fp8.yml
-
-# BF16 baseline
-oc apply -f bfcl-bf16.yml
+oc apply -f bfcl.yml
 ```
 
 ### Monitor progress
@@ -59,8 +65,6 @@ oc logs -l app.kubernetes.io/instance=mlr-vllm-<YOUR_NAME>-bfcl-fp8 -c vllm-serv
 # Benchmark logs
 oc logs -l app.kubernetes.io/instance=mlr-vllm-<YOUR_NAME>-bfcl-fp8 -c benchmark -f
 ```
-
-Replace `bfcl-fp8` with `bfcl-bf16` for the baseline variant.
 
 ### Clean up
 
@@ -105,11 +109,9 @@ Each run produces a timestamped directory under `/tier2/benchmark_results/` cont
 
 ### Model
 
-To change the model, update these values in both containers:
-- Server: the `vllm serve <model>` and `--served-model-name` arguments
-- Benchmark: the `MODEL=` variable
-
-The `--served-model-name` must match the model name registered in BFCL.
+To use a different model entirely, update the `MODEL_ID` / `MODEL` variables
+(marked `✎`) in both container scripts. The `--served-model-name` must match
+the model name registered in BFCL.
 
 ### Test categories
 
@@ -123,5 +125,4 @@ bfcl test-categories
 
 ### GPU count
 
-Both YAMLs request 8 GPUs. The FP8 variant uses TP=4, DP=2. The BF16
-variant uses TP=8, DP=1.
+The YAML requests 8 GPUs. TP and DP are set in the vllm-server script.

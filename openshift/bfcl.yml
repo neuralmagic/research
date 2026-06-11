@@ -1,17 +1,34 @@
+# ── Configuration ─────────────────────────────────────────────────────
+# To switch models, update the four fields marked with ✎ below:
+#   1. metadata.name          (Job + label)
+#   2. MODEL_ID / MODEL       (in each container script)
+#   3. QUANTIZATION            (in the benchmark script)
+#   4. NUM_THREADS             (scale to model size — see table)
+#
+# ┌────────────────────────────────────────────────────────────────────┐
+# │  Preset   │ MODEL_ID                                │ Q   │ Thr  │
+# ├───────────┼─────────────────────────────────────────┼─────┼──────┤
+# │  FP8      │ RedHatAI/command-a-plus-05-2026-fp8     │ fp8 │  12  │
+# │  BF16     │ CohereLabs/command-a-plus-05-2026-bf16  │ bf16│   8  │
+# └────────────────────────────────────────────────────────────────────┘
+# NUM_THREADS: FP8 is smaller and handles more concurrent requests,
+# so it gets more benchmark threads than BF16.
+# ──────────────────────────────────────────────────────────────────────
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: mlr-vllm-<YOUR_NAME>-bfcl-bf16
+  # ✎ Change suffix to match quantization (e.g. -bfcl-fp8 or -bfcl-bf16)
+  name: mlr-vllm-<YOUR_NAME>-bfcl-fp8
   namespace: machine-learning
   labels:
-    app.kubernetes.io/instance: mlr-vllm-<YOUR_NAME>-bfcl-bf16
+    app.kubernetes.io/instance: mlr-vllm-<YOUR_NAME>-bfcl-fp8
 spec:
   backoffLimit: 0
   activeDeadlineSeconds: 43200
   template:
     metadata:
       labels:
-        app.kubernetes.io/instance: mlr-vllm-<YOUR_NAME>-bfcl-bf16
+        app.kubernetes.io/instance: mlr-vllm-<YOUR_NAME>-bfcl-fp8
     spec:
       restartPolicy: Never
       serviceAccountName: ml-workload
@@ -32,6 +49,9 @@ spec:
           - |
             set -e
 
+            # ✎ Model to serve
+            MODEL_ID="RedHatAI/command-a-plus-05-2026-fp8"
+
             pip install -q cohere_melody>=0.9.0
 
             export HF_HOME="/tier2/hf-hub"
@@ -44,7 +64,6 @@ spec:
 
             mkdir -p "$HF_HOME"
 
-            MODEL_ID="CohereLabs/command-a-plus-05-2026-bf16"
             LOCAL_MODEL="/tier1/model"
 
             echo "[*] Resolving model in tier2 HF cache..."
@@ -61,7 +80,7 @@ spec:
             NUM_GPUS=$(nvidia-smi -L | wc -l)
 
             echo "========================================================="
-            echo " Starting vLLM Server (Command A+ BF16, BFCL)           "
+            echo " Starting vLLM Server: ${MODEL_ID}                       "
             echo " TP=${NUM_GPUS}, DP=1, GPUs=${NUM_GPUS}                  "
             echo "========================================================="
 
@@ -113,15 +132,20 @@ spec:
           - |
             set -e
 
+            # ✎ Benchmark configuration
+            MODEL="RedHatAI/command-a-plus-05-2026-fp8"
+            QUANTIZATION="fp8"
+            NUM_THREADS=12
+            BFCL_CATEGORIES="non_live multi_turn"
+
             apt-get update && apt-get install -y --no-install-recommends curl git
 
             export HF_HOME="/tier2/hf-hub"
             export HF_HUB_CACHE="/tier2/hf-hub"
             SERVER_URL="http://localhost:8000"
 
-            MODEL="CohereLabs/command-a-plus-05-2026-bf16"
-            QUANTIZATION="bf16"
-            BFCL_CATEGORIES="non_live multi_turn"
+            ORG="${MODEL%%/*}"
+            DISPLAY_NAME="${MODEL##*/}"
 
             RUN_TS=$(date -u +%Y%m%d-%H%M%S)
             START_EPOCH=$(date +%s)
@@ -131,6 +155,7 @@ spec:
             echo "========================================================="
             echo " BFCL v4 Benchmark — run ${RUN_TS}                      "
             echo " Model: ${MODEL} (${QUANTIZATION})                       "
+            echo " Threads: ${NUM_THREADS}                                 "
             echo "========================================================="
 
             # Clone and install BFCL from neuralmagic gorilla fork
@@ -145,10 +170,12 @@ spec:
             export MODEL
 
             # Register model in BFCL
-            python3 << 'REGISTER_EOF'
+            ORG="$ORG" DISPLAY_NAME="$DISPLAY_NAME" python3 << 'REGISTER_EOF'
             import os
 
             model_name = os.environ["MODEL"]
+            org = os.environ["ORG"]
+            display_name = os.environ["DISPLAY_NAME"]
 
             # Append ModelConfig entry to model_config.py
             config_path = "bfcl_eval/constants/model_config.py"
@@ -157,13 +184,13 @@ spec:
 
             if model_name not in content:
                 entry = f"""
-            # Auto-registered by OpenShift benchmark pod
+            # Auto-registered by OpenShift benchmark job
             from bfcl_eval.model_handler.api_inference.openai_completion import OpenAICompletionsHandler
             MODEL_CONFIG_MAPPING["{model_name}"] = ModelConfig(
                 model_name="{model_name}",
-                display_name="Command A+ BF16 (FC)",
+                display_name="{display_name} (FC)",
                 url="https://huggingface.co/{model_name}",
-                org="CohereLabs",
+                org="{org}",
                 license="Apache 2.0",
                 model_handler=OpenAICompletionsHandler,
                 input_price=None,
@@ -245,7 +272,7 @@ spec:
                 },
                 'benchmark': {
                     'test_categories': '${BFCL_CATEGORIES}'.split(),
-                    'num_threads': 8,
+                    'num_threads': ${NUM_THREADS},
                 },
             }
             with open('${RESULT_DIR}/config.json', 'w') as f:
@@ -263,7 +290,7 @@ spec:
                 bfcl generate \
                     --model "$MODEL" \
                     --test-category "$CATEGORY" \
-                    --num-threads 8
+                    --num-threads "$NUM_THREADS"
 
                 echo "---------------------------------------------------------"
                 echo " BFCL evaluate: ${CATEGORY}                              "
