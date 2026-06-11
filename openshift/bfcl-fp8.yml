@@ -1,0 +1,345 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mlr-vllm-<YOUR_NAME>-bfcl-fp8
+  namespace: machine-learning
+  labels:
+    app.kubernetes.io/instance: mlr-vllm-<YOUR_NAME>-bfcl-fp8
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 43200
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: mlr-vllm-<YOUR_NAME>-bfcl-fp8
+    spec:
+      restartPolicy: Never
+      serviceAccountName: ml-workload
+      securityContext:
+        fsGroup: 1000760000
+        fsGroupChangePolicy: Always
+      nodeSelector:
+        node-role.kubernetes.io/up-h100mcp: ""
+      initContainers:
+      - name: vllm-server
+        restartPolicy: Always
+        image: vllm/vllm-openai:v0.22.1
+        securityContext:
+          runAsUser: 0
+        command:
+          - /bin/bash
+          - -c
+          - |
+            set -e
+
+            pip install -q cohere_melody>=0.9.0
+
+            export HF_HOME="/tier2/hf-hub"
+            export HF_HUB_CACHE="/tier2/hf-hub"
+            export OMP_NUM_THREADS=1
+            export MKL_NUM_THREADS=1
+            export OPENBLAS_NUM_THREADS=1
+            export NUMEXPR_NUM_THREADS=1
+            export VLLM_WORKER_MULTIPROC_METHOD=spawn
+
+            mkdir -p "$HF_HOME"
+
+            MODEL_ID="RedHatAI/command-a-plus-05-2026-fp8"
+            LOCAL_MODEL="/tier1/model"
+
+            # Ensure model is in tier2 cache, then copy to tier1 NVMe for fast loading
+            echo "[*] Resolving model in tier2 HF cache..."
+            CACHE_PATH=$(python3 -c "
+            from huggingface_hub import snapshot_download
+            print(snapshot_download('${MODEL_ID}'))
+            ")
+            echo "[+] Cached at: ${CACHE_PATH}"
+
+            echo "[*] Copying model to tier1 NVMe..."
+            cp -rL "$CACHE_PATH" "$LOCAL_MODEL"
+            echo "[+] Model copied to ${LOCAL_MODEL}"
+
+            NUM_GPUS=$(nvidia-smi -L | wc -l)
+
+            echo "========================================================="
+            echo " Starting vLLM Server (Command A+ FP8, BFCL)            "
+            echo " TP=${NUM_GPUS}, DP=1, GPUs=${NUM_GPUS}                  "
+            echo "========================================================="
+
+            exec vllm serve "$LOCAL_MODEL" \
+                --served-model-name "$MODEL_ID" \
+                --tensor-parallel-size ${NUM_GPUS} \
+                --data-parallel-size 1 \
+                --tool-call-parser cohere_command4 \
+                --reasoning-parser cohere_command4 \
+                --enable-auto-tool-choice \
+                --port 8000
+        resources:
+          requests:
+            nvidia.com/gpu: 8
+          limits:
+            nvidia.com/gpu: 8
+        env:
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: mlr-<YOUR_NAME>-hf-token-read-only
+              key: HF_TOKEN
+        - name: NVIDIA_VISIBLE_DEVICES
+          value: all
+        - name: NVIDIA_DRIVER_CAPABILITIES
+          value: compute,utility
+        - name: RAYON_NUM_THREADS
+          value: "1"
+        - name: VLLM_ENGINE_READY_TIMEOUT_S
+          value: "1800"
+        volumeMounts:
+        - name: tier1
+          mountPath: /tier1
+        - name: tier2
+          mountPath: /tier2
+        envFrom:
+        - configMapRef:
+            name: ceph-bucket-class
+        - secretRef:
+            name: ceph-bucket-class
+      containers:
+      - name: benchmark
+        image: python:3.12-slim
+        securityContext:
+          runAsUser: 0
+        command:
+          - /bin/bash
+          - -c
+          - |
+            set -e
+
+            apt-get update && apt-get install -y --no-install-recommends curl git
+
+            export HF_HOME="/tier2/hf-hub"
+            export HF_HUB_CACHE="/tier2/hf-hub"
+            SERVER_URL="http://localhost:8000"
+
+            MODEL="RedHatAI/command-a-plus-05-2026-fp8"
+            QUANTIZATION="fp8"
+            BFCL_CATEGORIES="non_live multi_turn"
+
+            RUN_TS=$(date -u +%Y%m%d-%H%M%S)
+            START_EPOCH=$(date +%s)
+            RESULT_DIR="/tier2/benchmark_results/${RUN_TS}"
+            mkdir -p "$HF_HOME" "$RESULT_DIR"
+
+            echo "========================================================="
+            echo " BFCL v4 Benchmark — run ${RUN_TS}                      "
+            echo " Model: ${MODEL} (${QUANTIZATION})                       "
+            echo "========================================================="
+
+            # Clone and install BFCL from neuralmagic gorilla fork
+            cd /tmp
+            git clone --depth 1 -b shubhra/bfcl-vllm-patches https://github.com/neuralmagic/gorilla.git
+            cd gorilla/berkeley-function-call-leaderboard
+            pip install -q -e .
+            pip install -q -e ".[web_search_ddgs]"
+            pip install -q soundfile
+
+            BFCL_ROOT=$(pwd)
+            export MODEL
+
+            # Register model in BFCL
+            python3 << 'REGISTER_EOF'
+            import os
+
+            model_name = os.environ["MODEL"]
+
+            # Append ModelConfig entry to model_config.py
+            config_path = "bfcl_eval/constants/model_config.py"
+            with open(config_path, "r") as f:
+                content = f.read()
+
+            if model_name not in content:
+                entry = f"""
+            # Auto-registered by OpenShift benchmark pod
+            from bfcl_eval.model_handler.api_inference.openai_completion import OpenAICompletionsHandler
+            MODEL_CONFIG_MAPPING["{model_name}"] = ModelConfig(
+                model_name="{model_name}",
+                display_name="Command A+ FP8 (FC)",
+                url="https://huggingface.co/{model_name}",
+                org="RedHatAI",
+                license="Apache 2.0",
+                model_handler=OpenAICompletionsHandler,
+                input_price=None,
+                output_price=None,
+                is_fc_model=True,
+                underscore_to_dot=False,
+            )
+            """
+                import textwrap
+                entry = textwrap.dedent(entry)
+                with open(config_path, "a") as f:
+                    f.write(entry)
+                print(f"[+] Registered {model_name} in {config_path}")
+            else:
+                print(f"[+] {model_name} already in {config_path}")
+
+            # Append to supported_models.py
+            supported_path = "bfcl_eval/constants/supported_models.py"
+            with open(supported_path, "r") as f:
+                content = f.read()
+
+            if model_name not in content:
+                with open(supported_path, "a") as f:
+                    f.write(f'\nSUPPORTED_MODELS.append("{model_name}")\n')
+                print(f"[+] Registered {model_name} in {supported_path}")
+            else:
+                print(f"[+] {model_name} already in {supported_path}")
+            REGISTER_EOF
+
+            # Configure .env for BFCL
+            cat > "${BFCL_ROOT}/.env" << ENV_EOF
+            OPENAI_BASE_URL=http://localhost:8000/v1
+            OPENAI_API_KEY=EMPTY
+            ENV_EOF
+            echo "[+] BFCL .env configured"
+
+            # Wait for the vLLM server to become healthy
+            echo "[*] Waiting for vLLM server at ${SERVER_URL} ..."
+            until curl -sf "${SERVER_URL}/v1/models" > /dev/null 2>&1; do
+                echo "[*] Server not ready yet, retrying in 15s..."
+                sleep 15
+            done
+            echo "[+] vLLM Server is UP and healthy!"
+
+            # Collect server info for config.json
+            SERVER_VERSION=$(curl -sf "${SERVER_URL}/version" | python3 -c "import sys,json; print(json.load(sys.stdin)['version'])")
+            SERVER_MODELS=$(curl -sf "${SERVER_URL}/v1/models")
+
+            echo "[+] Server vLLM version: ${SERVER_VERSION}"
+
+            # Write config.json
+            python3 -c "
+            import json
+            config = {
+                'benchmark_type': 'bfcl',
+                'spec_decode_method': None,
+                'target_model': '${MODEL}',
+                'draft_model': None,
+                'quantization': '${QUANTIZATION}',
+                'run_timestamp': '${RUN_TS}',
+                'server': {
+                    'vllm_version': '${SERVER_VERSION}',
+                    'url': '${SERVER_URL}',
+                    'image': 'vllm/vllm-openai:v0.22.1',
+                    'model': '${MODEL}',
+                    'max_model_len': None,
+                    'tensor_parallel_size': 8,
+                    'data_parallel_size': 1,
+                    'served_model_name': '${MODEL}',
+                    'tool_call_parser': 'cohere_command4',
+                    'reasoning_parser': 'cohere_command4',
+                    'models_endpoint': json.loads('''${SERVER_MODELS}'''),
+                },
+                'client': {
+                    'harness': 'bfcl',
+                    'harness_source': 'neuralmagic/gorilla@shubhra/bfcl-vllm-patches',
+                    'image': 'python:3.12-slim',
+                    'is_fc_model': True,
+                },
+                'benchmark': {
+                    'test_categories': '${BFCL_CATEGORIES}'.split(),
+                    'num_threads': 12,
+                },
+            }
+            with open('${RESULT_DIR}/config.json', 'w') as f:
+                json.dump(config, f, indent=2)
+            "
+            echo "[+] config.json written to ${RESULT_DIR}/config.json"
+
+            # ---- BFCL sweep ----
+            cd "${BFCL_ROOT}"
+
+            for CATEGORY in ${BFCL_CATEGORIES}; do
+                echo "---------------------------------------------------------"
+                echo " BFCL generate: ${CATEGORY}                              "
+                echo "---------------------------------------------------------"
+                bfcl generate \
+                    --model "$MODEL" \
+                    --test-category "$CATEGORY" \
+                    --num-threads 12
+
+                echo "---------------------------------------------------------"
+                echo " BFCL evaluate: ${CATEGORY}                              "
+                echo "---------------------------------------------------------"
+                bfcl evaluate \
+                    --model "$MODEL" \
+                    --test-category "$CATEGORY"
+
+                echo "[+] Completed: ${CATEGORY}"
+            done
+
+            # Copy results to the timestamped result directory
+            if [ -d "${BFCL_ROOT}/result" ]; then
+                cp -r "${BFCL_ROOT}/result" "${RESULT_DIR}/bfcl_result"
+            fi
+            if [ -d "${BFCL_ROOT}/score" ]; then
+                cp -r "${BFCL_ROOT}/score" "${RESULT_DIR}/bfcl_score"
+            fi
+
+            # Write run-metadata.json — presence of this file = successful run
+            END_TS=$(date -u +%Y%m%d-%H%M%S)
+            END_EPOCH=$(date +%s)
+            DURATION_S=$((END_EPOCH - START_EPOCH))
+            RESULT_FILES=$(find "$RESULT_DIR" -mindepth 1 -maxdepth 1 ! -name 'config.json' ! -name 'run-metadata.json' | wc -l | tr -d ' ')
+
+            python3 -c "
+            import json
+            metadata = {
+                'status': 'completed',
+                'start_timestamp': '${RUN_TS}',
+                'end_timestamp': '${END_TS}',
+                'duration_seconds': ${DURATION_S},
+                'result_files_written': ${RESULT_FILES},
+            }
+            with open('${RESULT_DIR}/run-metadata.json', 'w') as f:
+                json.dump(metadata, f, indent=2)
+            "
+
+            echo "========================================================="
+            echo " Sweep Complete! Results saved to ${RESULT_DIR}          "
+            echo "========================================================="
+        env:
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: mlr-<YOUR_NAME>-hf-token-read-only
+              key: HF_TOKEN
+        - name: OPENBLAS_NUM_THREADS
+          value: "1"
+        - name: RAYON_NUM_THREADS
+          value: "1"
+        - name: BFCL_ROOT
+          value: /tmp/gorilla/berkeley-function-call-leaderboard
+        volumeMounts:
+        - name: tier2
+          mountPath: /tier2
+        envFrom:
+        - configMapRef:
+            name: ceph-bucket-class
+        - secretRef:
+            name: ceph-bucket-class
+      volumes:
+      - name: tier1
+        ephemeral:
+          volumeClaimTemplate:
+            metadata:
+              labels:
+                type: ephemeral-volume
+            spec:
+              accessModes:
+              - ReadWriteOnce
+              storageClassName: lvms-h100-tier1-storage
+              resources:
+                requests:
+                  storage: 512Gi
+      - name: tier2
+        persistentVolumeClaim:
+          claimName: mlr-tier2-<YOUR_NAME>
