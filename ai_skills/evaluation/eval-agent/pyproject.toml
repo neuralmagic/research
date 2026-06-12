@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eval-agent"
+version = "0.1.0"
+description = "Unified LLM evaluation orchestrator (lm-eval + lighteval) via vLLM + canhazgpu"
+requires-python = ">=3.10"
+dependencies = [
+    "pyyaml>=6.0",
+    "requests>=2.31",
+    "psutil>=5.9",
+    "huggingface-hub>=0.20",
+]
+
+# No [eval] extras: lm-eval and lighteval live in their own workspace venvs
+# (.venvs/lm-eval/ and .venvs/lighteval/), installed separately at runtime.
+
+[project.scripts]
+eval-agent = "eval_agent.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["eval_agent*"]
