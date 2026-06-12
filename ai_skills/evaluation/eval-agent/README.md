@@ -2,6 +2,38 @@
 
 Unified LLM evaluation orchestrator for lm-eval and lighteval benchmarks, served via vLLM with GPU reservation via canhazgpu.
 
+## Adding to Claude Code or Cursor
+
+**1. Copy the skill into your agent's skills directory:**
+
+```bash
+# Claude Code
+cp -r eval-agent ~/.claude/skills/eval-agent
+
+# Cursor
+cp -r eval-agent ~/.cursor/skills/eval-agent
+```
+
+Or clone the full repo and symlink:
+
+```bash
+git clone git@github.com:neuralmagic/research.git
+ln -s "$(pwd)/research/ai_skills/evaluation/eval-agent" ~/.claude/skills/eval-agent
+```
+
+**2. Restart Claude Code / Cursor** — the skill is picked up automatically on startup.
+
+**3. Invoke it** by typing `/eval-agent` in the chat. The agent will:
+- Ask for the model ID and any GPU constraints
+- Set up the three evaluation venvs (first run only, ~5 min)
+- Run the full benchmark suite and write a `summary.md` with results
+
+**Workspace requirements** (must be available on the machine running the benchmarks):
+- `uv` — Python venv manager
+- `canhazgpu` (`chg`) — GPU reservation
+- `hf` (Hugging Face CLI) — model config download
+- CUDA-capable GPUs with enough VRAM for the target model
+
 ## What it evaluates
 
 | Category | Tasks | Harness |
