@@ -5,28 +5,24 @@
 #   3. QUANTIZATION            (in the benchmark script)
 #   4. TP / DP                 (in the vllm-server script)
 #
-# ┌────────────────────────────────────────────────────────────────────┐
-# │  Preset   │ MODEL_ID                                │ Q   │TP│DP │
-# ├───────────┼─────────────────────────────────────────┼─────┼──┼───┤
-# │  FP8      │ RedHatAI/command-a-plus-05-2026-fp8     │ fp8 │ 4│ 2 │
-# │  BF16     │ CohereLabs/command-a-plus-05-2026-bf16  │ bf16│ 8│ 1 │
-# └────────────────────────────────────────────────────────────────────┘
+# The example below uses Qwen3-8B on a single GPU. Adjust GPU count,
+# TP/DP, and tier1 storage when serving larger models.
 # ──────────────────────────────────────────────────────────────────────
 apiVersion: batch/v1
 kind: Job
 metadata:
-  # ✎ Change suffix to match quantization (e.g. -lm-eval-fp8 or -lm-eval-bf16)
-  name: mlr-vllm-<YOUR_NAME>-lm-eval-fp8
+  # ✎ Change suffix to match your model/quantization
+  name: mlr-vllm-<YOUR_NAME>-lm-eval
   namespace: machine-learning
   labels:
-    app.kubernetes.io/instance: mlr-vllm-<YOUR_NAME>-lm-eval-fp8
+    app.kubernetes.io/instance: mlr-vllm-<YOUR_NAME>-lm-eval
 spec:
   backoffLimit: 0
   activeDeadlineSeconds: 86400
   template:
     metadata:
       labels:
-        app.kubernetes.io/instance: mlr-vllm-<YOUR_NAME>-lm-eval-fp8
+        app.kubernetes.io/instance: mlr-vllm-<YOUR_NAME>-lm-eval
     spec:
       restartPolicy: Never
       serviceAccountName: ml-workload
@@ -48,12 +44,10 @@ spec:
             set -e
 
             # ✎ Model to serve
-            MODEL_ID="RedHatAI/command-a-plus-05-2026-fp8"
-            # ✎ Parallelism — FP8: TP=4 DP=2, BF16: TP=8 DP=1
-            TP=4
-            DP=2
-
-            pip install -q cohere_melody>=0.9.0
+            MODEL_ID="Qwen/Qwen3-8B"
+            # ✎ Parallelism — adjust to model size
+            TP=1
+            DP=1
 
             export HF_HOME="/tier2/hf-hub"
             export HF_HUB_CACHE="/tier2/hf-hub"
@@ -87,15 +81,12 @@ spec:
                 --served-model-name "$MODEL_ID" \
                 --tensor-parallel-size ${TP} \
                 --data-parallel-size ${DP} \
-                --tool-call-parser cohere_command4 \
-                --reasoning-parser cohere_command4 \
-                --enable-auto-tool-choice \
                 --port 8000
         resources:
           requests:
-            nvidia.com/gpu: 8
+            nvidia.com/gpu: 1
           limits:
-            nvidia.com/gpu: 8
+            nvidia.com/gpu: 1
         env:
         - name: HF_TOKEN
           valueFrom:
@@ -132,8 +123,8 @@ spec:
             set -e
 
             # ✎ Benchmark configuration
-            MODEL="RedHatAI/command-a-plus-05-2026-fp8"
-            QUANTIZATION="fp8"
+            MODEL="Qwen/Qwen3-8B"
+            QUANTIZATION="bf16"
 
             apt-get update && apt-get install -y --no-install-recommends curl git
 
@@ -152,7 +143,7 @@ spec:
             echo "========================================================="
 
             # Install lm-eval from neuralmagic fork (has mmlu_pro_chat task)
-            pip install -q "lm_eval[api] @ git+https://github.com/neuralmagic/lm-evaluation-harness.git@mmlu-pro-chat-variant"
+            pip install -q "lm_eval[api] @ git+https://github.com/neuralmagic/lm-evaluation-harness.git@mmlu-pro-chat-variant" langdetect
 
             # Wait for the vLLM server to become healthy
             echo "[*] Waiting for vLLM server at ${SERVER_URL} ..."
@@ -186,8 +177,6 @@ spec:
                     'image': 'vllm/vllm-openai:v0.22.1',
                     'model': '${MODEL}',
                     'max_model_len': None,
-                    'tool_call_parser': 'cohere_command4',
-                    'reasoning_parser': 'cohere_command4',
                     'models_endpoint': json.loads('''${SERVER_MODELS}'''),
                 },
                 'client': {
@@ -207,7 +196,7 @@ spec:
                     'generation_kwargs': {
                         'temperature': 0.6,
                         'top_p': 0.95,
-                        'max_gen_toks': 65536,
+                        'max_gen_toks': 32768,
                     },
                 },
             }
@@ -218,8 +207,14 @@ spec:
 
             # ---- Benchmark sweep ----
             SEEDS=(0 1 2)
-            MODEL_ARGS="model=${MODEL},max_length=131072,base_url=http://localhost:8000/v1/chat/completions,num_concurrent=64,max_retries=3,tokenized_requests=False,tokenizer_backend=None,timeout=3600"
-            GEN_KWARGS_BASE="do_sample=True,temperature=0.6,top_p=0.95,max_gen_toks=65536"
+            MODEL_ARGS="model=${MODEL},max_length=32768,base_url=http://localhost:8000/v1/chat/completions,num_concurrent=64,max_retries=3,tokenized_requests=False,tokenizer_backend=None,timeout=3600"
+            GEN_KWARGS_BASE="do_sample=True,temperature=0.6,top_p=0.95,max_gen_toks=32768"
+
+            LIMIT_ARG=""
+            if [ -n "${LIMIT:-}" ]; then
+                echo "[*] Limiting to ${LIMIT} samples per task"
+                LIMIT_ARG="--limit ${LIMIT}"
+            fi
 
             # 0-shot tasks
             TASKS_0SHOT=("gsm8k_platinum_cot_llama" "mmlu_pro_chat" "ifeval")
@@ -236,7 +231,8 @@ spec:
                         --apply_chat_template \
                         --output_path "${RESULT_DIR}/${TASK}_seed${SEED}" \
                         --seed "$SEED" \
-                        --gen_kwargs "${GEN_KWARGS_BASE},seed=${SEED}"
+                        --gen_kwargs "${GEN_KWARGS_BASE},seed=${SEED}" \
+                        $LIMIT_ARG
                     echo "[+] Completed: ${TASK} (seed=${SEED})"
                 done
 
@@ -252,7 +248,8 @@ spec:
                     --fewshot_as_multiturn \
                     --output_path "${RESULT_DIR}/mmlu_cot_llama_seed${SEED}" \
                     --seed "$SEED" \
-                    --gen_kwargs "${GEN_KWARGS_BASE},seed=${SEED}"
+                    --gen_kwargs "${GEN_KWARGS_BASE},seed=${SEED}" \
+                    $LIMIT_ARG
                 echo "[+] Completed: mmlu_cot_llama (seed=${SEED})"
             done
 
@@ -309,7 +306,7 @@ spec:
               storageClassName: lvms-h100-tier1-storage
               resources:
                 requests:
-                  storage: 512Gi
+                  storage: 50Gi
       - name: tier2
         persistentVolumeClaim:
           claimName: mlr-tier2-<YOUR_NAME>
