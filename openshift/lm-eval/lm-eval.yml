@@ -143,7 +143,7 @@ spec:
             echo "========================================================="
 
             # Install lm-eval from neuralmagic fork (has mmlu_pro_chat task)
-            pip install -q "lm_eval[api] @ git+https://github.com/neuralmagic/lm-evaluation-harness.git@mmlu-pro-chat-variant" langdetect
+            pip install -q "lm_eval[api,ifeval] @ git+https://github.com/neuralmagic/lm-evaluation-harness.git@mmlu-pro-chat-variant" langdetect
 
             # Wait for the vLLM server to become healthy
             echo "[*] Waiting for vLLM server at ${SERVER_URL} ..."
