@@ -1,0 +1,139 @@
+# Benchmark registry -- IMMUTABLE
+# Do NOT change: task names, harness, max_gen_tokens, n_repetitions, num_fewshot,
+#                apply_chat_template, fewshot_as_multiturn, task_str, metric.
+# Only environment knobs are adjustable: timeout, num_concurrent, port, gen_params.
+#
+# max_gen_tokens: the benchmark standard for this task.
+# Runner computes: effective_max_gen_tokens = min(task.max_gen_tokens, max_model_len - 4096)
+#
+# num_concurrent is NOT here — it depends on model+hardware, not the benchmark.
+# The agent sets it via --num-concurrent after observing smoke test KV-cache utilization.
+#
+# 8 seeds to cover AIME25 (8 repetitions); 3-rep tasks use seeds[0:3].
+seeds: [1234, 2345, 3456, 4567, 5678, 6789, 7890, 8901]
+
+categories:
+  instruct:
+    # Recommended max_model_len = max(max_gen_tokens) + 4096 = 16384 + 4096 = 20480
+    tasks:
+      - name: gsm8k_platinum_cot_llama
+        harness: lm-eval
+        max_gen_tokens: 8192
+        n_repetitions: 3
+        num_fewshot: 5
+        apply_chat_template: true
+        fewshot_as_multiturn: true
+        metric: "exact_match,strict-match"
+
+      - name: mmlu_cot_llama
+        harness: lm-eval
+        max_gen_tokens: 8192
+        n_repetitions: 3
+        num_fewshot: 5
+        apply_chat_template: true
+        fewshot_as_multiturn: true
+        metric: "exact_match,strict_match"
+
+      - name: mmlu_pro_chat
+        harness: lm-eval
+        max_gen_tokens: 8192
+        n_repetitions: 3
+        num_fewshot: 5
+        apply_chat_template: true
+        fewshot_as_multiturn: true
+        metric: "exact_match,custom-extract"
+
+      - name: ifeval
+        harness: lm-eval
+        max_gen_tokens: 8192
+        n_repetitions: 3
+        num_fewshot: 0
+        apply_chat_template: true
+        fewshot_as_multiturn: false
+        metric: "inst_level_strict_acc,none"
+
+      - name: math_500
+        harness: lighteval
+        task_str: "math_500|0"
+        max_gen_tokens: 16384
+        n_repetitions: 3
+        num_fewshot: 0
+        metric: "pass@k:k=1&n=1"
+
+  reasoning:
+    # Recommended max_model_len = max(32000, 65536) + 4096 = 69632
+    tasks:
+      - name: gsm8k_platinum_cot_llama
+        harness: lm-eval
+        max_gen_tokens: 32000
+        n_repetitions: 3
+        num_fewshot: 0
+        apply_chat_template: true
+        fewshot_as_multiturn: false
+        metric: "exact_match,strict-match"
+
+      - name: mmlu_pro_chat
+        harness: lm-eval
+        max_gen_tokens: 32000
+        n_repetitions: 3
+        num_fewshot: 0
+        apply_chat_template: true
+        fewshot_as_multiturn: false
+        metric: "exact_match,custom-extract"
+
+      - name: ifeval
+        harness: lm-eval
+        max_gen_tokens: 32000
+        n_repetitions: 3
+        num_fewshot: 0
+        apply_chat_template: true
+        fewshot_as_multiturn: false
+        metric: "inst_level_strict_acc,none"
+
+      - name: math_500
+        harness: lighteval
+        task_str: "math_500|0"
+        max_gen_tokens: 65536
+        n_repetitions: 3
+        num_fewshot: 0
+        metric: "pass@k:k=1&n=1"
+
+      - name: aime25
+        harness: lighteval
+        task_str: "aime25|0"
+        max_gen_tokens: 65536
+        n_repetitions: 8
+        num_fewshot: 0
+        metric: "pass@k:k=1&n=1"
+
+      - name: gpqa_diamond
+        harness: lighteval
+        task_str: "gpqa:diamond|0"
+        max_gen_tokens: 65536
+        n_repetitions: 3
+        num_fewshot: 0
+        metric: "gpqa_pass@k:k=1&n=1"
+
+  coding:
+    # Recommended max_model_len = 32768 + 4096 = 36864
+    tasks:
+      - name: lcb_codegeneration_v6
+        harness: lighteval
+        task_str: "lcb:codegeneration_v6|0"
+        max_gen_tokens: 32768
+        n_repetitions: 3
+        num_fewshot: 0
+        metric: "codegen_pass@k:k=1&n=1"
+
+  long_context:
+    # max_model_len = model's native max_position_embeddings from config.json
+    # The 4096-token buffer rule does NOT apply here.
+    tasks:
+      - name: mrcr
+        harness: lm-eval
+        max_gen_tokens: 8192
+        n_repetitions: 3
+        num_fewshot: 0
+        apply_chat_template: true
+        fewshot_as_multiturn: false
+        metric: "auc"
