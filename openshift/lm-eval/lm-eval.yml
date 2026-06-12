@@ -1,9 +1,10 @@
 # ── Configuration ─────────────────────────────────────────────────────
-# To switch models, update the fields marked with ✎ below:
+# To switch models, update the env vars on each container:
 #   1. metadata.name          (Job + label)
-#   2. MODEL_ID / MODEL       (in each container script)
-#   3. QUANTIZATION            (in the benchmark script)
-#   4. TP / DP                 (in the vllm-server script)
+#   2. MODEL                   (env var on both containers)
+#   3. QUANTIZATION            (env var on benchmark container)
+#   4. TP / DP                 (env vars on vllm-server container)
+#   5. MAX_MODEL_LEN           (env var on both containers)
 #
 # The example below uses Qwen3-8B on a single GPU. Adjust GPU count,
 # TP/DP, and tier1 storage when serving larger models.
@@ -41,13 +42,7 @@ spec:
           - /bin/bash
           - -c
           - |
-            set -e
-
-            # ✎ Model to serve
-            MODEL_ID="Qwen/Qwen3-8B"
-            # ✎ Parallelism — adjust to model size
-            TP=1
-            DP=1
+            set -eu
 
             export HF_HOME="/tier2/hf-hub"
             export HF_HUB_CACHE="/tier2/hf-hub"
@@ -64,7 +59,7 @@ spec:
             echo "[*] Resolving model in tier2 HF cache..."
             CACHE_PATH=$(python3 -c "
             from huggingface_hub import snapshot_download
-            print(snapshot_download('${MODEL_ID}'))
+            print(snapshot_download('${MODEL}'))
             ")
             echo "[+] Cached at: ${CACHE_PATH}"
 
@@ -73,14 +68,16 @@ spec:
             echo "[+] Model copied to ${LOCAL_MODEL}"
 
             echo "========================================================="
-            echo " Starting vLLM Server: ${MODEL_ID}                       "
+            echo " Starting vLLM Server: ${MODEL}                       "
             echo " TP=${TP}, DP=${DP}                                      "
             echo "========================================================="
 
             exec vllm serve "$LOCAL_MODEL" \
-                --served-model-name "$MODEL_ID" \
+                --served-model-name "$MODEL" \
                 --tensor-parallel-size ${TP} \
                 --data-parallel-size ${DP} \
+                --max-model-len ${MAX_MODEL_LEN} \
+                --disable-log-requests \
                 --port 8000
         resources:
           requests:
@@ -88,6 +85,14 @@ spec:
           limits:
             nvidia.com/gpu: 1
         env:
+        - name: MODEL
+          value: "Qwen/Qwen3-8B"
+        - name: TP
+          value: "1"
+        - name: DP
+          value: "1"
+        - name: MAX_MODEL_LEN
+          value: "32768"
         - name: HF_TOKEN
           valueFrom:
             secretKeyRef:
@@ -120,11 +125,7 @@ spec:
           - /bin/bash
           - -c
           - |
-            set -e
-
-            # ✎ Benchmark configuration
-            MODEL="Qwen/Qwen3-8B"
-            QUANTIZATION="bf16"
+            set -eu
 
             apt-get update && apt-get install -y --no-install-recommends curl git
 
@@ -176,7 +177,7 @@ spec:
                     'url': '${SERVER_URL}',
                     'image': 'vllm/vllm-openai:v0.22.1',
                     'model': '${MODEL}',
-                    'max_model_len': None,
+                    'max_model_len': ${MAX_MODEL_LEN},
                     'models_endpoint': json.loads('''${SERVER_MODELS}'''),
                 },
                 'client': {
@@ -207,7 +208,7 @@ spec:
 
             # ---- Benchmark sweep ----
             SEEDS=(0 1 2)
-            MODEL_ARGS="model=${MODEL},max_length=32768,base_url=http://localhost:8000/v1/chat/completions,num_concurrent=64,max_retries=3,tokenized_requests=False,tokenizer_backend=None,timeout=3600"
+            MODEL_ARGS="model=${MODEL},max_length=${MAX_MODEL_LEN},base_url=http://localhost:8000/v1/chat/completions,num_concurrent=64,max_retries=3,tokenized_requests=False,tokenizer_backend=None,timeout=3600"
             GEN_KWARGS_BASE="do_sample=True,temperature=0.6,top_p=0.95,max_gen_toks=32768"
 
             LIMIT_ARG=""
@@ -276,6 +277,14 @@ spec:
             echo " Sweep Complete! Results saved to ${RESULT_DIR}          "
             echo "========================================================="
         env:
+        - name: MODEL
+          value: "Qwen/Qwen3-8B"
+        - name: QUANTIZATION
+          value: "bf16"
+        - name: MAX_MODEL_LEN
+          value: "32768"
+        - name: LIMIT
+          value: ""
         - name: HF_TOKEN
           valueFrom:
             secretKeyRef:
