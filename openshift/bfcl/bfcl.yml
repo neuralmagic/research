@@ -3,32 +3,26 @@
 #   1. metadata.name          (Job + label)
 #   2. MODEL_ID / MODEL       (in each container script)
 #   3. QUANTIZATION            (in the benchmark script)
-#   4. NUM_THREADS             (scale to model size — see table)
+#   4. NUM_THREADS             (scale to model size)
 #
-# ┌────────────────────────────────────────────────────────────────────┐
-# │  Preset   │ MODEL_ID                                │ Q   │ Thr  │
-# ├───────────┼─────────────────────────────────────────┼─────┼──────┤
-# │  FP8      │ RedHatAI/command-a-plus-05-2026-fp8     │ fp8 │  12  │
-# │  BF16     │ CohereLabs/command-a-plus-05-2026-bf16  │ bf16│   8  │
-# └────────────────────────────────────────────────────────────────────┘
-# NUM_THREADS: FP8 is smaller and handles more concurrent requests,
-# so it gets more benchmark threads than BF16.
+# The example below uses Qwen3-8B on a single GPU. Adjust GPU count,
+# TP, and tier1 storage when serving larger models.
 # ──────────────────────────────────────────────────────────────────────
 apiVersion: batch/v1
 kind: Job
 metadata:
-  # ✎ Change suffix to match quantization (e.g. -bfcl-fp8 or -bfcl-bf16)
-  name: mlr-vllm-<YOUR_NAME>-bfcl-fp8
+  # ✎ Change suffix to match your model/quantization
+  name: mlr-vllm-<YOUR_NAME>-bfcl
   namespace: machine-learning
   labels:
-    app.kubernetes.io/instance: mlr-vllm-<YOUR_NAME>-bfcl-fp8
+    app.kubernetes.io/instance: mlr-vllm-<YOUR_NAME>-bfcl
 spec:
   backoffLimit: 0
   activeDeadlineSeconds: 43200
   template:
     metadata:
       labels:
-        app.kubernetes.io/instance: mlr-vllm-<YOUR_NAME>-bfcl-fp8
+        app.kubernetes.io/instance: mlr-vllm-<YOUR_NAME>-bfcl
     spec:
       restartPolicy: Never
       serviceAccountName: ml-workload
@@ -50,9 +44,7 @@ spec:
             set -e
 
             # ✎ Model to serve
-            MODEL_ID="RedHatAI/command-a-plus-05-2026-fp8"
-
-            pip install -q cohere_melody>=0.9.0
+            MODEL_ID="Qwen/Qwen3-8B"
 
             export HF_HOME="/tier2/hf-hub"
             export HF_HUB_CACHE="/tier2/hf-hub"
@@ -88,15 +80,13 @@ spec:
                 --served-model-name "$MODEL_ID" \
                 --tensor-parallel-size ${NUM_GPUS} \
                 --data-parallel-size 1 \
-                --tool-call-parser cohere_command4 \
-                --reasoning-parser cohere_command4 \
                 --enable-auto-tool-choice \
                 --port 8000
         resources:
           requests:
-            nvidia.com/gpu: 8
+            nvidia.com/gpu: 1
           limits:
-            nvidia.com/gpu: 8
+            nvidia.com/gpu: 1
         env:
         - name: HF_TOKEN
           valueFrom:
@@ -133,8 +123,8 @@ spec:
             set -e
 
             # ✎ Benchmark configuration
-            MODEL="RedHatAI/command-a-plus-05-2026-fp8"
-            QUANTIZATION="fp8"
+            MODEL="Qwen/Qwen3-8B"
+            QUANTIZATION="bf16"
             NUM_THREADS=12
             BFCL_CATEGORIES="non_live multi_turn"
 
@@ -257,11 +247,9 @@ spec:
                     'image': 'vllm/vllm-openai:v0.22.1',
                     'model': '${MODEL}',
                     'max_model_len': None,
-                    'tensor_parallel_size': 8,
+                    'tensor_parallel_size': 1,
                     'data_parallel_size': 1,
                     'served_model_name': '${MODEL}',
-                    'tool_call_parser': 'cohere_command4',
-                    'reasoning_parser': 'cohere_command4',
                     'models_endpoint': json.loads('''${SERVER_MODELS}'''),
                 },
                 'client': {
@@ -365,7 +353,7 @@ spec:
               storageClassName: lvms-h100-tier1-storage
               resources:
                 requests:
-                  storage: 512Gi
+                  storage: 50Gi
       - name: tier2
         persistentVolumeClaim:
           claimName: mlr-tier2-<YOUR_NAME>
