@@ -1,9 +1,10 @@
 # ── Configuration ─────────────────────────────────────────────────────
-# To switch models, update the four fields marked with ✎ below:
+# To switch models, update the env vars on each container:
 #   1. metadata.name          (Job + label)
-#   2. MODEL_ID / MODEL       (in each container script)
-#   3. QUANTIZATION            (in the benchmark script)
-#   4. NUM_THREADS             (scale to model size)
+#   2. MODEL                   (env var on both containers)
+#   3. QUANTIZATION            (env var on benchmark container)
+#   4. BFCL_CATEGORIES         (env var on benchmark container)
+#   5. MAX_MODEL_LEN           (env var on both containers)
 #
 # The example below uses Qwen3-8B on a single GPU. Adjust GPU count,
 # TP, and tier1 storage when serving larger models.
@@ -41,10 +42,7 @@ spec:
           - /bin/bash
           - -c
           - |
-            set -e
-
-            # ✎ Model to serve
-            MODEL_ID="Qwen/Qwen3-8B"
+            set -eu
 
             export HF_HOME="/tier2/hf-hub"
             export HF_HUB_CACHE="/tier2/hf-hub"
@@ -61,7 +59,7 @@ spec:
             echo "[*] Resolving model in tier2 HF cache..."
             CACHE_PATH=$(python3 -c "
             from huggingface_hub import snapshot_download
-            print(snapshot_download('${MODEL_ID}'))
+            print(snapshot_download('${MODEL}'))
             ")
             echo "[+] Cached at: ${CACHE_PATH}"
 
@@ -72,14 +70,16 @@ spec:
             NUM_GPUS=$(nvidia-smi -L | wc -l)
 
             echo "========================================================="
-            echo " Starting vLLM Server: ${MODEL_ID}                       "
+            echo " Starting vLLM Server: ${MODEL}                       "
             echo " TP=${NUM_GPUS}, DP=1, GPUs=${NUM_GPUS}                  "
             echo "========================================================="
 
             exec vllm serve "$LOCAL_MODEL" \
-                --served-model-name "$MODEL_ID" \
+                --served-model-name "$MODEL" \
                 --tensor-parallel-size ${NUM_GPUS} \
                 --data-parallel-size 1 \
+                --max-model-len ${MAX_MODEL_LEN} \
+                --disable-log-requests \
                 --enable-auto-tool-choice \
                 --port 8000
         resources:
@@ -88,6 +88,10 @@ spec:
           limits:
             nvidia.com/gpu: 1
         env:
+        - name: MODEL
+          value: "Qwen/Qwen3-8B"
+        - name: MAX_MODEL_LEN
+          value: "32768"
         - name: HF_TOKEN
           valueFrom:
             secretKeyRef:
@@ -120,13 +124,7 @@ spec:
           - /bin/bash
           - -c
           - |
-            set -e
-
-            # ✎ Benchmark configuration
-            MODEL="Qwen/Qwen3-8B"
-            QUANTIZATION="bf16"
-            NUM_THREADS=12
-            BFCL_CATEGORIES="non_live multi_turn"
+            set -eu
 
             apt-get update && apt-get install -y --no-install-recommends curl git
 
@@ -246,7 +244,7 @@ spec:
                     'url': '${SERVER_URL}',
                     'image': 'vllm/vllm-openai:v0.22.1',
                     'model': '${MODEL}',
-                    'max_model_len': None,
+                    'max_model_len': ${MAX_MODEL_LEN},
                     'tensor_parallel_size': 1,
                     'data_parallel_size': 1,
                     'served_model_name': '${MODEL}',
@@ -321,6 +319,16 @@ spec:
             echo " Sweep Complete! Results saved to ${RESULT_DIR}          "
             echo "========================================================="
         env:
+        - name: MODEL
+          value: "Qwen/Qwen3-8B"
+        - name: QUANTIZATION
+          value: "bf16"
+        - name: NUM_THREADS
+          value: "12"
+        - name: BFCL_CATEGORIES
+          value: "non_live multi_turn"
+        - name: MAX_MODEL_LEN
+          value: "32768"
         - name: HF_TOKEN
           valueFrom:
             secretKeyRef:
