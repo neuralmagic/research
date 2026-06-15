@@ -214,6 +214,13 @@ tail -f $RUN_DIR/logs/vllm_server.log | grep "GPU KV cache"
 eval-agent resume --run-dir $RUN_DIR --num-concurrent <halved_value>
 ```
 
+< 50% persistent utilization (not increasing over time) is a sign of poor hardware utilization.
+Double `--num-concurrent` and resume:
+
+```bash
+eval-agent resume --run-dir $RUN_DIR --num-concurrent <doubled_value>
+```
+
 Also check `$RUN_DIR/events.jsonl` for `eval_failed` events. On any failure:
 
 1. Read the task log: `tail -50 $RUN_DIR/logs/<task>_seed<seed>.log`
