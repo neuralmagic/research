@@ -178,3 +178,10 @@ def merge_dicts(d1, d2):
                 raise ValueError(f"{key} already defined. It can't be defined again.")
     d1.update(d2)
     return d1
+
+def flatten_nested_dict(nested_dataset_args):
+    flattened_dict = {}
+    for org, datasets in nested_dataset_args.items():
+        for dataset, count in datasets.items():
+            flattened_dict[f"{org}/{dataset}"]  = count
+    return flattened_dict
