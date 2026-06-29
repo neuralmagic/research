@@ -1,30 +1,32 @@
 ---
-name: fp8_compress
+name: nvfp4
 description: >
-  Generate a working FP8 quantization example script, set up an environment, install dependencies,
-  run quantization with canhazgpu, and verify the compressed model with vLLM.
-  Triggers on: "fp8", "FP8_DYNAMIC", "FP8_BLOCK", "MXFP8", "fp8 example", "quantize to fp8".
+  Generate a working NVFP4 quantization example script targeting H100/Blackwell, set up an environment,
+  install dependencies, run quantization with canhazgpu, and verify the compressed model with vLLM.
+  Triggers on: "nvfp4", "NVFP4", "nv fp4", "fp4 nvidia", "fp4 hopper", "fp4 blackwell", "h100 fp4".
 allowed-tools: [Read, Write, Glob, Shell, AskQuestion, WebFetch]
 ---
 
-# FP8 Quantization — End-to-End Workflow
+# NVFP4 Quantization — End-to-End Workflow
 
-Generate a working FP8 quantization script, create an isolated environment, run quantization on GPUs, and verify the result with vLLM.
+Generate a working NVFP4 quantization script, create an isolated environment, run quantization on GPUs, and verify the result with vLLM.
+
+Hardware requirement: H100 / Blackwell (sm90+) for inference. Quantization can run on any GPU.
 
 ## Step 1 — Gather information
 
 Ask the user (or infer from context) for:
 
-1. **MODEL_ID** — HuggingFace model ID (e.g. `meta-llama/Meta-Llama-3-8B-Instruct`)
-2. **Scheme variant** — choose one:
-   - `FP8_DYNAMIC` — weights fp8 per-channel, activations fp8 dynamic per-token. No calibration. Broadest hardware support (Ampere+). Recommended default.
-   - `FP8_BLOCK` — weights fp8 with 128x128 block scaling, activations dynamic. No calibration. Best throughput on Hopper/Blackwell.
-   - `MXFP8` — weights and activations in MX fp8 format. No calibration. AMD MI300X target.
+1. **MODEL_ID** — HuggingFace model ID (e.g. `meta-llama/Meta-Llama-3.1-8B-Instruct`)
+2. **Algorithm** — choose one:
+   - `QuantizationModifier` — simple PTQ, no weight optimization. Faster.
+   - `GPTQModifier` — learned weight rounding via GPTQ. Better accuracy, slower.
 3. **Model type** — dense, MoE, or multimodal (vision/audio)
-4. **Use `model_free_ptq`?** — yes if the model is very large (70B+) and should avoid full GPU load; otherwise use `oneshot`
-5. **Existing virtual environment** — Ask: "Do you have an existing virtual environment you'd like to use? If so, provide the path (e.g. `/data/user/myenv`). Otherwise a new one will be created."
-6. **Additional dependencies** — Ask: "Do you need any additional pip packages beyond `llmcompressor`, `vllm`, and `torchvision`?"
-7. **HF repo name (optional)** — Ask: "Do you want to upload the quantized model to a Hugging Face repo? If so, provide the repo name (e.g. `RedHatAI/Qwen3-8B-FP8-dynamic`). Leave blank to skip upload."
+4. **Existing virtual environment** — Ask: "Do you have an existing virtual environment you'd like to use? If so, provide the path (e.g. `/data/user/myenv`). Otherwise a new one will be created."
+5. **Additional dependencies** — Ask: "Do you need any additional pip packages beyond `llmcompressor`, `vllm`, and `torchvision`?"
+6. **HF repo name (optional)** — Ask: "Do you want to upload the quantized model to a Hugging Face repo? If so, provide the repo name (e.g. `RedHatAI/Qwen3-8B-NVFP4`). Leave blank to skip upload."
+
+NVFP4 always requires calibration data.
 
 ## Step 2 — Determine GPU requirements
 
@@ -39,7 +41,7 @@ Determine how many GPUs are needed based on model size:
 - **30B–70B parameters** — 4 GPUs
 - **70B+ parameters** — 8 GPUs
 
-If the required number of GPUs exceeds what is available, warn the user and ask how to proceed (e.g. use `model_free_ptq` instead, or wait for resources).
+If the required number of GPUs exceeds what is available, warn the user and ask how to proceed.
 
 Set `TENSOR_PARALLEL_SIZE` to the number of GPUs needed (used later for vLLM verification).
 
@@ -77,7 +79,7 @@ uv pip install <additional_packages>
 
 Before writing a script from scratch, check the upstream examples directory for an existing script that targets the same model architecture:
 
-**GitHub directory:** `https://github.com/vllm-project/llm-compressor/tree/main/examples/quantization_w8a8_fp8`
+**GitHub directory:** `https://github.com/vllm-project/llm-compressor/tree/main/examples/quantization_w4a4_fp4`
 
 1. Fetch the directory listing using `WebFetch` or browse the GitHub URL to see available example files.
 2. Identify if an example exists for the same model family / architecture as the user's MODEL_ID. For example:
@@ -85,7 +87,7 @@ Before writing a script from scratch, check the upstream examples directory for 
    - User wants to quantize `Qwen/Qwen3-32B` → look for `qwen3_example.py`
    - User wants to quantize `google/gemma-3-27b-it` → look for `gemma3_example.py`
 3. **If a matching example is found:**
-   - Download the raw file from GitHub (e.g. `https://raw.githubusercontent.com/vllm-project/llm-compressor/main/examples/quantization_w8a8_fp8/<filename>.py`)
+   - Download the raw file from GitHub (e.g. `https://raw.githubusercontent.com/vllm-project/llm-compressor/main/examples/quantization_w4a4_fp4/<filename>.py`)
    - Replace the `MODEL_ID` value in the script with the user's MODEL_ID
    - Adjust the `SAVE_DIR` if needed
    - Use this as the quantization script — skip Step 5 template generation
@@ -94,10 +96,10 @@ Before writing a script from scratch, check the upstream examples directory for 
 
 ## Step 5 — Choose the quantization template and write the script (fallback)
 
-### `oneshot` with `QuantizationModifier` (standard path)
+### QuantizationModifier (PTQ)
 
 ```python
-from compressed_tensors.offload import dispatch_model
+from datasets import load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from llmcompressor import oneshot
@@ -109,81 +111,107 @@ MODEL_ID = "<MODEL_ID>"
 model = AutoModelForCausalLM.from_pretrained(MODEL_ID)
 tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
 
+NUM_CALIBRATION_SAMPLES = 256
+MAX_SEQUENCE_LENGTH = 2048
+
+ds = load_dataset("HuggingFaceH4/ultrachat_200k", split=f"train_sft[:{NUM_CALIBRATION_SAMPLES}]")
+ds = ds.shuffle(seed=42)
+
+
+def preprocess(example):
+    return {"text": tokenizer.apply_chat_template(example["messages"], tokenize=False)}
+
+
+def tokenize(sample):
+    return tokenizer(
+        sample["text"],
+        padding=False,
+        max_length=MAX_SEQUENCE_LENGTH,
+        truncation=True,
+        add_special_tokens=False,
+    )
+
+
+ds = ds.map(preprocess)
+ds = ds.map(tokenize, remove_columns=ds.column_names)
+
 recipe = QuantizationModifier(
     targets="Linear",
-    scheme="<SCHEME>",  # FP8_DYNAMIC | FP8_BLOCK | MXFP8
-    ignore=["lm_head"],  # extend per model type — see Step 6
+    scheme="NVFP4",
+    ignore=["lm_head", "re:.*embed_tokens$"],  # extend per model type — see Step 6
 )
 
-oneshot(model=model, recipe=recipe)
+oneshot(
+    model=model,
+    dataset=ds,
+    recipe=recipe,
+    max_seq_length=MAX_SEQUENCE_LENGTH,
+    num_calibration_samples=NUM_CALIBRATION_SAMPLES,
+)
 
-print("========== SAMPLE GENERATION ==============")
-dispatch_model(model)
-input_ids = tokenizer("Hello my name is", return_tensors="pt").input_ids.to(model.device)
-output = model.generate(input_ids, max_new_tokens=20)
-print(tokenizer.decode(output[0]))
-print("==========================================")
-
-SAVE_DIR = MODEL_ID.rstrip("/").split("/")[-1] + "-<SCHEME>"
+SAVE_DIR = MODEL_ID.rstrip("/").split("/")[-1] + "-NVFP4"
 model.save_pretrained(SAVE_DIR)
 tokenizer.save_pretrained(SAVE_DIR)
 ```
 
-### `model_free_ptq` (large models, avoids full GPU load)
+### GPTQModifier
+
+Replace only the recipe line:
 
 ```python
-from llmcompressor import model_free_ptq
+from llmcompressor.modifiers.gptq import GPTQModifier
 
-MODEL_ID = "<MODEL_ID>"
-SAVE_DIR = MODEL_ID.rstrip("/").split("/")[-1] + "-<SCHEME>"
-
-model_free_ptq(
-    model_stub=MODEL_ID,
-    save_directory=SAVE_DIR,
-    scheme="<SCHEME>",  # FP8_DYNAMIC | FP8_BLOCK
-    ignore=[
-        "model.embed_tokens",
-        "lm_head",
-        # extend per model type — see Step 6
-    ],
-    max_workers=15,
-    device="cuda:0",
+recipe = GPTQModifier(
+    targets="Linear",
+    scheme="NVFP4",
+    ignore=["lm_head", "re:.*embed_tokens$"],  # extend per model type — see Step 6
 )
 ```
 
-Place the file in the appropriate directory under `examples/`:
-- `quantization_w8a8_fp8/` for FP8_DYNAMIC or FP8_BLOCK (oneshot path)
-- `quantization_w8a8_mxfp8/` for MXFP8
-- `model_free_ptq/` when using `model_free_ptq()`
+Everything else (data loading, `oneshot` call, save) is identical to the `QuantizationModifier` template.
 
-Name the file `{model_name_slug}_example.py` (e.g. `llama3_example.py`, `gemma4_example.py`).
+Place the file in the appropriate directory under `examples/quantization_w4a4_fp4/`.
+
+Name the file `{model_name_slug}_example.py` (e.g. `llama3_example.py`, `qwen3_5_example.py`).
 
 ## Step 6 — Apply model-type adjustments
 
 ### Dense models
-`ignore=["lm_head"]` is sufficient in most cases.
+`ignore=["lm_head", "re:.*embed_tokens$"]`
 
 ### MoE models
-Add gate/router layers to `ignore`. For models that require a custom loading path, wrap the load in `load_context`:
+Add gate/router layers to `ignore`. For models that need a custom loading path, wrap the load in `load_context`:
+
 ```python
 from llmcompressor.utils import load_context
 
 with load_context(SpecificModelClass):
     model = SpecificModelClass.from_pretrained(MODEL_ID)
 ```
-Common MoE ignore additions:
-- Qwen MoE: `"re:.*mlp.gate$"`, `"re:.*shared_expert_gate.*"`
-- Llama4 / Gemma4 MoE: `"re:.*router"`, `"Llama4TextAttention"`
 
-For FP8_BLOCK on MoE, also skip attention: `"re:.*self_attn"`.
+Common MoE ignore additions:
+- Qwen MoE: `"re:.*mlp.gate$"`, `"re:.*shared_expert_gate.*"`, `"re:.*linear_attn.*"`
+- Llama4: `"re:.*router"`, `"re:.*self_attn"`, `"Llama4TextAttention"`
+- General: `"re:.*mlp.router.*"`, `"re:.*self_attn.*"`
+
+For large MoE models, calibrate one expert block at a time:
+```python
+oneshot(..., sequential_targets=["Llama4TextMLP"])
+```
+
+To calibrate all experts (not just sampled routed ones):
+```python
+oneshot(..., moe_calibrate_all_experts=True)
+```
 
 ### Multimodal (vision / audio)
 - Use `AutoProcessor` instead of `AutoTokenizer`
-- Use the appropriate model class (e.g. `Gemma4ForConditionalGeneration`, `Llama4ForConditionalGeneration`) and wrap load in `load_context` if needed
+- Use the model-specific class and `load_context` if needed
 - Add to `ignore`:
   - Vision: `"re:.*vision_tower.*"`, `"re:.*vision_model.*"`, `"re:.*multi_modal_projector.*"`
   - Audio: `"re:.*audio_tower.*"`
-  - Embedding projections: `"re:.*embed.*"` (model-specific)
+  - Embedding projections: `"re:.*embed_vision.*"`, `"re:.*embed_audio.*"`
+- Preprocessing must use `processor.apply_chat_template` with `return_dict=True`; pass a `data_collator` to `oneshot`
 
 ## Step 7 — Run quantization with canhazgpu
 
@@ -225,11 +253,11 @@ After running `vllm_test.py`, check:
 1. The model loaded successfully without errors.
 2. The generated output is coherent and reasonable (not garbage/random tokens).
 
-If both conditions are met, the FP8 quantization is successful. Report the result to the user.
+If both conditions are met, the NVFP4 quantization is successful. Report the result to the user.
 
 If the output is garbled or the model fails to load, investigate:
 - Check if `ignore` layers need adjustment
-- Verify the correct scheme was used for the hardware
+- Verify the model is being run on H100/Blackwell (sm90+ required for NVFP4 inference)
 - Ensure tensor_parallel_size matches available GPUs
 
 ## Step 10 — Upload to Hugging Face (optional)
@@ -250,19 +278,15 @@ If `$HF_TOKEN` is not set, try `$HUGGING_FACE_HUB_TOKEN`. If neither is set, ask
 
 Create a `README.md` inside the `<SAVE_DIR>` directory. The README must be **specific to the model being quantized**. Use the template below and fill in all placeholders:
 
-- `<HF_REPO>` — the full repo name (e.g. `RedHatAI/Qwen3-8B-FP8-dynamic`)
+- `<HF_REPO>` — the full repo name (e.g. `RedHatAI/Qwen3-8B-NVFP4`)
 - `<BASE_MODEL_ID>` — the original unquantized model (e.g. `Qwen/Qwen3-8B`)
 - `<MODEL_ARCH>` — the model's architecture class (e.g. `Qwen3ForCausalLM`, `LlamaForCausalLM`). Determine from the model's `config.json` `architectures` field.
-- `<SCHEME>` — the quantization scheme used (`FP8_DYNAMIC`, `FP8_BLOCK`, or `MXFP8`)
-- `<SCHEME_DESCRIPTION>` — scheme-specific text:
-  - FP8_DYNAMIC: "Weights are quantized with a symmetric static per-channel scheme, whereas activations are quantized with a symmetric dynamic per-token scheme."
-  - FP8_BLOCK: "Weights are quantized with 128x128 block scaling, and activations are quantized dynamically."
-  - MXFP8: "Weights and activations are quantized using the MX FP8 format."
+- `<ALGORITHM>` — either `QuantizationModifier` or `GPTQModifier`
 - `<TENSOR_PARALLEL_SIZE>` — number of GPUs for vLLM
 - `<QUANTIZATION_SCRIPT>` — the actual Python code used for quantization (from Step 4 or 5)
 - `<LANGUAGES>` — infer from the base model card; if unknown, use `en` only
 - `<LICENSE>` — infer from the base model card
-- `<TAGS>` — include the model family tag (e.g. `qwen`, `llama`, `gemma`), `fp8`, `vllm`, `conversational`, `text-generation-inference`
+- `<TAGS>` — include the model family tag (e.g. `qwen`, `llama`, `gemma`), `nvfp4`, `fp4`, `vllm`, `conversational`, `text-generation-inference`
 - `<PIPELINE_TAG>` — typically `text-generation`
 
 **README template:**
@@ -284,8 +308,8 @@ license: <LICENSE>
   - **Input:** Text
   - **Output:** Text
 - **Model Optimizations:**
-  - **Activation quantization:** FP8
-  - **Weight quantization:** FP8
+  - **Activation quantization:** FP4
+  - **Weight quantization:** FP4
 - **Intended Use Cases:** Intended for commercial and research use. Similarly to the base model, this quantized version is intended for assistant-like chat.
 - **Out-of-scope:** Use in any manner that violates applicable laws or regulations (including trade compliance laws).
 - **Version:** 1.0
@@ -293,13 +317,14 @@ license: <LICENSE>
 
 ### Model Optimizations
 
-This model was obtained by quantizing activations and weights of [<BASE_MODEL_ID>](https://huggingface.co/<BASE_MODEL_ID>) to FP8 data type.
-This optimization reduces the number of bits used to represent weights and activations from 16 to 8, reducing GPU memory requirements (by approximately 50%) and increasing matrix-multiply compute throughput (by approximately 2x).
-Weight quantization also reduces disk size requirements by approximately 50%.
+This model was obtained by quantizing weights and activations of [<BASE_MODEL_ID>](https://huggingface.co/<BASE_MODEL_ID>) to NVFP4 data type.
+This optimization reduces the number of bits used to represent weights from 16 to 4, significantly reducing GPU memory requirements (by approximately 75%) and increasing inference throughput.
 
 Only weights and activations of the linear operators within transformers blocks are quantized.
-<SCHEME_DESCRIPTION>
+Quantization is performed using the NVFP4 scheme, which targets NVIDIA H100 and Blackwell (sm90+) GPUs.
 The [llm-compressor](https://github.com/vllm-project/llm-compressor) library is used for quantization.
+
+**Hardware requirement:** H100 / Blackwell (sm90+) for inference.
 
 ## Deployment
 
@@ -357,9 +382,8 @@ huggingface-cli repo create <REPO_NAME> --organization <ORG> --type model --toke
 Verify the upload succeeded by checking the repo page.
 
 ## Notes
-- `FP8_DYNAMIC` is the recommended starting point — no calibration required, broad hardware support.
-- `FP8_BLOCK` is preferred for Hopper/Blackwell throughput.
-- `MXFP8` targets AMD MI300X.
-- Neither scheme requires a calibration dataset; `oneshot(model=model, recipe=recipe)` with no `dataset` argument is correct.
-- `save_compressed=True` is optional — the checkpoint saves in compressed-tensors format either way. Omit unless explicitly requested.
+- 256 calibration samples at 2048 sequence length is a good default; increase samples if accuracy drops.
+- NVFP4 always requires calibration data — unlike FP8, you cannot skip the dataset.
+- MTP (multi-token prediction) layers in some Qwen models are excluded from the standard model class. Save them separately after quantization using `save_mtp_tensors_to_checkpoint` from `compressed_tensors`.
+- `save_compressed=True` is not required — NVFP4 checkpoints save correctly without it, but it can be added.
 - The virtual environment name defaults to `compress_model` but can be customized if the user prefers.
