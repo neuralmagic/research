@@ -15,6 +15,42 @@ allowed-tools: [Read, Write, Glob, Shell, AskQuestion, WebFetch]
 
 This skill determines the appropriate quantization scheme and delegates to the scheme-specific sub-skill.
 
+## Step 0 — Detect the user's intent
+
+Before routing to a scheme, determine **what the user is asking to do**. The user's request falls into one of these categories:
+
+### A) Upload-only (skip quantization)
+
+The user already has a quantized model on disk and wants to **generate a README and/or upload to Hugging Face**.
+
+**Trigger phrases:** "upload", "push to hub", "create readme", "generate readme", "publish model", "upload to huggingface", "push to hf", combined with a local model directory path.
+
+**Required information — gather from the user (or infer from context):**
+
+1. **SAVE_DIR** — path to the local quantized model directory
+2. **HF_REPO** — target Hugging Face repo name (e.g. `RedHatAI/Qwen3-8B-FP8-dynamic`)
+3. **BASE_MODEL_ID** — the original unquantized model ID (e.g. `Qwen/Qwen3-8B`). If not provided, try to infer from the model directory name or `config.json` inside `SAVE_DIR`.
+4. **Scheme** — the quantization scheme used (FP8_DYNAMIC, FP8_BLOCK, MXFP8, W4A16, W8A8, NVFP4, MXFP4). If not provided, try to infer from the directory name (e.g. `-FP8-dynamic` → FP8_DYNAMIC, `-NVFP4` → NVFP4) or from `config.json` / `quantization_config` inside `SAVE_DIR`.
+5. **Quantization script (optional)** — the Python code used for quantization, to embed in the README's "Creation" section. Ask: "Do you have the quantization script you used? If so, provide the path or paste it. Otherwise this section will be omitted from the README."
+
+**Action:** Once the scheme is identified, read the corresponding sub-skill (see Step 2 table) and jump directly to its **Step 10** (Upload to Hugging Face). Execute Step 10 using the information gathered above.
+
+### B) Verify-only (skip quantization, just run vLLM test)
+
+The user has a quantized model and wants to **verify it loads and generates correctly with vLLM**.
+
+**Trigger phrases:** "test", "verify", "run vllm", "check model", "vllm test", combined with a local model directory path.
+
+**Required information:**
+1. **SAVE_DIR** — path to the local quantized model directory
+2. **TENSOR_PARALLEL_SIZE** — number of GPUs (infer from model size or ask)
+
+**Action:** Read any sub-skill (they all share the same Steps 8–9) and jump directly to **Step 8** (Write and run vLLM verification test), then **Step 9** (Validate results).
+
+### C) Full quantization workflow (default)
+
+The user wants to quantize a model from scratch. Proceed to **Step 1** below.
+
 ## Step 1 — Determine the quantization scheme
 
 Analyze the user's request for explicit or implicit scheme indicators. Use the table below to classify:
