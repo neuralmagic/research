@@ -1,41 +1,39 @@
-# General instructions
-
 # Evaluations using vLLM server
 
-# Start vLLM server
+This document is a catalogue of known benchmarks and their evaluation protocols.
+The skill should search for and report whatever benchmarks are available — only
+include results that were actually run. Do not skip or error if a benchmark is missing.
 
-Start vLLM server using the configurations recommended by the model provider:
+---
+
+## Serving the model
+
+Start the vLLM server using the configuration recommended by the model provider.
+The vLLM recipes page (`recipes.vllm.ai/<org>/<model>`) is the primary reference for
+model-specific flags such as `--tool-call-parser`, `--reasoning-parser`,
+`--tokenizer-mode`, and `--load-format`.
 
 ```
 vllm serve <model_name> ...
 ```
 
-Please note arguments such as
+---
 
-- load-format  
-- config-format  
-- tokenizer-mode  
-- tool-call-parser  
-- reasoning-parser
+## lighteval
 
-# lighteval
+**Note:** use the neuralmagic fork: https://github.com/neuralmagic/lighteval
 
-**Note**: we’ve identified a couple of bugs in the upstream lighteval library, and until our bug fixes are merged into main (we’ll update this doc to indicate that), please use our own fork of lighteval from the [\`eldar-fix-litellm\` branch](https://github.com/neuralmagic/lighteval/tree/eldar-fix-litellm)
+To use lighteval with a vLLM server, use the litellm endpoint.
 
-To use lighteval with a vLLM server, one needs to use the litellm endpoint as follows.
+**litellm_config.yaml**
 
-## Create yaml file containing configuration for evaluation
-
-**litellm\_config.yaml**
-
-```
+```yaml
 model_parameters:
   provider: "hosted_vllm"
   model_name: "hosted_vllm/<model_name>"
   base_url: "http://0.0.0.0:8000/v1"
   api_key: ""
   timeout: 1200
-  max_model_lentgh: 96000
   concurrent_requests: 16
   generation_parameters:
     temperature: 0.6
@@ -48,50 +46,49 @@ model_parameters:
 
 **Notes:**
 
-* The model\_name has to be preceded by “hosted\_vllm”. Examples:  
-  * HF model: moonshotai/Kimi-K2-Thinking  
-    * model\_name: “hosted\_vllm/moonshotai/Kimi-K2-Thinking”  
-  * Local model: /local-dir  
-    * model\_name: “hosted\_vllm/local-dir”  
-* Generation parameters (temperature, top\_p, top\_k, etc) should match the parameters suggested by the model provider, normally listed in the model card and/or *generation\_config.json*.  
-* max\_model\_length needs to be specified if the model’s default length is overridden when launching the vLLM server.  
-* lighteval allows generating multiple responses per sample, each using a different seed. This is useful when repeating the same evaluation is needed (see syntax below). If using this, each request will spin multiple decoding processes within vLLM. Be mindful of that when determining concurrent\_requests.  
-* The seed is specified in the generation\_parameters.  
-* The timeout parameter controls the time in seconds per request. This is optional, but I recommend setting it to a large number for reasoning evals.  
-* Default value for concurrent\_requests is low (10), so feel free to increase concurrency for better speed.
+- The model_name must be preceded by `hosted_vllm`. Examples:
+  - HF model: `moonshotai/Kimi-K2-Thinking` → `model_name: "hosted_vllm/moonshotai/Kimi-K2-Thinking"`
+  - Local model: `/local-dir` → `model_name: "hosted_vllm/local-dir"`
+- Generation parameters should match the model provider's recommendations.
+- `max_model_length` needs to be specified if the model's default length is overridden when launching the vLLM server.
+- lighteval allows generating multiple responses per sample, each with a different seed. Set `concurrent_requests` accordingly.
+- The seed is specified in `generation_parameters`.
+- The timeout parameter controls time in seconds per request.
+- Default `concurrent_requests` is low (10); increase for better throughput.
 
-## Evaluation command
+**Evaluation command:**
 
 ```shell
 lighteval endpoint litellm litellm_config.yaml \
-"aime25@<k>@<n>|0,math_500@<k>@<n>|0" \
---output-dir <output-dir> \
---save-details
+  "aime25@<k>@<n>|0,math_500@<k>@<n>|0" \
+  --output-dir <output-dir> \
+  --save-details
 ```
 
-   
-Notes:
+**Notes:**
 
-* Tasks are specified as: \<task\_name\>@\<k\>@\<n\>|\<num\_fewshot\>. In previous versions there was a need to specify an additional \<suite\> entry (\<suite\>|\<task\_name\>|\<num\_fewshot\>) that is now deprecated. Examples  
-  * aime25@1@8|0  
-  * math\_500@1@3|0  
-  * gpqa:diamond@1@3|0  
-* k and n refer to pass@k with n samples.  
-  * This can be used to average results over multiple random seeds. For instance, setting k=1 and n=3 will average the results over 3 different random seeds.  
-  * If k and n are not specified, they default to k=1 and n=1.  
-* If you are running evals in a loop and need to change some values in *litellm\_config.yaml*, instead of creating a new yaml file for each new configuration, you can also use an inline string instead of the yaml file as an input. For example: 
+- Task format: `<task_name>@<k>@<n>|<num_fewshot>`. If k and n are omitted, they default to 1.
+  - `aime25@1@8|0` — 8 seeds, pass@1
+  - `math_500@1@3|0` — 3 seeds, pass@1
+  - `gpqa:diamond@1@3|0` — 3 seeds
+- k and n refer to pass@k with n samples; used to average results over multiple seeds.
+- Inline string alternative (useful in scripts):
 
 ```shell
 lighteval endpoint litellm \
-"model_name=hosted_vllm/${SERVED_MODEL_NAME},provider=hosted_vllm,base_url=http://0.0.0.0:${PORT}/v1,timeout=3600,concurrent_requests=8,generation_parameters={temperature:${TEMP},max_new_tokens:${MAX_NEW_TOKENS},top_p:${TOP_P},seed:${SEED},presence_penalty:${PRESENCE_PENALTY},top_k:${TOP_K},min_p:${MIN_P},repetition_penalty:${REPETITION_PENALTY}}" \
-"aime25@k=${K}@n=${N_AIME}|0,math_500@k=${K}@n=${N_OTHERS}|0,gpqa:diamond@k=${K}@n=${N_OTHERS}|0,lcb:codegeneration_v6|0" \
---output-dir ${OUTPUT_DIR} \
---save-details
+  "model_name=hosted_vllm/${SERVED_MODEL_NAME},provider=hosted_vllm,base_url=http://0.0.0.0:${PORT}/v1,timeout=3600,concurrent_requests=8,generation_parameters={temperature:${TEMP},max_new_tokens:${MAX_NEW_TOKENS},top_p:${TOP_P},seed:${SEED},top_k:${TOP_K}}" \
+  "aime25@k=${K}@n=${N_AIME}|0,math_500@k=${K}@n=${N_OTHERS}|0,gpqa:diamond@k=${K}@n=${N_OTHERS}|0,lcb:codegeneration_v6|0" \
+  --output-dir ${OUTPUT_DIR} \
+  --save-details
 ```
 
-# lm-eval generative tasks
+---
 
-## Evaluation command
+## lm-eval (generative tasks)
+
+**Note:** use the neuralmagic fork: https://github.com/neuralmagic/lm-evaluation-harness
+
+**Evaluation command:**
 
 ```shell
 lm_eval --model local-chat-completions \
@@ -107,17 +104,12 @@ lm_eval --model local-chat-completions \
 
 **Notes:**
 
-* MUST set max\_length explicitly (default=2048 is very low).  
-* Greedy decoding is the default. MUST set gen\_kwargs if one wishes to use something other than greedy (and must set do\_sample to True explicitly).  
-* Generation parameters (temperature, top\_p, top\_k, etc) should match the parameters suggested by the model provider, normally listed in the model card and/or *generation\_config.json*.  
-* Seed MUST be included in the gen\_kwargs. Right now lm-eval does not pipe the seed correctly to the vLLM request.  
-* Default num\_concurrent requests is low (10), so feel free to increase concurrency for better speed.  
-* The timeout parameter controls the time in seconds per request. This is optional, but I recommend setting it to a large number for reasoning evals.  
-* DOES NOT WORK with log-likelihood tasks (or output\_type: multiple\_choice in lm-eval definitions). Only works for generative tasks.
+- Always set `max_length` explicitly (the default of 2048 is very low).
+- Set `do_sample=True` explicitly when using non-greedy decoding.
+- Include `seed` in both `--seed` and `gen_kwargs`.
+- Only works with generative tasks; does not work with log-likelihood or multiple-choice tasks.
 
-# lm-eval multiple-choice tasks (no support for chat template)
-
-## Evaluation command
+## lm-eval (multiple-choice tasks, no chat template)
 
 ```
 lm_eval --model local-completions \
@@ -127,17 +119,10 @@ lm_eval --model local-completions \
   --output_path results_mmlu.json
 ```
 
-**Notes:**
+## Debugging tips
 
-* MUST set max\_length explicitly (default=2048 is very low).  
-* Default num\_concurrent requests is 1, so feel free to increase concurrency for better speed.
-
-# Useful debugging tips
-
-* Launch limited evaluations for debugging before committing to complete (expensive) evaluations  
-  * With lighteval use the argument \--max-samples 5  
-  * With lm-eval use the argument \--limit 5  
-* Sometimes eval libraries might silently ignore some of your sampling arguments because they are either not parsed correctly or not propagated properly to the actual API call. Before running large scale evaluations, we advise doing a quick debugging run to confirm that all sampling arguments are handled correctly. To do this, start your vLLM server with the following flags:
+- Limit samples for quick tests: `--max-samples 5` (lighteval) or `--limit 5` (lm-eval)
+- Verify sampling args reach vLLM:
 
 ```shell
 VLLM_LOGGING_LEVEL=INFO vllm serve <model> \
@@ -145,129 +130,161 @@ VLLM_LOGGING_LEVEL=INFO vllm serve <model> \
     --uvicorn-log-level info
 ```
 
-and verify if your sampling args are correctly reaching the v	LLM server:
+---
+
+# Standard benchmarks
+
+## Standard protocol
+
+- Always use the chat template (`--apply_chat_template`)
+- Use `--fewshot_as_multiturn` when using 1 or more few-shot examples
+- Match generation parameters to the model provider's recommendations
+- Each benchmark entry lists the recommended number of repetitions (runs with different random seeds)
+- For lighteval, use `@1@n` to denote average over n repetitions. Example: AIME 2025 with 8 repetitions: `aime25@1@8`
+
+---
+
+## Instruction Following
+
+### GSM8K Platinum
+
+- **Harness:** lm-eval
+- **Task:** `gsm8k_platinum_cot_llama`
+- **Shots:** 5
+- **Metric:** `exact_match,strict-match`
+- **Repetitions:** 3
+
+### MMLU-CoT
+
+- **Harness:** lm-eval
+- **Task:** `mmlu_cot_llama`
+- **Shots:** 5
+- **Metric:** `exact_match,strict_match`
+- **Repetitions:** 3
+
+### MMLU-Pro
+
+- **Harness:** lm-eval (neuralmagic fork)
+- **Task:** `mmlu_pro_chat`
+- **Shots:** 5
+- **Metric:** `exact_match,custom-extract`
+- **Repetitions:** 3
+
+### IFEval
+
+- **Harness:** lm-eval
+- **Task:** `ifeval`
+- **Shots:** 0
+- **Metrics:** `prompt_level_strict_acc` and `inst_level_strict_acc`
+- **Repetitions:** 3
+
+---
+
+## Reasoning
+
+### GSM8K Platinum
+
+- **Harness:** lm-eval
+- **Task:** `gsm8k_platinum_cot_llama`
+- **Shots:** 0
+- **Metric:** `exact_match,strict-match`
+- **Repetitions:** 3
+
+### MMLU-Pro
+
+- **Harness:** lm-eval (neuralmagic fork)
+- **Task:** `mmlu_pro_chat`
+- **Shots:** 0
+- **Metric:** `exact_match,custom-extract`
+- **Repetitions:** 3
+
+### IFEval
+
+- **Harness:** lm-eval
+- **Task:** `ifeval`
+- **Shots:** 0
+- **Metrics:** `prompt_level_strict_acc` and `inst_level_strict_acc`
+- **Repetitions:** 3
+
+### MATH-500
+
+- **Harness:** lighteval
+- **Task:** `math_500`
+- **Shots:** 0
+- **Metric:** `pass@k:k=1&n=1`
+- **Repetitions:** 3
+
+### AIME 2025
+
+- **Harness:** lighteval
+- **Task:** `aime25`
+- **Shots:** 0
+- **Metric:** `pass@k:k=1&n=1`
+- **Repetitions:** 8
+
+### GPQA Diamond
+
+- **Harness:** lighteval
+- **Task:** `gpqa:diamond`
+- **Shots:** 0
+- **Metric:** `gpqa_pass@k:k=1`
+- **Repetitions:** 3
+
+---
+
+## Coding
+
+### LiveCodeBench v6
+
+- **Harness:** lighteval
+- **Task:** `lcb:codegeneration_v6`
+- **Shots:** 0
+- **Metric:** `codegen_pass@1:16`
+- **Repetitions:** 3
+
+---
+
+## Tool Calling
+
+### BFCLv4
+
+- **Tool:** Berkeley Function Call Leaderboard CLI (`bfcl`)
+- **When to include:** For models with tool-calling support, when BFCL results are available.
+- **Test category:** `all`
+- **Reported sub-scores:**
+  - **Overall** (weighted composite)
+  - **Single Turn** (Non-Live AST Accuracy)
+  - **Multi-Turn**
+  - **Agentic**
+- **Scoring weights:** Non-Live=10, Live=10, Irrelevance=10, Multi-Turn=30, Agentic=40
+  - Agentic = unweighted average of web_search and memory categories
+  - Overall = weighted sum of all categories divided by 100
+- **Repetitions:** 1 (BFCL is deterministic for a fixed model)
+
+### Where to find results
+
+BFCL scores may be in several locations depending on how the evaluation was run:
+
+- `score/data_overall.csv` — unquantized model scores
+- `score/quantized/data_overall.csv` — quantized model scores (may not exist)
+- Per-category JSON files under `score/` — needed to compute sub-scores when
+  the CSV does not contain them
+
+If results cannot be located automatically, prompt the user for the path to the
+BFCL score directory.
+
+The Overall score is typically pre-computed in the CSV. Sub-scores may require
+reading per-category JSON files and applying the scoring weights above.
+
+### Registration (for running new evaluations)
+
+1. Add a `ModelConfig` entry to `bfcl_eval/constants/model_config.py` under `api_inference_model_map`.
+2. Add the model key to the `SUPPORTED_MODELS` list in `bfcl_eval/constants/supported_models.py`.
+3. The model slug must match `--served-model-name` passed to vLLM (or the HuggingFace repo path by default).
+
+### Commands
 
 ```shell
-(APIServer pid=953522) INFO 03-20 05:36:49 [logger.py:49] Received request chatcmpl-96ec1b6b48833ca1: params: SamplingParams(n=1, presence_penalty=1.5, frequency_penalty=0.0, repetition_penalty=1.3, temperature=1.0, top_p=0.95, top_k=18, min_p=0.23, seed=42, stop=[], stop_token_ids=[], bad_words=[], include_stop_str_in_output=False, ignore_eos=False, max_tokens=65536, min_tokens=0, logprobs=None, prompt_logprobs=None, skip_special_tokens=True, spaces_between_special_tokens=True, truncate_prompt_tokens=None, structured_outputs=None, extra_args=None)
+bfcl generate --model <MODEL_SLUG> --test-category all
+bfcl evaluate --model <MODEL_SLUG> --test-category all
 ```
-
-# Standard evaluations
-
-# Standard protocol
-
-* Always use the chat template  
-* Use fewshot\_as\_multiturn when using 1 or more fewshot examples  
-* Use the vllm serve interface described in the General instructions tab  
-* Adjust generation configurations to match the model standard (temperature, top\_p, etc)  
-* The list below includes the number of suggested repetitions for each evaluation. Each repetition should use a different random seed  
-* For lighteval use **@1@n** to denote average over n repetitions. Example: AIME25 with 8 repetitions: aime25@1@8
-
-# Instruction following
-
-* GSM8k-Platinum  
-  * Harness: **lm-eval**  
-  * Task: **gsm8k\_platinum\_cot\_llama**  
-    * Can be used with models other than Llama too  
-  * Number of shots: **5**  
-  * Metric: **exact\_match,strict-match**  
-  * Repetitions: **3**  
-* MMLU-CoT  
-  * Harness: **lm-eval**  
-  * Task: **mmlu\_cot\_llama**  
-  * Number of shots: **5**  
-  * Metric: **exact\_match,strict\_match**  
-  * Repetitions: **3**  
-* MMLU-Pro  
-  * Harness: **lm-eval**  
-  * Task: **mmlu\_pro\_chat**  
-    * Only available on fork at the moment: [https://github.com/neuralmagic/lm-evaluation-harness/tree/mmlu-pro-chat-variant](https://github.com/neuralmagic/lm-evaluation-harness/tree/mmlu-pro-chat-variant)  
-  * Number of shots: **5**  
-  * Metric: **exact\_match,custom-extract**  
-  * Repetitions: **3**  
-* IFEval  
-  * Harness: **lm-eval**  
-  * Task: **ifeval**  
-  * Number of shots: **0**  
-  * Metric: **inst\_level\_strict\_acc,none**  
-  * Repetitions: **3**  
-* Math 500  
-  * Harness: **lighteval**  
-  * Task: **math\_500**  
-  * Number of shots: **0**  
-  * Metric:  
-    * 3 individual jobs: **pass@k:k=1\&n=1**  
-    * 1 single job: **pass@k:k=1\&n=3**  
-  * Repetitions: **3**  
-    * Either 3 individual jobs with different seeds or 1 single job with k=1, n=3
-
-# Reasoning
-
-* GSM8k-Platinum  
-  * Harness: **lm-eval**  
-  * Task: **gsm8k\_platinum\_cot\_llama**  
-    * Can be used with models other than Llama too  
-  * Number of shots: **0**  
-  * Metric: **exact\_match,strict-match**  
-  * Repetitions: **3**  
-* MMLU-Pro  
-  * lHarness: **lm-eval**  
-  * Task: **mmlu\_pro\_chat**  
-    * Only available on fork at the moment: [https://github.com/neuralmagic/lm-evaluation-harness/tree/mmlu-pro-chat-variant](https://github.com/neuralmagic/lm-evaluation-harness/tree/mmlu-pro-chat-variant)  
-  * Number of shots: **0**  
-  * Metric: **exact\_match,custom-extract**  
-  * Repetitions: **3**  
-* IFEval  
-  * Harness: **lm-eval**  
-  * Task: **ifeval**  
-  * Number of shots: **0**  
-  * Metric: **inst\_level\_strict\_acc,none**  
-  * Repetitions: **3**  
-* Math 500  
-  * Harness: **lighteval**  
-  * Task: **math\_500**  
-  * Number of shots: **0**  
-  * Metric:  
-    * 3 individual jobs: **pass@k:k=1\&n=1**  
-    * 1 single job: **pass@k:k=1\&n=1**  
-  * Repetitions: **3**  
-    * Either 3 individual jobs with different seeds or 1 single job with k=1, n=3  
-* AIME 25  
-  * Harness: **lighteval**  
-  * Task: **aime25**  
-  * Number of shots: **0**  
-  * Metric:  
-    * 8 individual jobs: **pass@k:k=1\&n=1**  
-    * 1 single job: **pass@k:k=1\&n=8**  
-  * Repetitions: **8**  
-    * Either 8 individual jobs with different seeds or 1 single job with k=1, n=8  
-* GPQA Diamond  
-  * Harness: **lighteval**  
-  * Task: **gpqa:diamond**  
-  * Number of shots: **0**  
-  * Metric:  
-    * 3 individual jobs: **gpqa\_pass@k:k=1\&n=1**  
-    * 1 single job: **gpqa\_pass@k:k=1\&n=3**  
-  * Repetitions: **3**  
-    * Either 3 individual jobs with different seeds or 1 single job with k=1, n=3
-
-# Coding
-
-* LiveCodeBench v6  
-  * Harness: **lighteval**  
-  * Task: **lcb:codegeneration\_v6**  
-  * Number of shots: **0**  
-  * Metric:  
-    * 3 individual jobs: **codegen\_pass@k:k=1\&n=1**  
-    * 1 single job: **codegen\_pass@k:k=1\&n=3**  
-  * Repetitions: **3**  
-    * Either 3 individual jobs with different seeds or 1 single job with k=1, n=3  
-* SWE-Bench  
-  * swe-bench \+ mini-swe-agent  
-  * Lite  
-  * Will share more information about how to use it in coming days
-
-# Long context
-
-* MRCR  
-  * Custom evaluation harness  
-  * Will add more information in coming days

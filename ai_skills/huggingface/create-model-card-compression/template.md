@@ -53,11 +53,14 @@ base_model: <ORIGINAL_MODEL_ID>
 # <QUANTIZED_MODEL_NAME>
 
 ## Model Overview
-- **Model Architecture:** <ORIGINAL_MODEL_ID>
+- **Model Architecture:** <ARCHITECTURE_CLASS>
+<!-- ARCHITECTURE_CLASS: the class name from config.json's architectures[0] field,
+     e.g. LlamaForCausalLM, Gemma4ForConditionalGeneration, Qwen2ForCausalLM
+     NOT the HuggingFace model ID or _name_or_path -->
   - **Input:** <MODEL_INPUT>
   - **Output:** <MODEL_OUTPUT>
 <!-- MODEL_INPUT and MODEL_OUTPUT are usually "Text" / "Text".
-     For multimodal models adjust accordingly (e.g. "Text/Image" / "Text"). -->
+     For multimodal models adjust accordingly (e.g. "Text / Image" / "Text"). -->
 - **Model Optimizations:**
   - **Weight quantization:** <WEIGHT_QUANT_TYPE>
   - **Activation quantization:** <ACTIVATION_QUANT_TYPE>
@@ -108,7 +111,13 @@ This optimization reduces the number of bits per parameter from 16 to <BITS_PER_
        16 -> 4 bits  = ~75% reduction
        For mixed precision, compute based on the average bits. -->
 
-Only the weights and activations of the linear operators within transformers blocks are quantized using [LLM Compressor](https://github.com/vllm-project/llm-compressor).
+<!-- IF weights AND activations are quantized (INT W8A8, FP8 W8A8, FP8 W8A8 block, NVFP4, Mixed) -->
+Only the weights and activations of the linear operators within transformer blocks are quantized using [LLM Compressor](https://github.com/vllm-project/llm-compressor).
+<!-- ENDIF -->
+
+<!-- IF only weights are quantized (INT W4A16) -->
+Only the weights of the linear operators within transformer blocks are quantized using [LLM Compressor](https://github.com/vllm-project/llm-compressor).
+<!-- ENDIF -->
 
 <!-- ============================================================
      SECTION 4: DEPLOYMENT
@@ -118,15 +127,21 @@ Only the weights and activations of the linear operators within transformers blo
 
 ### Use with vLLM
 
-1. Initialize vLLM server:
+1. Start the vLLM server:
 ```
 vllm serve RedHatAI/<QUANTIZED_MODEL_NAME> <VLLM_EXTRA_ARGS>
 ```
-<!-- VLLM_EXTRA_ARGS: include flags relevant to the model, for example:
-       --tensor_parallel_size N
+<!-- VLLM_EXTRA_ARGS: use flags from the vLLM recipes page for this model
+     (https://recipes.vllm.ai/<ORG>/<BASE_MODEL_NAME>) as the primary reference,
+     supplemented by the base model's HuggingFace README. Include only flags
+     relevant to the model, for example:
+       --reasoning-parser         (for reasoning models)
+       --tool-call-parser         (for tool-calling models)
+       --enable-auto-tool-choice  (for tool-calling models)
+       --chat-template <path>     (when a custom chat template was used)
        --tokenizer_mode mistral   (if the model uses a Mistral tokenizer)
-       --max_model_len N          (if needed)
-     Adjust based on the specific model's requirements. -->
+       --max_model_len N          (if specified in the base model card)
+     Do not add --tensor_parallel_size unless the base model card prescribes it. -->
 
 2. Send requests to the server:
 
@@ -155,6 +170,9 @@ outputs = client.chat.completions.create(
 generated_text = outputs.choices[0].message.content
 print(generated_text)
 ```
+<!-- For model-specific request parameters (thinking mode, tool calling format,
+     sampling settings), refer to the vLLM recipes page for this model:
+     https://recipes.vllm.ai/<ORG>/<BASE_MODEL_NAME> -->
 
 <!-- ============================================================
      SECTION 5: CREATION
@@ -162,7 +180,10 @@ print(generated_text)
 
 ## Creation
 
-This model was created by applying [LLM Compressor](https://github.com/vllm-project/llm-compressor) with calibration samples from UltraChat, as presented in the code snippet below.
+This model was created by applying [LLM Compressor](https://github.com/vllm-project/llm-compressor) with calibration samples from <CALIBRATION_DATASET>, as presented in the code snippet below.
+<!-- CALIBRATION_DATASET: set to the dataset used in the quantization script (e.g. UltraChat).
+     If the quantization scheme requires no calibration data (e.g. FP8 dynamic),
+     omit the "with calibration samples from ..." phrase entirely and use model_free_ptq(). -->
 
 <details>
 
@@ -176,11 +197,11 @@ This model was created by applying [LLM Compressor](https://github.com/vllm-proj
        - Configuring the quantization recipe (varies by format):
            INT W8A8       -> GPTQModifier or QuantizationModifier with int8 weights + int8 activations
            INT W4A16      -> GPTQModifier with int4 weights, group_size 128, no activation quantization
-           FP8 W8A8       -> QuantizationModifier with fp8 weights + dynamic per-tensor fp8 activations
-           FP8 W8A8 block -> QuantizationModifier with fp8 weights + fp8 activations using block scales (group_size 128)
-           NVFP4          -> SmoothQuantModifier + QuantizationModifier with fp4 weights + fp4 activations, group_size 16
+           FP8 W8A8       -> model_free_ptq(scheme="FP8_DYNAMIC") — no calibration data needed
+           FP8 W8A8 block -> QuantizationModifier with fp8 weights + fp8 block-scaled activations (group_size 128)
+           NVFP4          -> QuantizationModifier with scheme="NVFP4", fp4 weights + fp4 activations, group_size 16
            Mixed          -> recipe with per-layer config mapping layers to different precisions
-       - Running oneshot() to apply quantization
+       - Running oneshot() or apply() to apply quantization
        - Saving the model in compressed-tensors format
 -->
 </details>
@@ -193,30 +214,32 @@ This model was created by applying [LLM Compressor](https://github.com/vllm-proj
 
 <!-- Add a sentence listing the benchmarks the model was evaluated on and the
      evaluation harnesses used. Mention both lm-evaluation-harness and lighteval
-     if both were used. Link to the relevant repos.
+     if both were used. Mention BFCLv4 if tool-calling results are available.
+     Only list benchmarks for which results are present.
 
-     Example: "This model was evaluated on GSM8k-Platinum, MMLU-CoT, IFEval, and
-     Math 500 using lm-evaluation-harness and lighteval."
-
-     Refer to the evaluation protocol document (model_cards/Evaluations using vLLM server.md)
-     for the full list of standard benchmarks, harness configurations, and commands. -->
+     Example: "This model was evaluated on GSM8K Platinum, MMLU-Pro, IFEval,
+     MATH-500, AIME 2025, GPQA Diamond, LiveCodeBench v6, and BFCLv4 using
+     lm-evaluation-harness, lighteval, and BFCL — all served with vLLM
+     (OpenAI-compatible API)." -->
 
 <EVALUATION_DESCRIPTION>
 
 ### Accuracy
 
-<!-- Add an HTML table with evaluation results.
-     Columns: Category | Metric | <ORIGINAL_MODEL_ID> | RedHatAI/<QUANTIZED_MODEL_NAME> | Recovery
-     Recovery = (quantized_score / original_score) * 100, shown as percentage.
-     Group rows by category using rowspan. Include an Average row per category.
+<!-- IF results are available for both thinking and non-thinking modes:
+     use two subsections as shown below.
+     IF only one set of results is available:
+     present a single table without the subsection headers. -->
 
-     Example: -->
+<!-- IF both thinking and non-thinking results are available -->
+#### Without thinking
+<!-- ENDIF -->
 
 <table>
   <thead>
     <tr>
       <th>Category</th>
-      <th>Metric</th>
+      <th>Benchmark</th>
       <th><ORIGINAL_MODEL_ID></th>
       <th>RedHatAI/<QUANTIZED_MODEL_NAME></th>
       <th>Recovery</th>
@@ -224,33 +247,157 @@ This model was created by applying [LLM Compressor](https://github.com/vllm-proj
   </thead>
   <tbody>
     <tr>
-      <td rowspan="4"><b>Instruction Following</b></td>
-      <td>GSM8k-Platinum (5-shot)</td>
+      <td rowspan="2"><b>Instruction Following</b></td>
+      <td>IFEval (0-shot, prompt-level strict)</td>
       <td><!-- original score --></td>
       <td><!-- quantized score --></td>
       <td><!-- recovery % --></td>
     </tr>
     <tr>
-      <td>MMLU-CoT (5-shot)</td>
+      <td>IFEval (0-shot, inst-level strict)</td>
       <td><!-- original score --></td>
       <td><!-- quantized score --></td>
       <td><!-- recovery % --></td>
     </tr>
     <tr>
-      <td>IFEval (0-shot)</td>
+      <td rowspan="5"><b>Reasoning</b></td>
+      <td>GSM8K Platinum (0-shot, strict-match)</td>
       <td><!-- original score --></td>
       <td><!-- quantized score --></td>
       <td><!-- recovery % --></td>
     </tr>
     <tr>
-      <td><b>Average</b></td>
-      <td><b><!-- avg original --></b></td>
-      <td><b><!-- avg quantized --></b></td>
-      <td><b><!-- avg recovery --></b></td>
+      <td>MMLU-Pro (0-shot, custom-extract)</td>
+      <td><!-- original score --></td>
+      <td><!-- quantized score --></td>
+      <td><!-- recovery % --></td>
     </tr>
-    <!-- Add more categories and rows as needed (Reasoning, Coding, etc.) -->
+    <tr>
+      <td>MATH-500 (0-shot, pass@1)</td>
+      <td><!-- original score --></td>
+      <td><!-- quantized score --></td>
+      <td><!-- recovery % --></td>
+    </tr>
+    <tr>
+      <td>AIME 2025 (0-shot, pass@1)</td>
+      <td><!-- original score --></td>
+      <td><!-- quantized score --></td>
+      <td><!-- recovery % --></td>
+    </tr>
+    <tr>
+      <td>GPQA Diamond (0-shot, pass@1)</td>
+      <td><!-- original score --></td>
+      <td><!-- quantized score --></td>
+      <td><!-- recovery % --></td>
+    </tr>
+    <tr>
+      <td><b>Coding</b></td>
+      <td>LiveCodeBench v6 (0-shot, pass@1)</td>
+      <td><!-- original score --></td>
+      <td><!-- quantized score --></td>
+      <td><!-- recovery % --></td>
+    </tr>
+    <!-- Add or remove rows to match the benchmarks actually evaluated -->
   </tbody>
 </table>
+
+<!-- IF both thinking and non-thinking results are available -->
+#### With thinking
+
+<table>
+  <thead>
+    <tr>
+      <th>Category</th>
+      <th>Benchmark</th>
+      <th><ORIGINAL_MODEL_ID></th>
+      <th>RedHatAI/<QUANTIZED_MODEL_NAME></th>
+      <th>Recovery</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td rowspan="2"><b>Instruction Following</b></td>
+      <td>IFEval (0-shot, prompt-level strict)</td>
+      <td><!-- original score --></td>
+      <td><!-- quantized score --></td>
+      <td><!-- recovery % --></td>
+    </tr>
+    <tr>
+      <td>IFEval (0-shot, inst-level strict)</td>
+      <td><!-- original score --></td>
+      <td><!-- quantized score --></td>
+      <td><!-- recovery % --></td>
+    </tr>
+    <tr>
+      <td rowspan="5"><b>Reasoning</b></td>
+      <td>GSM8K Platinum (0-shot, strict-match)</td>
+      <td><!-- original score --></td>
+      <td><!-- quantized score --></td>
+      <td><!-- recovery % --></td>
+    </tr>
+    <tr>
+      <td>MMLU-Pro (0-shot, custom-extract)</td>
+      <td><!-- original score --></td>
+      <td><!-- quantized score --></td>
+      <td><!-- recovery % --></td>
+    </tr>
+    <tr>
+      <td>MATH-500 (0-shot, pass@1)</td>
+      <td><!-- original score --></td>
+      <td><!-- quantized score --></td>
+      <td><!-- recovery % --></td>
+    </tr>
+    <tr>
+      <td>AIME 2025 (0-shot, pass@1)</td>
+      <td><!-- original score --></td>
+      <td><!-- quantized score --></td>
+      <td><!-- recovery % --></td>
+    </tr>
+    <tr>
+      <td>GPQA Diamond (0-shot, pass@1)</td>
+      <td><!-- original score --></td>
+      <td><!-- quantized score --></td>
+      <td><!-- recovery % --></td>
+    </tr>
+    <tr>
+      <td><b>Coding</b></td>
+      <td>LiveCodeBench v6 (0-shot, pass@1)</td>
+      <td><!-- original score --></td>
+      <td><!-- quantized score --></td>
+      <td><!-- recovery % --></td>
+    </tr>
+    <!-- IF BFCLv4 results are available -->
+    <tr>
+      <td rowspan="4"><b>Tool Calling</b></td>
+      <td>BFCLv4 Overall</td>
+      <td><!-- baseline % --></td>
+      <td><!-- quantized % --></td>
+      <td><!-- recovery % --></td>
+    </tr>
+    <tr>
+      <td>BFCLv4 Single Turn</td>
+      <td><!-- baseline % --></td>
+      <td><!-- quantized % --></td>
+      <td><!-- recovery % --></td>
+    </tr>
+    <tr>
+      <td>BFCLv4 Multi-Turn</td>
+      <td><!-- baseline % --></td>
+      <td><!-- quantized % --></td>
+      <td><!-- recovery % --></td>
+    </tr>
+    <tr>
+      <td>BFCLv4 Agentic</td>
+      <td><!-- baseline % --></td>
+      <td><!-- quantized % --></td>
+      <td><!-- recovery % --></td>
+    </tr>
+    <!-- BFCLv4 scores shown as percentages (e.g. 68.31%), not plain numbers -->
+    <!-- ENDIF BFCLv4 -->
+    <!-- Add or remove rows to match the benchmarks actually evaluated -->
+  </tbody>
+</table>
+<!-- ENDIF both thinking and non-thinking -->
 
 ### Reproduction
 
@@ -258,39 +405,92 @@ The results were obtained using the following commands:
 
 <!-- Add the evaluation commands inside a collapsible <details> block.
      Include one command block per benchmark evaluated.
-     Refer to model_cards/Evaluations using vLLM server.md for the standard
-     command formats, harness selection (lm-eval vs lighteval), number of shots,
-     and repetition settings for each benchmark.
-
-     Two examples are shown below — one for lm-eval (generative tasks via vLLM server)
-     and one for lighteval. Adapt the model name, generation parameters, and
-     task names to match the actual evaluations run. -->
+     Refer to evaluations.md for standard command formats, harness selection
+     (lm-eval vs lighteval), and task names for each benchmark.
+     Only include commands for benchmarks that were actually evaluated. -->
 
 <details>
 
-#### GSM8k-Platinum (lm-eval, 5-shot, 3 repetitions)
+#### GSM8K Platinum (lm-eval, 0-shot, 3 repetitions)
 ```
 lm_eval --model local-chat-completions \
   --tasks gsm8k_platinum_cot_llama \
-  --model_args "model=RedHatAI/<QUANTIZED_MODEL_NAME>,max_length=<MAX_LENGTH>,base_url=http://0.0.0.0:8000/v1/chat/completions,num_concurrent=128,max_retries=3,tokenized_requests=False,tokenizer_backend=None,timeout=1200" \
-  --num_fewshot 5 \
+  --model_args "model=RedHatAI/<QUANTIZED_MODEL_NAME>,max_length=<MAX_LENGTH>,base_url=http://0.0.0.0:8000/v1/chat/completions,num_concurrent=32,max_retries=3,tokenized_requests=False,tokenizer_backend=None,timeout=1200" \
+  --num_fewshot 0 \
   --apply_chat_template \
-  --fewshot_as_multiturn \
   --output_path results_gsm8k_platinum.json \
   --seed 1234 \
   --gen_kwargs "do_sample=True,temperature=<TEMPERATURE>,top_p=<TOP_P>,top_k=<TOP_K>,max_gen_toks=<MAX_GEN_TOKS>,seed=1234"
 ```
 
-#### Math 500 (lighteval, 0-shot, 3 repetitions)
-```
-lighteval endpoint litellm litellm_config.yaml \
-  "math_500@1@3|0" \
-  --output-dir <OUTPUT_DIR> \
-  --save-details
+#### MATH-500, AIME 2025, GPQA Diamond (lighteval, 3 repetitions; 8 for AIME 2025)
+
+**litellm_config.yaml:**
+```yaml
+model_parameters:
+  provider: hosted_vllm
+  model_name: hosted_vllm/RedHatAI/<QUANTIZED_MODEL_NAME>
+  base_url: http://0.0.0.0:8000/v1
+  api_key: ''
+  timeout: 3600
+  concurrent_requests: 32
+  generation_parameters:
+    temperature: <TEMPERATURE>
+    max_new_tokens: <MAX_NEW_TOKENS>
+    top_p: <TOP_P>
+    top_k: <TOP_K>
+    seed: 1234
 ```
 
-<!-- Add more command blocks for each benchmark evaluated.
-     Remember to repeat each evaluation with different seeds as specified
-     in the evaluation protocol. -->
+Run once per seed (changing `seed` in the config each time):
+```
+lighteval endpoint litellm litellm_config.yaml 'math_500|0' \
+  --output-dir results/ --save-details
+
+lighteval endpoint litellm litellm_config.yaml 'aime25|0' \
+  --output-dir results/ --save-details
+
+lighteval endpoint litellm litellm_config.yaml 'gpqa:diamond|0' \
+  --output-dir results/ --save-details
+```
+
+<!-- Add more command blocks for each benchmark evaluated. -->
+
+<!-- IF BFCLv4 results are present -->
+#### BFCLv4
+
+BFCL requires the model to be registered in the leaderboard codebase before running.
+
+**Step 1 — Register the model in `bfcl_eval/constants/model_config.py`**
+
+Add the following entry to `api_inference_model_map`:
+
+```python
+"<MODEL_SLUG>": ModelConfig(
+    model_name="<MODEL_SLUG>",
+    display_name="<DISPLAY_NAME> (FC)",
+    url="https://huggingface.co/RedHatAI/<QUANTIZED_MODEL_NAME>",
+    org="<ORG>",
+    license="<LICENSE>",
+    model_handler=OpenAICompletionsHandler,
+    input_price=None,
+    output_price=None,
+    is_fc_model=True,
+    underscore_to_dot=True,
+),
+```
+
+**Step 2 — Add the key to `bfcl_eval/constants/supported_models.py`**
+
+Add `"<MODEL_SLUG>"` to the `SUPPORTED_MODELS` list.
+
+**Step 3 — Start the vLLM server** (use the command at the top of this section)
+
+**Step 4 — Generate responses and evaluate**
+```
+bfcl generate --model <MODEL_SLUG> --test-category all
+bfcl evaluate --model <MODEL_SLUG> --test-category all
+```
+<!-- ENDIF BFCLv4 -->
 
 </details>
