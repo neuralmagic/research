@@ -54,27 +54,31 @@ These are the **defaults for the final README** unless the user asks otherwise:
 
 ### Deployment (vLLM)
 
-- **Simple** primary example: `vllm serve RedHatAI/<model>…` with **model-specific flags taken from the base model’s HuggingFace README** (e.g. `--reasoning-parser`, `--tool-call-parser`, `--enable-auto-tool-choice`, `--speculative-config` for MTP, `--language-model-only`, `--max-model-len`) **merged into the command** when that matches upstream guidance.
-- Do **not** prescribe **tensor parallel size** or long hardware tuning prose; a single line that users can adapt is enough.
+- **Simple** primary example: `vllm serve RedHatAI/<model>…` with **model-specific flags taken from the base model’s HuggingFace README and the [vLLM recipes page](https://recipes.vllm.ai)** (`recipes.vllm.ai/<org>/<model>`) (e.g. `--reasoning-parser`, `--tool-call-parser`, `--enable-auto-tool-choice`, `--speculative-config` for MTP, `--language-model-only`, `--max-model-len`, `--async-scheduling`, `--limit-mm-per-prompt`) **merged into the command** when that matches upstream guidance. Prefer the vLLM recipes page — it is often more complete than the base model’s HF README.
+- Do **not** prescribe **tensor parallel size** unless the unquantized model’s card or the vLLM recipes page specifies it. A single line that users can adapt is enough.
+- Include `--chat-template <path>` in vLLM serve commands when a custom chat template was used (e.g. for tool calling or thinking mode). Use the filename from the vLLM recipes page (e.g. `examples/tool_chat_template_gemma4.jinja`) — do not hard-code local machine paths.
 
 ### Evaluation (intro paragraph)
 
-- **Brief**: name the **benchmarks** and the libraries — **[lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness)**, **[lighteval](https://github.com/huggingface/lighteval)**, and serving with **vLLM** (OpenAI-compatible API).
-- Do **not** mention **forks** of lm-eval or lighteval unless the user explicitly asks; treat upstream as the reference.
+- **Brief**: name the **benchmarks** and the libraries used — **[lm-evaluation-harness](https://github.com/neuralmagic/lm-evaluation-harness)**, **[lighteval](https://github.com/neuralmagic/lighteval)**, and **BFCL** (when tool-calling results are available) — and serving with **vLLM** (OpenAI-compatible API). Only mention harnesses and benchmarks for which results are present.
 
 ### Accuracy table
 
 - When **baseline (e.g. BF16) JSON** exists: include baseline and quantized columns plus **Recovery** (quantized score ÷ baseline score, as a percentage). Omit baseline/Recovery if no baseline.
 - Prefer **HTML `<table>`** with **`rowspan`** on **Category** so each category label appears once per group.
 - **IFEval**: default to **two benchmark rows** (e.g. prompt-level strict and instruction-level strict) with **Instruction following** `rowspan` on the category column — unless the user prefers a grouped layout.
+- **Benchmark categories depend on the evaluation protocol**: GSM8K Platinum and MMLU-Pro belong under **Reasoning** when evaluated 0-shot (with or without thinking). They belong under **Instruction Following** only when evaluated 5-shot. IFEval always belongs under **Instruction Following** regardless of shot count.
 - Omit a separate **metric** column if the user wants a cleaner table (benchmark names can carry the distinction).
+- **Thinking mode**: if results are available for both thinking and non-thinking modes, present two separate tables under `#### Without thinking` and `#### With thinking` subsections, each with its own BF16 baseline column. If only one set is available, present a single table without subsection headers.
+- **BFCLv4**: when tool-calling results are available, add a **Tool Calling** category at the bottom of the table (or the "with thinking" table if results are split). Include four rows: Overall, Single Turn, Multi-Turn, Agentic. Show scores as percentages (e.g. `68.31%`). Omit when not available or when the model has no tool-calling support.
 
 ### Reproduction
 
 - Show the **simplest** representative **lm-eval** and **lighteval** commands (no seed loops in the snippet unless the user wants them).
 - Summarize **repetitions per benchmark in prose** (e.g. 3 runs for most tasks, 8 for AIME): state that each task is run **N times** with seeds.
-- Include the full **`litellm_config.yaml`** content used for lighteval (`provider`, `hosted_vllm` model id, `base_url`, timeouts, `concurrent_requests`, `max_model_length`, `generation_parameters` aligned with the model card / base model sampling guidance).
+- Include the full **`litellm_config.yaml`** content used for lighteval (`provider`, `hosted_vllm` model id, `base_url`, timeouts, `concurrent_requests`, `generation_parameters` aligned with the model card / base model sampling guidance). If actual config files exist in the run directory, copy them exactly — do not invent fields that were not present (e.g. `max_model_length` is optional and should only be included if it appears in the actual config).
 - Keep **sampling / adapter details** out of the Evaluation intro; they belong here under Reproduction.
+- When **BFCLv4 results** are included: add a BFCLv4 section inside the `<details>` block showing the model registration steps (`model_config.py` entry + `supported_models.py`) and the `bfcl generate` / `bfcl evaluate` commands. See `evaluations.md` for the full protocol.
 
 ## Phase 1: Gather Model Information
 
@@ -89,6 +93,7 @@ These are the **defaults for the final README** unless the user asks otherwise:
 
 3. **Read `config.json`** from the model path:
    - Extract `model_type`, `_name_or_path`, and architecture details.
+   - The **Model Architecture** line in the card uses `config.json`'s `architectures[0]` value (the class name, e.g. `LlamaForCausalLM`, `Gemma4ForConditionalGeneration`) — not `_name_or_path` or the HuggingFace model ID.
    - For a HuggingFace model ID, fetch via the Hub API or `huggingface_hub` (raw `huggingface.co/.../raw/main/config.json` may return **401** for gated or token-only repos — use authenticated download or a workspace cache directory if needed).
 
 4. **Read `recipe.yaml`** from the model path to determine the quantization
@@ -116,20 +121,30 @@ before continuing. Example:
 
 ## Phase 2: Collect Evaluation Results
 
-7. **Search for evaluation result JSON files** in the model directory (and
-   subdirectories). Look for:
+7. **Search for evaluation result JSON files** in the model directory, any user-specified runs directory, and subdirectories. Look for:
+   - **every_eval_ever output** (highest priority): JSON files inside an `every_eval_ever/`
+     folder at the root of the model directory. If this folder is present, use its
+     JSON files as the authoritative source for all results tables. These files take
+     precedence over any other result files found.
+   - **Aggregated result JSONs in run directories**: files with `schema_version` at the top level (produced by the evaluation harness aggregation step). These are the authoritative per-benchmark scores. Prefer these over any narrative `summary.md` files — `summary.md` is human-written and may contain errors.
    - **lm-eval output**: JSON files containing a top-level `"results"` key with
      task names mapping to metric dictionaries.
    - **lighteval output**: JSON files inside output directories with task metrics.
    - Common patterns: `results*.json`, `**/results.json`
+   - **BFCLv4 scores**: check `score/data_overall.csv` and `score/quantized/data_overall.csv` relative to the BFCL repo root (the path may vary). The Overall score is typically pre-computed in the CSV; sub-scores (Single Turn, Multi-Turn, Agentic) may require reading per-category JSON files under `score/` and applying the weighting formula in `evaluations.md`. If no CSV is found automatically, prompt the user for the path to the BFCL score directory.
    - Baseline runs may use parallel naming (e.g. `*_bf16_*` vs `*_fp8_*`); parse and match the same metrics.
    - Normalize benchmark/task names before matching (lowercase, trim whitespace, collapse repeated separators, and map common aliases such as `ifeval`/`IFEval`).
 
 8. **If results are found**:
-   - Parse each file, extracting benchmark name and metric scores.
-   - Group by benchmark name.
-   - If the same benchmark appears multiple times (different seeds/runs),
-     **average the scores** across repetitions and report the average.
+   - Run `compute_averages.py` (located in the same folder as this `SKILL.md`) on all
+     found result files and directories. For BFCL CSV files, also pass `--bfcl-model`
+     with the quantized model name. Capture the JSON output.
+   - **Always** use this script — do not hand-parse or hand-average result files. The
+     script handles all supported formats (summary_data.json, lm-eval JSON, BFCL CSV)
+     and outputs a consistent `{task:metric -> {mean, n}}` structure with scores in
+     percentage form.
+   - **Do not trust `summary.md`** or other narrative files as the source of scores —
+     always derive from the actual JSON/CSV files via the script.
    - Present the parsed results to the user for confirmation.
 
 9. **If no results are found**: tell the user and ask:
@@ -139,9 +154,16 @@ before continuing. Example:
 
 10. **Ask for unquantized (baseline) results**: request a path to the baseline
    model's evaluation results. If provided:
-   - Load and match benchmarks by normalized benchmark and metric names (case-insensitive).
-   - Compute Recovery = (quantized_score / baseline_score) * 100 for each metric.
-   - If baseline score is `0`, missing, or non-numeric, set Recovery to `N/A` for that row and continue.
+   - Run `compute_averages.py` on the baseline result files (same as step 8) to
+     produce a baseline averages JSON. For BFCL, pass `--bfcl-model` with the
+     **unquantized** model name.
+   - Run `compute_recovery.py` (located in the same folder as this `SKILL.md`) with
+     the baseline averages JSON and the quantized model averages JSON from step 8.
+     Capture the JSON output.
+   - **Always** use these scripts — do not hand-compute recovery. The script produces
+     a consistent `{task:metric -> {baseline, quantized, recovery_pct}}` structure.
+   - If baseline score is `0` or missing for a metric, the script sets `recovery_pct`
+     to `null`; show `N/A` in the table for that row.
    - If not available, omit the Recovery column (and baseline column) from the table.
 
 ## Phase 3: Prompt for Missing Information
@@ -163,7 +185,7 @@ before continuing. Example:
 
 ## Phase 4: Generate Draft
 
-12. **Read the model card template** from `template.md` located in the **same folder as this `SKILL.md`**. This template contains the full structure with placeholders and guidance comments. **Adapt** the template to the **Published card conventions** above when they conflict (overview brevity, deployment simplicity, no fork language, etc.). Try to keep to the template as closely as possible.
+12. **Read the model card template** from `template.md` located in the **same folder as this `SKILL.md`**. This template contains the full structure with placeholders and guidance comments. **Adapt** the template to the **Published card conventions** above when they conflict (overview brevity, deployment simplicity, etc.). Try to keep to the template as closely as possible.
 
 13. **Read the evaluation protocol** from
     `evaluations.md` located in the **same folder as this `SKILL.md`** (if present). If the file is missing, continue with best-practice defaults from this skill. Use it to choose harnesses, task names,
@@ -213,6 +235,7 @@ before continuing. Example:
       `RedHatAI/<model_name>` on HuggingFace.
     - If the model path is a **HuggingFace model ID**: ask the user if they want
       to upload just the README.md to the existing repo.
+    - **If `every_eval_ever/` JSON files were used**: also upload those files to `every_eval_ever/` inside the HuggingFace repo. Upload **only the top-level aggregated JSON files (one per benchmark)** — do not upload per-seed subdirectories, raw lm-eval output files, or lighteval detail parquet files. Do this as part of the same upload action and confirm with the user before proceeding.
     - **Only proceed after the user explicitly confirms.**
     - If no automated upload path is available, explicitly tell the user the card was generated locally and provide manual upload commands/options.
 
