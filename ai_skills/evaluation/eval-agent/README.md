@@ -1,6 +1,6 @@
 # eval-agent
 
-Unified LLM evaluation orchestrator for lm-eval and lighteval benchmarks, served via vLLM with GPU reservation via canhazgpu.
+Unified LLM evaluation orchestrator for lm-eval and lighteval benchmarks, served via vLLM with GPU reservation via canhazgpu. Also supports an optional additional `inspect_ai_core` category run through the Inspect AI / `inspect_evals` harness (see [What it evaluates](#what-it-evaluates)).
 
 ## Adding to Claude Code or Cursor
 
@@ -42,6 +42,16 @@ ln -s "$(pwd)/research/ai_skills/evaluation/eval-agent" ~/.claude/skills/eval-ag
 | reasoning | GSM8k, MMLU-Pro, IFEval, Math-500, AIME25, GPQA Diamond | lm-eval + lighteval |
 | coding | LiveCodeBench v6 | lighteval |
 | long_context | MRCR | lm-eval |
+| inspect_ai_core (optional) | GSM8k, MMLU (0-shot), MMLU-Pro, IFEval, GPQA Diamond | inspect-ai |
+
+`inspect_ai_core` is a separate, additive category run through the
+[Inspect AI](https://inspect.aisi.org.uk/) / [`inspect_evals`](https://github.com/UKGovernmentBEIS/inspect_evals)
+harness — it doesn't change or replace the four categories above, and its
+scores aren't directly comparable to them for the "same" benchmark name
+(different prompt templates/scorers). AIME is deliberately not included yet:
+`inspect_evals`' AIME scorer has a bug fixed in an open, unmerged PR
+([UKGovernmentBEIS/inspect_evals#2025](https://github.com/UKGovernmentBEIS/inspect_evals/pull/2025)).
+See `SKILL.md` → "Core Evals via Inspect AI" for usage.
 
 ## Installation
 
@@ -66,19 +76,28 @@ The agent (SKILL.md) handles all three venv setups during Step 0. See SKILL.md f
 
 Harnesses run via their absolute binary paths — venv activation is not needed.
 
+A fourth, optional venv is only needed for the `inspect_ai_core` category:
+
+| venv path | Contents | Use |
+|---|---|---|
+| `.venvs/inspect-ai/` | `inspect_ai` + `inspect_evals` (PyPI) | inspect-ai tasks (`inspect_ai_core` category only) |
+
 ## CLI
 
 ```
 eval-agent run     --model MODEL --server-cmd CMD --gen-params JSON --category CATEGORY \
                    --max-length N --run-dir DIR \
                    [--port N] [--num-concurrent N] [--timeout N] \
-                   [--lm-eval-venv PATH] [--lighteval-venv PATH] \
+                   [--lm-eval-venv PATH] [--lighteval-venv PATH] [--inspect-ai-venv PATH] \
                    [--health-timeout N] [--smoke-only]
 
 eval-agent resume  --run-dir DIR [--timeout N] [--num-concurrent N]
 eval-agent status  --run-dir DIR [--follow]
 eval-agent cleanup --run-dir DIR
 ```
+
+`CATEGORY` is one of `instruct`, `reasoning`, `coding`, `long_context`,
+`inspect_ai_core`.
 
 ## Run directory structure
 
@@ -107,7 +126,7 @@ runs/<run_name>/
 
 ## Registry
 
-Task definitions are in `eval_agent/benchmarks/registry.yaml`. The registry is **immutable** — task names, harness, max_gen_tokens, n_repetitions, and metric fields must not be changed.
+Task definitions are in `eval_agent/benchmarks/registry.yaml`. The registry is **immutable** — task names, harness, max_gen_tokens, n_repetitions, and metric fields must not be changed. This applies per-category: the `inspect_ai_core` category (see [What it evaluates](#what-it-evaluates)) is additive and does not alter the task definitions of `instruct`, `reasoning`, `coding`, or `long_context`.
 
 Concurrency (`--num-concurrent`) is not in the registry. It is hardware-dependent and determined by the agent via smoke test KV-cache monitoring.
 

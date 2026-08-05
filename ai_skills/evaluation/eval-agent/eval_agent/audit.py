@@ -55,6 +55,7 @@ class RunAudit:
         smoke_only: bool,
         lm_eval_venv: str,
         lighteval_venv: str,
+        inspect_ai_venv: str = ".venvs/inspect-ai",
         registry_snapshot: dict,
     ) -> dict:
         manifest = {
@@ -71,6 +72,7 @@ class RunAudit:
             "smoke_only": smoke_only,
             "lm_eval_venv": lm_eval_venv,
             "lighteval_venv": lighteval_venv,
+            "inspect_ai_venv": inspect_ai_venv,
             "seeds": registry_snapshot.get("seeds", []),
             "benchmarks": [
                 {
@@ -142,6 +144,10 @@ class RunAudit:
 
     def task_lighteval_result_dir(self, task_name: str, seed: int) -> Path:
         """Output directory for lighteval (--output-dir target)."""
+        return self.results_dir / f"{task_name}_seed{seed}"
+
+    def task_inspect_ai_result_dir(self, task_name: str, seed: int) -> Path:
+        """Output directory for inspect-ai (--log-dir target)."""
         return self.results_dir / f"{task_name}_seed{seed}"
 
 

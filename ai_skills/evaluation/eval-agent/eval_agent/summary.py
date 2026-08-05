@@ -9,6 +9,8 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
+from eval_agent.inspect_ai_runner import find_eval_log_json
+
 
 def _load_lm_eval_scores(result_file: Path) -> dict[str, float]:
     """Extract numeric metric scores from an lm-eval result JSON."""
@@ -43,6 +45,30 @@ def _load_lighteval_scores(result_dir: Path) -> dict[str, float]:
                             scores[key] = value
         except Exception as e:
             print(f"WARNING: Could not parse lighteval result {json_file}: {e}", file=sys.stderr)
+    return scores
+
+
+def _load_inspect_ai_scores(result_dir: Path) -> dict[str, float]:
+    """Extract numeric metric scores from an `inspect eval` JSON log.
+
+    Inspect (`--log-format json`) writes one `<timestamp>_<task>_<id>.json`
+    file per run into the log dir; its `results.scores[].metrics` mirrors
+    the shape lm-eval/lighteval already report, so we flatten it the
+    same way: {metric_name: value}.
+    """
+    scores: dict[str, float] = {}
+    log_file = find_eval_log_json(result_dir)
+    if log_file is None:
+        return scores
+    try:
+        data = json.loads(log_file.read_text())
+        for score_entry in data.get("results", {}).get("scores", []):
+            for metric_name, metric in score_entry.get("metrics", {}).items():
+                value = metric.get("value")
+                if isinstance(value, (int, float)):
+                    scores[metric_name] = value
+    except Exception as e:
+        print(f"WARNING: Could not parse inspect-ai result {log_file}: {e}", file=sys.stderr)
     return scores
 
 
@@ -81,6 +107,9 @@ def generate_summary_data(run_dir: Path) -> dict:
         if harness == "lm-eval":
             result_file = results_dir / f"{task_name}_seed{seed}.json"
             scores = _load_lm_eval_scores(result_file) if result_file.exists() else {}
+        elif harness == "inspect-ai":
+            result_dir = results_dir / f"{task_name}_seed{seed}"
+            scores = _load_inspect_ai_scores(result_dir) if result_dir.exists() else {}
         else:
             result_dir = results_dir / f"{task_name}_seed{seed}"
             scores = _load_lighteval_scores(result_dir) if result_dir.exists() else {}

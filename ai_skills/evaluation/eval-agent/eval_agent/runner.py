@@ -19,6 +19,7 @@ from eval_agent.lighteval_runner import (
     write_litellm_config,
     build_lighteval_command,
 )
+from eval_agent.inspect_ai_runner import build_inspect_ai_command
 
 _REGISTRY_PATH = Path(__file__).parent / "benchmarks" / "registry.yaml"
 _SMOKE_SAMPLES = 100
@@ -68,6 +69,7 @@ class BenchmarkRunner:
         max_length: int,
         lm_eval_venv: str,
         lighteval_venv: str,
+        inspect_ai_venv: str = ".venvs/inspect-ai",
         smoke_only: bool = False,
         skip_completed: bool = False,
     ):
@@ -81,6 +83,7 @@ class BenchmarkRunner:
         self.max_length = max_length
         self.lm_eval_bin = str(Path(lm_eval_venv) / "bin" / "lm_eval")
         self.lighteval_bin = str(Path(lighteval_venv) / "bin" / "lighteval")
+        self.inspect_ai_bin = str(Path(inspect_ai_venv) / "bin" / "inspect")
         self.smoke_only = smoke_only
         self.skip_completed = skip_completed
         self.tasks = get_tasks_for_category(category)
@@ -134,10 +137,15 @@ class BenchmarkRunner:
 
     def _run_single(self, task: dict, seed: int, limit: Optional[int] = None) -> bool:
         """Dispatch to the correct harness runner. Returns True on success."""
-        if task["harness"] == "lm-eval":
+        harness = task["harness"]
+        if harness == "lm-eval":
             return self._run_lm_eval(task, seed, limit)
-        else:
+        elif harness == "lighteval":
             return self._run_lighteval(task, seed, limit)
+        elif harness == "inspect-ai":
+            return self._run_inspect_ai(task, seed, limit)
+        else:
+            raise ValueError(f"Unknown harness {harness!r} for task {task['name']!r}")
 
     def _run_lm_eval(self, task: dict, seed: int, limit: Optional[int]) -> bool:
         output_path = str(self.audit.task_lm_eval_result_path(task["name"], seed))
@@ -197,6 +205,26 @@ class BenchmarkRunner:
             output_dir=output_dir,
             lighteval_bin=self.lighteval_bin,
             max_samples=limit,
+        )
+        return self._execute(cmd, task["name"], seed, log_path)
+
+    def _run_inspect_ai(self, task: dict, seed: int, limit: Optional[int]) -> bool:
+        log_dir = str(self.audit.task_inspect_ai_result_dir(task["name"], seed))
+        effective_max_gen = self._effective_max_gen(task)
+        log_path = self.audit.task_log_path(task["name"], seed)
+
+        cmd = build_inspect_ai_command(
+            task=task,
+            model=self.model,
+            seed=seed,
+            gen_params=self.base_gen_params,
+            effective_max_gen_tokens=effective_max_gen,
+            port=self.port,
+            num_concurrent=self.num_concurrent,
+            timeout=self.timeout,
+            log_dir=log_dir,
+            inspect_bin=self.inspect_ai_bin,
+            limit=limit,
         )
         return self._execute(cmd, task["name"], seed, log_path)
 
