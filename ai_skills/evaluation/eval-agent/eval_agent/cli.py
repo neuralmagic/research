@@ -5,9 +5,15 @@ import json
 import sys
 import time
 from pathlib import Path
+from typing import Optional
 
 from eval_agent.audit import RunAudit
-from eval_agent.runner import BenchmarkRunner, get_tasks_for_category, load_registry
+from eval_agent.runner import (
+    BenchmarkRunner,
+    filter_tasks_by_names,
+    get_tasks_for_category,
+    load_registry,
+)
 from eval_agent.server import VLLMServer, ServerError
 from eval_agent.summary import generate_summary_data
 
@@ -34,6 +40,16 @@ def cmd_run(args: argparse.Namespace) -> int:
 
     registry = load_registry()
     tasks = get_tasks_for_category(args.category)
+
+    # Optionally scope the run to a named subset of the category's tasks.
+    task_names: Optional[list[str]] = None
+    if args.tasks:
+        task_names = [n.strip() for n in args.tasks.split(",") if n.strip()]
+        try:
+            tasks = filter_tasks_by_names(tasks, task_names)
+        except ValueError as e:
+            print(f"ERROR: {e}", file=sys.stderr)
+            return 1
 
     # Validate max_length: must fit at least the smallest task + 4096 prompt buffer
     # (long_context is exempt — agent sizes max_length to model's native max)
@@ -83,6 +99,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         lighteval_venv=args.lighteval_venv,
         inspect_ai_venv=args.inspect_ai_venv,
         registry_snapshot={"seeds": registry["seeds"], "tasks": tasks},
+        task_names=task_names,
     )
     audit.log_event("run_started", run_id=manifest["run_id"], model=args.model)
 
@@ -113,6 +130,7 @@ def cmd_run(args: argparse.Namespace) -> int:
             lighteval_venv=args.lighteval_venv,
             inspect_ai_venv=args.inspect_ai_venv,
             smoke_only=args.smoke_only,
+            tasks=tasks,
         )
         results = runner.run_all()
     finally:
@@ -201,6 +219,17 @@ def cmd_resume(args: argparse.Namespace) -> int:
     timeout = args.timeout if args.timeout else manifest["timeout"]
     num_concurrent = args.num_concurrent if args.num_concurrent else manifest["num_concurrent"]
 
+    # Reconstruct the same task subset the original run used, if any --tasks
+    # filter was applied (manifest["task_names"] is None for a full-category run).
+    tasks = None
+    task_names = manifest.get("task_names")
+    if task_names:
+        try:
+            tasks = filter_tasks_by_names(get_tasks_for_category(manifest["category"]), task_names)
+        except ValueError as e:
+            print(f"ERROR: {e}", file=sys.stderr)
+            return 1
+
     server = VLLMServer(
         server_cmd=manifest["server_cmd"],
         audit=audit,
@@ -230,6 +259,7 @@ def cmd_resume(args: argparse.Namespace) -> int:
             inspect_ai_venv=manifest.get("inspect_ai_venv", ".venvs/inspect-ai"),
             smoke_only=False,
             skip_completed=True,
+            tasks=tasks,
         )
         results = runner.run_all()
     finally:
@@ -294,6 +324,10 @@ def build_parser() -> argparse.ArgumentParser:
                        help="JSON dict of generation params (no seed, no max tokens)")
     p_run.add_argument("--category", required=True,
                        choices=["instruct", "reasoning", "coding", "long_context", "inspect_ai_core"])
+    p_run.add_argument("--tasks",
+                       help="Comma-separated subset of task names to run within --category "
+                            "(default: every task in the category). Example: "
+                            "--tasks ifeval,gpqa_diamond")
     p_run.add_argument("--port", type=int, default=8000)
     p_run.add_argument("--max-length", type=int, required=True,
                        help="vLLM --max-model-len used in server-cmd")

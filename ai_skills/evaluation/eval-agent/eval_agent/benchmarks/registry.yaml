@@ -151,6 +151,21 @@ categories:
   #
   # task_str is the `inspect eval` registry path (inspect_evals/<task_name>).
   # task_args entries are passed through as `-T key=value` task parameters.
+  # model_args entries are passed through as `-M key=value` model parameters
+  # (configures the model client/provider, not the task). ifeval requires
+  # model_args: {responses_api: false} -- without it, the default Responses
+  # API path leaks <think>...</think> reasoning into the completion instead
+  # of splitting it out, which breaks IFEval's strict format checks (~40pt
+  # accuracy loss on reasoning models, confirmed via direct measurement).
+  #
+  # humaneval, mbpp, and bigcodebench are deliberately NOT included here even
+  # though they run against inspect_evals with no code changes: they score by
+  # executing generated code, which requires a real Docker daemon reachable
+  # from the host (inspect_evals calls docker/docker compose directly via
+  # subprocess; a shell alias routing `docker` to Podman -- the RHEL default,
+  # and what our canhazgpu nodes have -- is not sufficient). Add them back
+  # once a real Docker Engine is provisioned on the target infra.
+  #
   # Scores from this harness use inspect_evals' own prompt templates and
   # scorers, which differ from lm-eval/lighteval's — treat these as a fast,
   # independent read on the same benchmark, not a numeric cross-check
@@ -165,10 +180,26 @@ categories:
         n_repetitions: 3
         metric: "accuracy"
 
+      - name: gsm8k_5_shot
+        harness: inspect-ai
+        task_str: "inspect_evals/gsm8k"
+        task_args: { fewshot: 5 }
+        max_gen_tokens: 8192
+        n_repetitions: 3
+        metric: "accuracy"
+
       - name: mmlu_0_shot
         harness: inspect-ai
         task_str: "inspect_evals/mmlu_0_shot"
         max_gen_tokens: 2048
+        n_repetitions: 3
+        metric: "accuracy"
+
+      - name: mmlu_5_shot_cot
+        harness: inspect-ai
+        task_str: "inspect_evals/mmlu_5_shot"
+        task_args: { cot: true }
+        max_gen_tokens: 4096
         n_repetitions: 3
         metric: "accuracy"
 
@@ -179,9 +210,18 @@ categories:
         n_repetitions: 3
         metric: "accuracy"
 
+      - name: mmlu_pro_5_shot
+        harness: inspect-ai
+        task_str: "inspect_evals/mmlu_pro"
+        task_args: { fewshot: 5 }
+        max_gen_tokens: 4096
+        n_repetitions: 3
+        metric: "accuracy"
+
       - name: ifeval
         harness: inspect-ai
         task_str: "inspect_evals/ifeval"
+        model_args: { responses_api: false }
         max_gen_tokens: 2048
         n_repetitions: 3
         metric: "prompt/instruction-level accuracy (if_metric, see log)"

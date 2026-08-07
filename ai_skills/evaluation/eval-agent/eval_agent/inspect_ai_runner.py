@@ -8,7 +8,10 @@ provider at the vLLM server that eval-agent already started via
 Registry tasks for this harness use `task_str` (an `inspect_evals/<task_name>`
 registry path) instead of a bare benchmark name, and an optional `task_args`
 dict whose entries are passed through as `-T key=value` task parameters
-(e.g. `{"fewshot": 0}`).
+(e.g. `{"fewshot": 0}`). An optional `model_args` dict is passed through the
+same way as `-M key=value` model parameters (e.g. `{"responses_api": false}`)
+-- these configure the model client/provider itself rather than the task, and
+are required by some tasks (e.g. ifeval) to get correct results.
 """
 
 import shlex
@@ -80,6 +83,9 @@ def build_inspect_ai_command(
 
     for arg_name, arg_value in task.get("task_args", {}).items():
         parts.extend(["-T", shlex.quote(f"{arg_name}={arg_value}")])
+
+    for arg_name, arg_value in task.get("model_args", {}).items():
+        parts.extend(["-M", shlex.quote(f"{arg_name}={arg_value}")])
 
     if limit is not None:
         parts.extend(["--limit", str(limit)])

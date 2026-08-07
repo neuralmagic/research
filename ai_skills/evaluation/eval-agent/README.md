@@ -42,7 +42,7 @@ ln -s "$(pwd)/research/ai_skills/evaluation/eval-agent" ~/.claude/skills/eval-ag
 | reasoning | GSM8k, MMLU-Pro, IFEval, Math-500, AIME25, GPQA Diamond | lm-eval + lighteval |
 | coding | LiveCodeBench v6 | lighteval |
 | long_context | MRCR | lm-eval |
-| inspect_ai_core (optional) | GSM8k, MMLU (0-shot), MMLU-Pro, IFEval, GPQA Diamond | inspect-ai |
+| inspect_ai_core (optional) | GSM8k (0-shot, 5-shot), MMLU (0-shot), MMLU (5-shot CoT), MMLU-Pro (0-shot, 5-shot), IFEval, GPQA Diamond | inspect-ai |
 
 `inspect_ai_core` is a separate, additive category run through the
 [Inspect AI](https://inspect.aisi.org.uk/) / [`inspect_evals`](https://github.com/UKGovernmentBEIS/inspect_evals)
@@ -51,6 +51,10 @@ scores aren't directly comparable to them for the "same" benchmark name
 (different prompt templates/scorers). AIME is deliberately not included yet:
 `inspect_evals`' AIME scorer has a bug fixed in an open, unmerged PR
 ([UKGovernmentBEIS/inspect_evals#2025](https://github.com/UKGovernmentBEIS/inspect_evals/pull/2025)).
+HumanEval, MBPP, and BigCodeBench are also deliberately excluded: they score
+by executing generated code, which requires a real Docker daemon reachable
+from the host (not just a `docker`-aliased Podman, which is the RHEL/canhazgpu
+node default) — add them once real Docker is provisioned on the target infra.
 See `SKILL.md` → "Core Evals via Inspect AI" for usage.
 
 ## Installation
@@ -87,6 +91,7 @@ A fourth, optional venv is only needed for the `inspect_ai_core` category:
 ```
 eval-agent run     --model MODEL --server-cmd CMD --gen-params JSON --category CATEGORY \
                    --max-length N --run-dir DIR \
+                   [--tasks NAME1,NAME2,...] \
                    [--port N] [--num-concurrent N] [--timeout N] \
                    [--lm-eval-venv PATH] [--lighteval-venv PATH] [--inspect-ai-venv PATH] \
                    [--health-timeout N] [--smoke-only]
@@ -95,6 +100,10 @@ eval-agent resume  --run-dir DIR [--timeout N] [--num-concurrent N]
 eval-agent status  --run-dir DIR [--follow]
 eval-agent cleanup --run-dir DIR
 ```
+
+`--tasks` runs only the named subset of `CATEGORY`'s tasks (e.g.
+`--tasks ifeval,gpqa_diamond`) instead of all of them; `resume` picks up the
+same subset automatically from the run's manifest.
 
 `CATEGORY` is one of `instruct`, `reasoning`, `coding`, `long_context`,
 `inspect_ai_core`.
