@@ -43,6 +43,22 @@ def get_seeds() -> list[int]:
     return load_registry().get("seeds", [1234, 2345, 3456, 4567, 5678, 6789, 7890, 8901])
 
 
+def filter_tasks_by_names(tasks: list[dict], names: list[str]) -> list[dict]:
+    """Return the subset of `tasks` whose name is in `names`, preserving
+    registry order. Raises ValueError (listing valid names) if any requested
+    name doesn't exist in `tasks`.
+    """
+    by_name = {t["name"]: t for t in tasks}
+    unknown = [n for n in names if n not in by_name]
+    if unknown:
+        valid = sorted(by_name.keys())
+        raise ValueError(
+            f"Unknown task name(s) {unknown!r}. Valid tasks for this category: {valid}"
+        )
+    selected = {n for n in names}
+    return [t for t in tasks if t["name"] in selected]
+
+
 def compute_recommended_max_model_len(category: str) -> int:
     """Return max(task.max_gen_tokens) + 4096 for the given category.
 
@@ -54,7 +70,7 @@ def compute_recommended_max_model_len(category: str) -> int:
 
 
 class BenchmarkRunner:
-    """Runs the full benchmark suite for a given category."""
+    """Runs the benchmark suite for a given category (or a subset of it)."""
 
     def __init__(
         self,
@@ -72,6 +88,7 @@ class BenchmarkRunner:
         inspect_ai_venv: str = ".venvs/inspect-ai",
         smoke_only: bool = False,
         skip_completed: bool = False,
+        tasks: Optional[list[dict]] = None,
     ):
         self.audit = audit
         self.model = model
@@ -86,7 +103,10 @@ class BenchmarkRunner:
         self.inspect_ai_bin = str(Path(inspect_ai_venv) / "bin" / "inspect")
         self.smoke_only = smoke_only
         self.skip_completed = skip_completed
-        self.tasks = get_tasks_for_category(category)
+        # `tasks` lets callers (e.g. --tasks on the CLI) run a named subset of
+        # a category instead of every task in it. Defaults to the full
+        # category task list, same as before this parameter existed.
+        self.tasks = tasks if tasks is not None else get_tasks_for_category(category)
         self.seeds = get_seeds()
 
         self.completed_work: set[tuple[str, int]] = set()

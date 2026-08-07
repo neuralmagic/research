@@ -57,6 +57,7 @@ class RunAudit:
         lighteval_venv: str,
         inspect_ai_venv: str = ".venvs/inspect-ai",
         registry_snapshot: dict,
+        task_names: Optional[list[str]] = None,
     ) -> dict:
         manifest = {
             "run_id": uuid.uuid4().hex[:12],
@@ -73,6 +74,11 @@ class RunAudit:
             "lm_eval_venv": lm_eval_venv,
             "lighteval_venv": lighteval_venv,
             "inspect_ai_venv": inspect_ai_venv,
+            # None means "every task in `category`" (the default, pre-existing
+            # behavior). A list means the run was scoped to --tasks; `resume`
+            # uses this to reconstruct the same subset rather than falling
+            # back to the full category.
+            "task_names": task_names,
             "seeds": registry_snapshot.get("seeds", []),
             "benchmarks": [
                 {

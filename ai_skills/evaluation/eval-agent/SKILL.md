@@ -296,13 +296,25 @@ explicitly asks for Inspect AI evals, or wants a third, independent harness
 on the same benchmarks.
 
 **Included tasks** (confirmed to run with no `inspect_evals` code changes):
-GSM8k, MMLU (0-shot), MMLU-Pro, IFEval, GPQA Diamond.
+GSM8k (0-shot, 5-shot), MMLU (0-shot), MMLU (5-shot CoT), MMLU-Pro (0-shot,
+5-shot), IFEval, GPQA Diamond. IFEval requires
+`model_args: {responses_api: false}` (set in the registry already) to avoid
+leaking `<think>` reasoning into the graded completion — without it, scores
+are ~40 points lower than correct.
 
 **Deliberately excluded: AIME.** `aime2024`/`aime2025`/`aime2026` in
 `inspect_evals` share a scorer (`utils/aime_common.py`) with a last-line- and
 state-mutation bug; the fix is an open, unmerged PR
 ([UKGovernmentBEIS/inspect_evals#2025](https://github.com/UKGovernmentBEIS/inspect_evals/pull/2025)).
 Do not add AIME to this category until that PR merges.
+
+**Deliberately excluded: HumanEval, MBPP, BigCodeBench.** These also run
+against `inspect_evals` with no code changes, but they score by executing
+generated code, which requires a real Docker daemon reachable from the host
+running eval-agent — `inspect_evals` calls `docker`/`docker compose` directly
+via subprocess, so a shell alias routing `docker` to Podman (the RHEL
+default, and what our canhazgpu nodes have) is not sufficient. Do not add
+these back until a real Docker Engine is provisioned on the target infra.
 
 **Scores are not directly comparable** to the instruct/reasoning results
 above for the "same" benchmark name (e.g. `gsm8k`) — `inspect_evals` uses
@@ -352,6 +364,7 @@ Starts a fresh vLLM server. Use `--timeout` and `--num-concurrent` to override.
 ```
 eval-agent run     --model M --server-cmd CMD --gen-params JSON --category C \
                    --max-length L --run-dir D \
+                   [--tasks NAME1,NAME2,...] \
                    [--port P] [--num-concurrent N] [--timeout T] \
                    [--lm-eval-venv PATH] [--lighteval-venv PATH] [--inspect-ai-venv PATH] \
                    [--health-timeout H] [--smoke-only]
@@ -365,6 +378,13 @@ eval-agent cleanup --run-dir D
 `inspect_ai_core`. `--inspect-ai-venv` (default `.venvs/inspect-ai`) is only
 read when `C` is `inspect_ai_core`; see
 [Core Evals via Inspect AI](#core-evals-via-inspect-ai-optional).
+
+`--tasks` scopes a run to a comma-separated subset of task names within `C`
+(e.g. `--tasks ifeval,gpqa_diamond`), instead of every task in the category.
+Omit it to run the full category (the default, unchanged behavior). The
+selection is recorded in the run's manifest, so `eval-agent resume` on that
+run directory automatically resumes the same subset — no need to pass
+`--tasks` again on resume.
 
 ## Verifying Sampling Parameters Reach vLLM
 
