@@ -67,6 +67,28 @@ vllm --version
 
 **If any validation command fails, STOP and fix the installation before proceeding.**
 
+### Step 0d (optional): inspect-ai venv
+
+Only needed if the user also wants to run `--category inspect_ai_core` (see
+[Core Evals via Inspect AI](#core-evals-via-inspect-ai-optional) below). Not
+part of the mandatory three-venv setup above — skip this unless asked.
+
+```bash
+if [ ! -d ./.venvs/inspect-ai ]; then
+    uv venv ./.venvs/inspect-ai --python 3.12
+    # `openai` is required by inspect_ai's `vllm` model provider even in pure
+    # remote-client mode (talking to an already-running vLLM server via
+    # --model-base-url) -- it is the underlying HTTP client. The heavy `vllm`
+    # pip package itself is NOT required for this: it's only imported by
+    # inspect_ai if you omit --model-base-url and ask it to spawn its own
+    # local vLLM server instead, which this skill never does.
+    ./.venvs/inspect-ai/bin/pip install inspect_ai "inspect_evals[ifeval]" openai
+fi
+
+# --- Validate ---
+.venvs/inspect-ai/bin/inspect --help
+```
+
 ## Workflow
 
 ### Step 1: Gather information
@@ -263,6 +285,56 @@ Maximum 3 retry attempts per failure type.
   - Cleanup confirmation
 3. Present key results to the user with brief interpretation.
 
+## Core Evals via Inspect AI (optional)
+
+A separate, additive category — `inspect_ai_core` — runs a handful of
+standard benchmarks through the [Inspect AI](https://inspect.aisi.org.uk/) /
+[`inspect_evals`](https://github.com/UKGovernmentBEIS/inspect_evals) harness
+instead of lm-eval or lighteval. It does not change or replace the instruct
+/ reasoning / coding / long_context workflow above — use it only if the user
+explicitly asks for Inspect AI evals, or wants a third, independent harness
+on the same benchmarks.
+
+**Included tasks** (confirmed to run with no `inspect_evals` code changes):
+GSM8k, MMLU (0-shot), MMLU-Pro, IFEval, GPQA Diamond.
+
+**Deliberately excluded: AIME.** `aime2024`/`aime2025`/`aime2026` in
+`inspect_evals` share a scorer (`utils/aime_common.py`) with a last-line- and
+state-mutation bug; the fix is an open, unmerged PR
+([UKGovernmentBEIS/inspect_evals#2025](https://github.com/UKGovernmentBEIS/inspect_evals/pull/2025)).
+Do not add AIME to this category until that PR merges.
+
+**Scores are not directly comparable** to the instruct/reasoning results
+above for the "same" benchmark name (e.g. `gsm8k`) — `inspect_evals` uses
+its own prompt templates and scorers, which differ from lm-eval/lighteval's.
+Treat this as an independent additional read, not a cross-check.
+
+### Running it
+
+Reuses the same vLLM server, port, and `--gen-params` as the main workflow —
+either point it at an already-running server from Step 4b, or start one the
+same way as Step 2/3 and run this category standalone:
+
+```bash
+RUN_DIR="./runs/$(date +%Y%m%d_%H%M%S)_<model_short_name>_inspect_ai_core"
+
+eval-agent run \
+  --model <model_name_as_served> \
+  --server-cmd "<full chg run ... -- vllm serve ... command>" \
+  --gen-params '{"temperature": 0.6, "top_p": 0.95}' \
+  --category inspect_ai_core \
+  --port 8000 \
+  --max-length <max_model_len> \
+  --num-concurrent <calibrated_value> \
+  --timeout 1200 \
+  --inspect-ai-venv .venvs/inspect-ai \
+  --run-dir "$RUN_DIR"
+```
+
+Same `--smoke-only`, `resume`, `status --follow`, and KV-cache monitoring
+guidance from Steps 4-6 applies unchanged — this category just adds more
+`(task, seed)` work items dispatched through a third harness.
+
 ## Resuming Interrupted Runs
 
 ```bash
@@ -281,13 +353,18 @@ Starts a fresh vLLM server. Use `--timeout` and `--num-concurrent` to override.
 eval-agent run     --model M --server-cmd CMD --gen-params JSON --category C \
                    --max-length L --run-dir D \
                    [--port P] [--num-concurrent N] [--timeout T] \
-                   [--lm-eval-venv PATH] [--lighteval-venv PATH] \
+                   [--lm-eval-venv PATH] [--lighteval-venv PATH] [--inspect-ai-venv PATH] \
                    [--health-timeout H] [--smoke-only]
 
 eval-agent resume  --run-dir D [--timeout T] [--num-concurrent N] [--health-timeout H]
 eval-agent status  --run-dir D [--follow]
 eval-agent cleanup --run-dir D
 ```
+
+`C` (`--category`) is one of `instruct`, `reasoning`, `coding`, `long_context`,
+`inspect_ai_core`. `--inspect-ai-venv` (default `.venvs/inspect-ai`) is only
+read when `C` is `inspect_ai_core`; see
+[Core Evals via Inspect AI](#core-evals-via-inspect-ai-optional).
 
 ## Verifying Sampling Parameters Reach vLLM
 

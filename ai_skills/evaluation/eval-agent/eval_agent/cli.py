@@ -51,8 +51,10 @@ def cmd_run(args: argparse.Namespace) -> int:
     from pathlib import Path as _P
     lm_eval_bin = _P(args.lm_eval_venv) / "bin" / "lm_eval"
     lighteval_bin = _P(args.lighteval_venv) / "bin" / "lighteval"
+    inspect_ai_bin = _P(args.inspect_ai_venv) / "bin" / "inspect"
     has_lm_eval = any(t["harness"] == "lm-eval" for t in tasks)
     has_lighteval = any(t["harness"] == "lighteval" for t in tasks)
+    has_inspect_ai = any(t["harness"] == "inspect-ai" for t in tasks)
     if has_lm_eval and not lm_eval_bin.exists():
         print(f"ERROR: lm-eval binary not found: {lm_eval_bin}", file=sys.stderr)
         print("Install with: .venvs/lm-eval/bin/pip install lm_eval[api,ifeval,multilingual]", file=sys.stderr)
@@ -60,6 +62,10 @@ def cmd_run(args: argparse.Namespace) -> int:
     if has_lighteval and not lighteval_bin.exists():
         print(f"ERROR: lighteval binary not found: {lighteval_bin}", file=sys.stderr)
         print("Install with: .venvs/lighteval/bin/pip install lighteval[extended]", file=sys.stderr)
+        return 1
+    if has_inspect_ai and not inspect_ai_bin.exists():
+        print(f"ERROR: inspect-ai binary not found: {inspect_ai_bin}", file=sys.stderr)
+        print("Install with: .venvs/inspect-ai/bin/pip install inspect_ai \"inspect_evals[ifeval]\"", file=sys.stderr)
         return 1
 
     audit.init_dirs()
@@ -75,6 +81,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         smoke_only=args.smoke_only,
         lm_eval_venv=args.lm_eval_venv,
         lighteval_venv=args.lighteval_venv,
+        inspect_ai_venv=args.inspect_ai_venv,
         registry_snapshot={"seeds": registry["seeds"], "tasks": tasks},
     )
     audit.log_event("run_started", run_id=manifest["run_id"], model=args.model)
@@ -104,6 +111,7 @@ def cmd_run(args: argparse.Namespace) -> int:
             max_length=args.max_length,
             lm_eval_venv=args.lm_eval_venv,
             lighteval_venv=args.lighteval_venv,
+            inspect_ai_venv=args.inspect_ai_venv,
             smoke_only=args.smoke_only,
         )
         results = runner.run_all()
@@ -219,6 +227,7 @@ def cmd_resume(args: argparse.Namespace) -> int:
             max_length=manifest["max_length"],
             lm_eval_venv=manifest["lm_eval_venv"],
             lighteval_venv=manifest["lighteval_venv"],
+            inspect_ai_venv=manifest.get("inspect_ai_venv", ".venvs/inspect-ai"),
             smoke_only=False,
             skip_completed=True,
         )
@@ -273,7 +282,7 @@ def cmd_cleanup(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="eval-agent",
-        description="Unified LLM evaluation orchestrator (lm-eval + lighteval)",
+        description="Unified LLM evaluation orchestrator (lm-eval + lighteval + inspect-ai)",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -284,7 +293,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_run.add_argument("--gen-params", default="{}",
                        help="JSON dict of generation params (no seed, no max tokens)")
     p_run.add_argument("--category", required=True,
-                       choices=["instruct", "reasoning", "coding", "long_context"])
+                       choices=["instruct", "reasoning", "coding", "long_context", "inspect_ai_core"])
     p_run.add_argument("--port", type=int, default=8000)
     p_run.add_argument("--max-length", type=int, required=True,
                        help="vLLM --max-model-len used in server-cmd")
@@ -296,6 +305,8 @@ def build_parser() -> argparse.ArgumentParser:
                        help="Path to the lm-eval venv")
     p_run.add_argument("--lighteval-venv", default=".venvs/lighteval",
                        help="Path to the lighteval venv")
+    p_run.add_argument("--inspect-ai-venv", default=".venvs/inspect-ai",
+                       help="Path to the inspect-ai venv (only needed for --category inspect_ai_core)")
     p_run.add_argument("--health-timeout", type=int, default=600)
     p_run.add_argument("--smoke-only", action="store_true",
                        help="Run each task once with 100 samples (first seed only)")

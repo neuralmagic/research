@@ -137,3 +137,62 @@ categories:
         apply_chat_template: true
         fewshot_as_multiturn: false
         metric: "auc"
+
+  # inspect_ai_core: benchmarks run through the Inspect AI / inspect_evals
+  # harness instead of lm-eval or lighteval. This is a separate, additive
+  # category — it does not change instruct/reasoning/coding/long_context.
+  #
+  # Scope: only inspect_evals tasks confirmed to need NO code changes are
+  # included here. AIME (aime2024/aime2025/aime2026) is deliberately
+  # excluded: its shared scorer (utils/aime_common.py) has a last-line /
+  # state-mutation bug fixed in an open, unmerged PR
+  # (https://github.com/UKGovernmentBEIS/inspect_evals/pull/2025). Re-add it
+  # here once that PR merges.
+  #
+  # task_str is the `inspect eval` registry path (inspect_evals/<task_name>).
+  # task_args entries are passed through as `-T key=value` task parameters.
+  # Scores from this harness use inspect_evals' own prompt templates and
+  # scorers, which differ from lm-eval/lighteval's — treat these as a fast,
+  # independent read on the same benchmark, not a numeric cross-check
+  # against the instruct/reasoning/coding/long_context results above.
+  inspect_ai_core:
+    tasks:
+      - name: gsm8k
+        harness: inspect-ai
+        task_str: "inspect_evals/gsm8k"
+        task_args: { fewshot: 0 }
+        max_gen_tokens: 8192
+        n_repetitions: 3
+        metric: "accuracy"
+
+      - name: mmlu_0_shot
+        harness: inspect-ai
+        task_str: "inspect_evals/mmlu_0_shot"
+        max_gen_tokens: 2048
+        n_repetitions: 3
+        metric: "accuracy"
+
+      - name: mmlu_pro
+        harness: inspect-ai
+        task_str: "inspect_evals/mmlu_pro"
+        max_gen_tokens: 4096
+        n_repetitions: 3
+        metric: "accuracy"
+
+      - name: ifeval
+        harness: inspect-ai
+        task_str: "inspect_evals/ifeval"
+        max_gen_tokens: 2048
+        n_repetitions: 3
+        metric: "prompt/instruction-level accuracy (if_metric, see log)"
+
+      - name: gpqa_diamond
+        harness: inspect-ai
+        task_str: "inspect_evals/gpqa_diamond"
+        max_gen_tokens: 8192
+        # gpqa_diamond resamples each question DEFAULT_EPOCHS=4 times inside
+        # a single run (inspect_evals' own repetition mechanism), so only
+        # one external seed is needed here — unlike the seed-loop repetition
+        # used for every other task in this registry.
+        n_repetitions: 1
+        metric: "accuracy"
