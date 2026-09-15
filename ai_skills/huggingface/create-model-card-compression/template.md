@@ -125,9 +125,8 @@ Only the weights of the linear operators within transformer blocks are quantized
 
 ## Deployment
 
-### Use with vLLM
+### vLLM Serving
 
-1. Start the vLLM server:
 ```
 vllm serve RedHatAI/<QUANTIZED_MODEL_NAME> <VLLM_EXTRA_ARGS>
 ```
@@ -141,38 +140,11 @@ vllm serve RedHatAI/<QUANTIZED_MODEL_NAME> <VLLM_EXTRA_ARGS>
        --chat-template <path>     (when a custom chat template was used)
        --tokenizer_mode mistral   (if the model uses a Mistral tokenizer)
        --max_model_len N          (if specified in the base model card)
-     Do not add --tensor_parallel_size unless the base model card prescribes it. -->
+     Do not add --tensor_parallel_size unless the base model card prescribes it.
 
-2. Send requests to the server:
-
-```python
-from openai import OpenAI
-
-openai_api_key = "EMPTY"
-openai_api_base = "http://<your-server-host>:8000/v1"
-
-client = OpenAI(
-    api_key=openai_api_key,
-    base_url=openai_api_base,
-)
-
-model = "RedHatAI/<QUANTIZED_MODEL_NAME>"
-
-messages = [
-    {"role": "user", "content": "Explain quantum mechanics clearly and concisely."},
-]
-
-outputs = client.chat.completions.create(
-    model=model,
-    messages=messages,
-)
-
-generated_text = outputs.choices[0].message.content
-print(generated_text)
-```
-<!-- For model-specific request parameters (thinking mode, tool calling format,
-     sampling settings), refer to the vLLM recipes page for this model:
-     https://recipes.vllm.ai/<ORG>/<BASE_MODEL_NAME> -->
+     Do NOT include boilerplate client snippets (e.g. an OpenAI SDK "send a
+     request" example) — only the serve command and any additional
+     model-specific serve commands (e.g. speculative decoding variants). -->
 
 <!-- ============================================================
      SECTION 5: CREATION
