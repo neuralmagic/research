@@ -60,7 +60,8 @@ These are the **defaults for the final README** unless the user asks otherwise:
 
 ### Evaluation (intro paragraph)
 
-- **Brief**: name the **benchmarks** and the libraries used — **[lm-evaluation-harness](https://github.com/neuralmagic/lm-evaluation-harness)**, **[lighteval](https://github.com/neuralmagic/lighteval)**, and **BFCL** (when tool-calling results are available) — and serving with **vLLM** (OpenAI-compatible API). Only mention harnesses and benchmarks for which results are present.
+    - **Brief**: name the **benchmarks** and the libraries used — **[lm-evaluation-harness](https://github.com/neuralmagic/lm-evaluation-harness)**, **[lighteval](https://github.com/neuralmagic/lighteval)**, and **BFCL** (when tool-calling results are available) — and serving with **vLLM** (OpenAI-compatible API). Only mention harnesses and benchmarks for which results are present.
+    - When the user provided **evaluation hardware** (GPU model / count, e.g. "4x GB300"), include a short trailing sentence such as *"Evaluations were run on 4x GB300 GPUs."* Do not fabricate hardware details; omit the sentence if unknown.
 
 ### Accuracy table
 
@@ -143,9 +144,13 @@ before continuing. Example:
      script handles all supported formats (summary_data.json, lm-eval JSON, BFCL CSV)
      and outputs a consistent `{task:metric -> {mean, n}}` structure with scores in
      percentage form.
-   - **Do not trust `summary.md`** or other narrative files as the source of scores —
-     always derive from the actual JSON/CSV files via the script.
-   - Present the parsed results to the user for confirmation.
+    - **Do not trust `summary.md`** or other narrative files as the source of scores —
+      always derive from the actual JSON/CSV files via the script.
+    - Present the parsed results to the user for confirmation.
+    - **Ask for the evaluation hardware**: once results are confirmed, ask which
+      hardware the evaluations were run on (e.g. "4x GB300", "8x H200 node",
+      "1x RTX 5090"). If provided, note it briefly in the Evaluation intro.
+      If the user skips or is unsure, omit it — do not guess.
 
 9. **If no results are found**: tell the user and ask:
    - Provide a path to evaluation results
@@ -164,7 +169,8 @@ before continuing. Example:
      a consistent `{task:metric -> {baseline, quantized, recovery_pct}}` structure.
    - If baseline score is `0` or missing for a metric, the script sets `recovery_pct`
      to `null`; show `N/A` in the table for that row.
-   - If not available, omit the Recovery column (and baseline column) from the table.
+    - If not available, omit the Recovery column (and baseline column) from the table.
+    - If the user said "skip evaluation", no hardware question is needed.
 
 ## Phase 3: Prompt for Missing Information
 
