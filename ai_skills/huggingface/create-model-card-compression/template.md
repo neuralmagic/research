@@ -189,10 +189,14 @@ This model was created by applying [LLM Compressor](https://github.com/vllm-proj
      if both were used. Mention BFCLv4 if tool-calling results are available.
      Only list benchmarks for which results are present.
 
-     Example: "This model was evaluated on GSM8K Platinum, MMLU-Pro, IFEval,
-     MATH-500, AIME 2025, GPQA Diamond, LiveCodeBench v6, and BFCLv4 using
-     lm-evaluation-harness, lighteval, and BFCL — all served with vLLM
-     (OpenAI-compatible API)." -->
+      Example: "This model was evaluated on GSM8K Platinum, MMLU-Pro, IFEval,
+      MATH-500, AIME 2025, GPQA Diamond, LiveCodeBench v6, and BFCLv4 using
+      lm-evaluation-harness, lighteval, and BFCL — all served with vLLM
+      (OpenAI-compatible API)."
+
+      IF the user provided evaluation hardware (GPU model / count), end the
+      intro with a short sentence, e.g. "Evaluations were run on 4x GB300
+      GPUs." Do not invent hardware details; omit if unknown. -->
 
 <EVALUATION_DESCRIPTION>
 
