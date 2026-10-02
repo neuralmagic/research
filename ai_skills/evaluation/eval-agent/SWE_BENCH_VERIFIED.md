@@ -67,7 +67,12 @@ plain text-only completion endpoint will not run the agent correctly. Use the
 FlashInfer CUTLASS backend for the BF16 control too when supported: on vLLM
 0.30.0, automatic backend selection chose TRTLLM for BF16 on our B200 host,
 while the NVFP4 card requires CUTLASS. Leaving these defaults unmatched adds
-the MoE backend as another variable in the comparison.
+the MoE backend as another variable in the comparison. FlashInfer/CUTLASS may
+compile kernels on the first server startup. On hosts where `/tmp` is small,
+set `TMPDIR` to a filesystem with enough free space; set `MAX_JOBS` to a
+conservative value such as `8` if parallel compilation exhausts scratch space.
+The compiled kernels are cached under `~/.cache/flashinfer`, so later starts
+should avoid most of this cold-start work.
 
 The model card does not publish a per-action output-token cap or an agent
 iteration limit. The example below uses a 16,384-token response cap and
