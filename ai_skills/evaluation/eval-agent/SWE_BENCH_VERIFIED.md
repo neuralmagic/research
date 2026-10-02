@@ -20,9 +20,11 @@ describes a preliminary checkpoint with both weights and activations quantized,
 and says it was tested against vLLM `main`. It specifically recommends the
 FlashInfer CUTLASS MoE backend. This comparison therefore measures the released
 weight-plus-activation NVFP4 checkpoint against BF16; it does not isolate the
-effect of weight quantization. Pin and report the vLLM build used for both
-checkpoints; matching the base model's minimum version alone does not establish
-that a given build supports this NVFP4 checkpoint.
+effect of weight quantization. Its model card does not report a SWE-bench
+Verified score, so evaluate the exact checkpoint with a matched BF16 run. Pin
+and report the vLLM build used for both checkpoints; matching the base model's
+minimum version alone does not establish that a given build supports this
+NVFP4 checkpoint.
 
 For a text-only repository task, start the BF16 model with the model card's
 context and reasoning settings, plus the Qwen tool-call parser used by
