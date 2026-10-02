@@ -39,7 +39,8 @@ vllm serve RedHatAI/Qwen3.6-35B-A3B \
   --tool-call-parser qwen3_coder \
   --enable-prefix-caching \
   --default-chat-template-kwargs '{"enable_thinking":true}' \
-  --max-model-len 200000
+  --max-model-len 200000 \
+  --moe-backend flashinfer_cutlass
 ```
 
 For `RedHatAI/Qwen3.6-35B-A3B-NVFP4`, use the same settings, replace the model
@@ -62,7 +63,11 @@ Use a vLLM release supported by the model card. `--language-model-only` avoids
 loading or profiling the vision path for text-only SWE-bench tasks. The
 `qwen3` reasoning parser and `qwen3_coder` tool-call parser are important here:
 mini-SWE-agent sends a Bash tool call through the OpenAI-compatible API. A
-plain text-only completion endpoint will not run the agent correctly.
+plain text-only completion endpoint will not run the agent correctly. Use the
+FlashInfer CUTLASS backend for the BF16 control too when supported: on vLLM
+0.30.0, automatic backend selection chose TRTLLM for BF16 on our B200 host,
+while the NVFP4 card requires CUTLASS. Leaving these defaults unmatched adds
+the MoE backend as another variable in the comparison.
 
 The model card does not publish a per-action output-token cap or an agent
 iteration limit. The example below uses a 16,384-token response cap and
