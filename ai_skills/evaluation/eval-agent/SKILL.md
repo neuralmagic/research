@@ -6,9 +6,11 @@ description: >-
   Run the standard benchmark suite (lm-eval + lighteval tasks) against a model
   served by vLLM, with GPU reservation via canhazgpu. Use when the user asks to
   evaluate a model, run standard benchmarks, or measure model accuracy across the
-  full suite (GSM8k, MMLU, IFEval, Math-500, AIME25, GPQA Diamond, LiveCodeBench).
+  full suite (GSM8k, MMLU, IFEval, Math-500, AIME25, GPQA Diamond, LiveCodeBench),
+  or when they ask for SWE-bench Verified using an agentic coding harness.
   Handles GPU reservation, vLLM serving, benchmark execution, monitoring, retry,
-  and summary. Supports instruct, reasoning, coding, and long_context categories.
+  and summary. Supports instruct, reasoning, coding, and long_context categories;
+  SWE-bench Verified uses a separate mini-SWE-agent + SWE-bench workflow.
 
 # LLM Evaluation Agent
 
@@ -346,6 +348,21 @@ eval-agent run \
 Same `--smoke-only`, `resume`, `status --follow`, and KV-cache monitoring
 guidance from Steps 4-6 applies unchanged — this category just adds more
 `(task, seed)` work items dispatched through a third harness.
+
+## SWE-bench Verified (optional, agentic coding)
+
+SWE-bench Verified is an agent benchmark, not a direct-completion task. The
+model must inspect and edit a repository through tools; the SWE-bench harness
+then applies the patch in an isolated environment and runs the task tests. Do
+not add it to `registry.yaml` as a regular lighteval/lm-eval task, and do not
+compare its score with LiveCodeBench as if they measured the same behavior.
+
+Use the separate [SWE-bench Verified guide](SWE_BENCH_VERIFIED.md)
+for setup, local vLLM settings, smoke runs, prediction evaluation, and storage
+requirements. It includes a Qwen3.6 configuration based on the model card's
+published SWE-bench settings. Keep patch generation and patch testing as
+separate recorded stages, and use the same agent config and instance set when
+comparing BF16 and quantized checkpoints.
 
 ## Resuming Interrupted Runs
 
