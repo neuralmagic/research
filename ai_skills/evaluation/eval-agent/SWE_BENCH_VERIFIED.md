@@ -129,6 +129,19 @@ DOCKER_HOST="$DOCKER_HOST" .venvs/swebench/bin/python -c \
   'import docker; c=docker.from_env(); print(c.ping(), c.version()["ApiVersion"])'
 ```
 
+If rootless Podman fails while unpacking an image with an error such as
+`potentially insufficient UIDs or GIDs` or `lchown: invalid argument`, check
+the user's `/etc/subuid` and `/etc/subgid` ranges. Some task images contain
+owners outside the allocated range; the preferred fix is to have the host
+administrator extend those ranges. The storage option
+[`ignore_chown_errors`](https://github.com/containers/storage/blob/main/docs/containers-storage.conf.5.md)
+can unpack such images, but it squashes their UIDs/GIDs to one container ID and
+removes user separation. If that workaround is necessary, use a dedicated
+rootless storage directory and socket, then verify a gold patch for each
+affected image before evaluating model patches. On our host, the Matplotlib
+Verified image required UID 197609 while the mapping covered only 65,536 IDs;
+an isolated store using this option passed the Matplotlib gold-patch test.
+
 The full Verified split has 500 tasks and can consume substantial image-cache
 space. A small smoke slice checks both generation and test execution; it is not
 a benchmark score and should not be reported as one.
@@ -162,6 +175,14 @@ First run a small fixed slice to verify the agent and container setup.
 For a final result, omit `--slice` and generate predictions for all 500
 instances.
 
+Do not assume a contiguous slice is representative: SWE-bench Verified is
+ordered by repository, and in our `swebench==5.0.2` run `--slice 0:10`
+contained only Astropy tasks. That is useful for a smoke test, but it cannot
+estimate performance across the benchmark. For an outcome comparison before a
+full run, choose a fixed list of task IDs spanning repositories and pass the
+same `--filter` expression for each checkpoint. Record the task IDs with the
+results. Do not independently shuffle or sample each checkpoint.
+
 ```bash
 RUN_DIR=/path/to/runs/qwen36_bf16_smoke
 mkdir -p "$RUN_DIR"
@@ -176,6 +197,12 @@ The command writes `preds.json` and per-instance trajectories under the output
 directory. Test the generated patches with unique run IDs for each checkpoint
 and prediction set; the harness caches task results by run ID, so reusing an ID
 can return stale results after predictions change.
+
+`mini-extra swebench` marking an instance `Submitted` only means it emitted a
+submission. The SWE-bench harness must still apply the patch and run the task
+tests. Review `error_instances` as well as resolved and unresolved counts:
+malformed or missing patches are reported as errors, separate from patches
+that apply but fail tests.
 
 ```bash
 .venvs/swebench/bin/swebench eval verified \
