@@ -249,3 +249,39 @@ Report the resolved count divided by evaluated instances, along with the model
 checkpoint, vLLM version and flags, mini-SWE-agent version/config, sampling
 parameters, task IDs, Docker/Podman storage backend, and SWE-bench version. Do
 not describe a 10-task smoke run as a SWE-bench Verified score.
+
+## Matched Qwen3.6 full-run observation
+
+In an October 2026 full-set comparison, BF16
+(`RedHatAI/Qwen3.6-35B-A3B`) resolved 330/500 tasks (66%), while the released
+NVFP4 checkpoint (`RedHatAI/Qwen3.6-35B-A3B-NVFP4`) resolved 300/500 (60%).
+Both runs used the same 500 task IDs, mini-SWE-agent 2.4.6, SWE-bench 5.0.2,
+vLLM 0.30.0 with PyTorch 2.13.0+cu132, 200K context, Qwen3 reasoning and
+`qwen3_coder` tool parsers, FlashInfer CUTLASS MoE backend, temperature 1.0,
+top-p 0.95, seed 42, and a 16,384-token response cap. The NVFP4 checkpoint
+quantizes both weights and activations, so this compares the released
+checkpoint with BF16 rather than isolating weight-only quantization.
+
+| Checkpoint | Resolved / 500 | Completed | Unresolved | Errors | Ambiguous | Infra failures | Empty patches |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| BF16 | 330 (66%) | 464 | 134 | 36 | 12 | 0 | 0 |
+| NVFP4 | 300 (60%) | 450 | 150 | 50 | 12 | 0 | 0 |
+
+On the paired task IDs, both checkpoints resolved 258 tasks; BF16 alone
+resolved 72, NVFP4 alone resolved 42, and neither resolved 128. This run
+therefore favored BF16 by 30 net resolutions (6 percentage points), though
+one sampling seed is not enough to characterize run-to-run variation. The
+model-card score uses a different agent scaffold and is not directly
+comparable.
+
+Interpret the final JSON report rather than the progress bar: the harness can
+print “ran successfully” for every attempted instance even when a generated
+patch fails to apply. In these runs there were no likely infrastructure
+failures, but both reports included malformed or non-applicable model patches,
+12 ambiguous failures, and a 1,800-second timeout on
+`scikit-learn__scikit-learn-14710`. The Requests task
+`psf__requests-2317` also took about 18 minutes before completing. Keep the
+per-instance timeout explicit, and inspect the running test process before
+interrupting a slow task; a live pytest process can be consuming CPU or waiting
+on a network-dependent test rather than being stuck. Report `resolved`,
+`unresolved`, `error`, `ambiguous`, and infrastructure counts separately.
