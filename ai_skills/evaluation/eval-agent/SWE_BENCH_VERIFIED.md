@@ -151,6 +151,8 @@ a benchmark score and should not be reported as one.
 Create a model overlay such as `qwen36.yaml`:
 
 ```yaml
+environment:
+  pull_timeout: 600
 model:
   model_name: hosted_vllm/qwen36
   model_kwargs:
@@ -162,6 +164,14 @@ model:
     max_tokens: 16384
   cost_tracking: ignore_errors
 ```
+
+The Docker environment's `pull_timeout` defaults to 120 seconds and also bounds
+the initial `docker run` call that creates each task container. With a cold
+rootless Podman image store, this can raise `TimeoutExpired` before an agent
+gets a usable environment. Allow several minutes (600 seconds in this example)
+for image startup. When retrying only failed tasks, pass `--redo-existing` with
+a filter for those IDs: mini-SWE-agent skips every ID already present in
+`preds.json`, including entries whose `model_patch` is empty.
 
 When supplying `-c`, explicitly include mini-SWE-agent's bundled benchmark
 config first; a custom `-c` replaces the default config rather than extending
