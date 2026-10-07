@@ -26,6 +26,13 @@ and report the vLLM build used for both checkpoints; matching the base model's
 minimum version alone does not establish that a given build supports this
 NVFP4 checkpoint.
 
+For custom mixed-precision Qwen3.6 checkpoints, let vLLM select the MoE backend
+unless a specific backend has been validated with that checkpoint and device.
+On a B200 with vLLM 0.30.0, an initialization probe for an HIGGS NVFP4/FP8
+checkpoint selected `FLASHINFER_TRTLLM`; forcing `flashinfer_cutlass` reported
+that its kernel did not support the deployment configuration. This is separate
+from the released checkpoint's model-card recommendation.
+
 For a text-only repository task, start the BF16 model with the model card's
 context and reasoning settings, plus the Qwen tool-call parser used by
 mini-SWE-agent:
@@ -173,6 +180,13 @@ for image startup. When retrying only failed tasks, pass `--redo-existing` with
 a filter for those IDs: mini-SWE-agent skips every ID already present in
 `preds.json`, including entries whose `model_patch` is empty.
 
+For a local-model generation run, one single-GPU vLLM replica can serve several
+mini-SWE-agent workers. Set `--max-num-seqs` at least as high as the worker
+count for each replica. The Qwen3.6 HIGGS evaluation is configured for four
+replicas with four agents per replica (16 concurrent tasks); check GPU memory
+and request latency before raising that further. This is generation concurrency;
+the separate SWE-bench test harness has its own `--workers` setting.
+
 When supplying `-c`, explicitly include mini-SWE-agent's bundled benchmark
 config first; a custom `-c` replaces the default config rather than extending
 it. Keep its system prompt, tool environment, and default `step_limit` fixed
@@ -221,6 +235,14 @@ that apply but fail tests.
   --workers 1 --timeout 1800 \
   --report-dir "$RUN_DIR/evaluation"
 ```
+
+The harness `--timeout` is a per-task test timeout in seconds, not an overall
+benchmark deadline. Use a larger value for tasks that need long test suites; a
+Qwen3.6 run uses `--timeout 10800` (three hours) and `--workers 12`. If
+retrying infrastructure failures, cap each task at two total harness attempts
+(the initial run plus one retry) and persist resolved IDs/attempt counts so a
+runner restart cannot reset that cap. Leave model-patch errors and ordinary
+test failures out of the infrastructure retry set.
 
 For the NVFP4 comparison, use the same instance slice, sampling seed,
 mini-SWE-agent config, vLLM build, and SWE-bench version; change only the
@@ -285,3 +307,10 @@ per-instance timeout explicit, and inspect the running test process before
 interrupting a slow task; a live pytest process can be consuming CPU or waiting
 on a network-dependent test rather than being stuck. Report `resolved`,
 `unresolved`, `error`, `ambiguous`, and infrastructure counts separately.
+
+One additional implementation detail arose while testing a HIGGS-generated
+NVFP4/FP8 checkpoint: vLLM's compressed-tensors fused-MoE loader requires the
+routed `gate_proj`, `up_proj`, and `down_proj` to share one quantization scheme.
+Assigning these independently per expert can make vLLM reject the checkpoint
+before inference. Include a same-scheme constraint across all routed expert
+projections in each MoE layer when generating a mixed-precision config.
