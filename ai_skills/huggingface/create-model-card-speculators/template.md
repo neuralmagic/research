@@ -168,7 +168,7 @@ vllm serve <VERIFIER_MODEL_ID> \
 <!-- IF evaluation scripts or a vLLM version/branch are known (from the card
      or the user), add a short line under the heading, e.g.:
      "Results were obtained using <EVAL_SCRIPTS> with vLLM <VERSION_OR_BRANCH>."
-     For GuideLLM-style sections, put it inside the <details> block instead. -->
+     For detailed performance sections, put it inside the <details> block. -->
 
 <!-- STYLE A (DFlash family): per-position acceptance rates -->
 
@@ -182,6 +182,38 @@ Per-position token acceptance rates across datasets:
 | <DATASET> | <pct>% | <pct>% | <pct>% | ... | <avg> |
 <!-- One row per dataset; position columns from the actual results
      (Pos 0.. or Pos 1.. depending on the source table). -->
+
+<!-- STYLE A2 (Speculators AIPerf): pooled acceptance + native category reports -->
+
+### Acceptance results
+
+| Dataset | Successful Requests | Acceptance Length | Acceptance Rate | Pos 0 | Pos 1 | ... |
+|---------|--------------------:|------------------:|----------------:|------:|------:|----:|
+| <DATASET> | <COUNT> | <LENGTH> | <RATE>% | <pct>% | <pct>% | ... |
+
+<!-- Build this table from acceptance.csv. These are request-derived pooled
+     values. If the source columns are position 1..N, zero-based presentation
+     may relabel position 1 as Pos 0 only when that mapping is disclosed. -->
+
+<!-- IF native SPEED-Bench category reports are available -->
+### SPEED-Bench categories
+
+<!-- Render acceptance_length_by_category.csv and
+     acceptance_rate_by_category.csv as separate tables. Their Overall column
+     is the arithmetic mean of category values, not the request-pooled result.
+     Native acceptance rates are fractions from 0 to 1; convert all values
+     consistently when displaying percentages. -->
+<!-- ENDIF -->
+
+<!-- IF acceptance_by_prompt_length.csv is available -->
+### Long-context acceptance
+
+| Prompt Length | Requests | Acceptance Length | Acceptance Rate |
+|--------------|---------:|------------------:|----------------:|
+| <PROMPT_BIN> | <COUNT> | <LENGTH> | <RATE>% |
+<!-- State the MRCR needle selection, budgets, maximum successful prompt
+     length, and context-limit failures. -->
+<!-- ENDIF -->
 
 <!-- STYLE B (EAGLE-3 family): use cases + acceptance lengths + performance -->
 ## Evaluation
@@ -236,11 +268,11 @@ Per-position token acceptance rates across datasets:
 - time per experiment: <TIME>
 - hardware: <HARDWARE>
 - vLLM version: <VLLM_VERSION>
-- GuideLLM version: <GUIDELLM_VERSION>
+- benchmark client/version: <BENCHMARK_CLIENT_VERSION>
 
 <strong>Command</strong>
 ```bash
-<GUIDELLM_BENCHMARK_COMMAND>
+<BENCHMARK_COMMAND>
 ```
 </details>
 <!-- ENDIF style -->

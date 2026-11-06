@@ -5,8 +5,9 @@ description: >-
   (speculative-decoding draft models: EAGLE-3, DFlash, DFlash2, DSpark,
   P-EAGLE). Use when the user wants to create a model card, generate a README
   for a speculator or draft model, prepare a speculative-decoding model for
-  HuggingFace upload, or mentions speculators, speculative decoding,
-  speculative-config, or RedHatAI speculator publishing.
+  HuggingFace upload, incorporate Speculators AIPerf evaluation artifacts, or
+  mentions speculators, speculative decoding, speculative-config, or RedHatAI
+  speculator publishing.
 ---
 
 # Create Model Card for Speculator Models
@@ -68,8 +69,8 @@ model's files (README + config.json). They report what is missing in a
   details, or serving flags.
 - **Prompt the user** for each missing category before drafting. The prompt
   must cover, at minimum:
-  - **Evaluation results**: acceptance rates, acceptance lengths, and
-    performance benchmarking data (throughput, speedup vs baseline, ITL/TTFT)
+  - **Evaluation results**: an existing card, a Speculators AIPerf artifact
+    directory, or pasted acceptance/performance results
   - **Evaluation tooling** (optional): which evaluation scripts were used and
     which vLLM version or branch the evaluation was run on
   - **Training command code** (prepare data / launch vLLM / launch training)
@@ -194,8 +195,12 @@ Validation Hardware.
 - **Performance benchmarking**: include any benchmarking data that shows
   performance — throughput (tokens/s), speedup vs the baseline, ITL/TTFT,
   etc. — as tables and/or plots (images under `assets/`), with a `<details>`
-  block holding the sampling config, hardware, library versions, and the
-  benchmark commands (e.g. `guidellm benchmark`).
+  block holding the sampling config, hardware, library versions, exact axis
+  statistics, and benchmark commands.
+- Prefer fresh Speculators AIPerf artifacts over values copied from an older
+  README when both describe the same run. Keep request-derived pooled
+  acceptance results distinct from server-derived SPEED-Bench category
+  matrices. Read `aiperf-evaluation.md` before using those artifacts.
 - For EAGLE-3-style cards this means: use-case table (dataset + sample count),
   acceptance lengths, and the performance plots + `<details>` block.
 - Do **not** report quantization-style accuracy/recovery tables — speculator
@@ -304,6 +309,19 @@ arXiv:2602.06036, P-EAGLE: arXiv:2602.01469). See `algorithm-reference.md`.
      from the card.
    - Present the parsed tables for confirmation.
 
+   When the user supplies one or more directories from the Speculators AIPerf
+   evaluator, add each directory explicitly:
+
+   ```
+   python collect_evaluations.py <model-path-or-id> \
+     --eval-dir <acceptance-or-speedup-output> \
+     --eval-dir <another-output>
+   ```
+
+   Read `aiperf-evaluation.md`, present the discovered tables, plots, commands,
+   and modes, and confirm which runs should appear in the card. Do not infer a
+   completed benchmark from a directory name or an unvalidated plot.
+
 10. **If the user has evaluation results not in the card** (e.g. acceptance
     rates from a fresh run): ask for the path or have them paste the tables,
     and use those values. Never hand-fill numbers that have no source.
@@ -313,9 +331,10 @@ arXiv:2602.06036, P-EAGLE: arXiv:2602.01469). See `algorithm-reference.md`.
 
 11. **Ask about evaluation tooling** (optional — the user may skip): which
     **evaluation scripts** were used, and which **vLLM version or branch** the
-    model was served/benchmarked with. When provided, state them in the
-    Evaluation section (e.g. a short line under the heading, or inside the
-    `<details>` block for GuideLLM-style performance sections).
+    model was served/benchmarked with. Use `eval_command.txt` and
+    `aiperf_command.txt` when present instead of asking for commands already
+    recorded in the artifacts. State the tooling in the Evaluation section or
+    its reproducibility `<details>` block.
 
 ## Phase 5: Generate Draft
 
