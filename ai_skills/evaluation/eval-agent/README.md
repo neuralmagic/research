@@ -1,6 +1,6 @@
 # eval-agent
 
-Unified LLM evaluation orchestrator for lm-eval and lighteval benchmarks, served via vLLM with GPU reservation via canhazgpu. Also supports an optional additional `inspect_ai_core` category run through the Inspect AI / `inspect_evals` harness (see [What it evaluates](#what-it-evaluates)).
+Unified LLM evaluation orchestrator for lm-eval and lighteval benchmarks, served via vLLM with GPU reservation via canhazgpu. It also documents optional `inspect_ai_core` and agentic SWE-bench Verified workflows (see [What it evaluates](#what-it-evaluates)).
 
 ## Adding to Claude Code or Cursor
 
@@ -43,6 +43,7 @@ ln -s "$(pwd)/research/ai_skills/evaluation/eval-agent" ~/.claude/skills/eval-ag
 | coding | LiveCodeBench v6 | lighteval |
 | long_context | MRCR | lm-eval |
 | inspect_ai_core (optional) | GSM8k (0-shot, 5-shot), MMLU (0-shot), MMLU (5-shot CoT), MMLU-Pro (0-shot, 5-shot), IFEval, GPQA Diamond | inspect-ai |
+| SWE-bench Verified (optional) | Repository issue resolution | mini-SWE-agent + SWE-bench harness (separate workflow) |
 
 `inspect_ai_core` is a separate, additive category run through the
 [Inspect AI](https://inspect.aisi.org.uk/) / [`inspect_evals`](https://github.com/UKGovernmentBEIS/inspect_evals)
@@ -56,6 +57,12 @@ by executing generated code, which requires a real Docker daemon reachable
 from the host (not just a `docker`-aliased Podman, which is the RHEL/canhazgpu
 node default) — add them once real Docker is provisioned on the target infra.
 See `SKILL.md` → "Core Evals via Inspect AI" for usage.
+
+SWE-bench Verified is handled separately from `eval-agent run`: an agent must
+generate a patch using repository tools, then the official SWE-bench harness
+tests that patch in isolated environments. The [SWE-bench Verified guide](SWE_BENCH_VERIFIED.md)
+documents a reproducible local-vLLM setup, including Qwen3.6 settings and the
+storage requirements for Docker-based task environments.
 
 ## Installation
 
